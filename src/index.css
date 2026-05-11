@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-apf-black text-apf-white antialiased overflow-x-hidden selection:bg-apf-purple selection:text-white font-sans;
+  }
+  
+  h1, h2, h3, h4, .font-cinzel {
+    @apply font-cinzel;
+  }
+}
+
+@layer utilities {
+  .logo-text {
+    @apply font-cinzel font-black tracking-widest uppercase;
+  }
+  
+  .skewed-i {
+    display: inline-block;
+    transform: skewX(-15deg);
+    color: #9400FF;
+  }
+
+  .scanlines::before {
+    content: " ";
+    display: block;
+    position: fixed;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 50;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+
+  .neon-grid {
+    background-size: 40px 40px;
+    background-image: 
+      linear-gradient(to right, rgba(148, 0, 255, 0.15) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 0, 255, 0.15) 1px, transparent 1px);
+  }
+
+  .glitch-hover:hover {
+    animation: glitch 0.2s infinite;
+  }
+
+  @keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+  }
+}
