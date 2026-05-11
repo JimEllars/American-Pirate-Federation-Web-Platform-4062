@@ -11,7 +11,7 @@ export function useParallax() {
     let lastKnownScrollPosition = 0;
 
     const updatePosition = () => {
-      setOffset(lastKnownScrollPosition * 0.5); // Adjust multiplier for effect depth
+      setOffset(lastKnownScrollPosition * 0.2); // Adjust multiplier for effect depth
       ticking = false;
     };
 

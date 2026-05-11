@@ -4,7 +4,8 @@
 */
 import React from 'react';
 import * as FiIcons from 'react-icons/fi';
-import { FiAlertTriangle } from 'react-icons/fi';
+
+const { FiAlertTriangle } = FiIcons;
 
 const SafeIcon = ({ icon, name, className, ...props }) => {
   let IconComponent = icon;
