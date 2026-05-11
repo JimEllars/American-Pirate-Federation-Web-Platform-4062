@@ -30,7 +30,7 @@ export function Navbar() {
                 <Link
                   key={link.name}
                   to={link.path}
-                  className="text-gray-300 hover:text-apf-purple transition-colors px-3 py-2 rounded-md text-sm font-mono font-medium"
+                  className="text-gray-300 hover:text-apf-purple transition-colors px-3 py-2 rounded-md text-sm font-vt323 font-medium"
                 >
                   {link.name}
                 </Link>
@@ -63,7 +63,7 @@ export function Navbar() {
               <Link
                 key={link.name}
                 to={link.path}
-                className="text-gray-300 hover:text-apf-purple block px-3 py-2 rounded-md text-base font-mono font-medium"
+                className="text-gray-300 hover:text-apf-purple block px-3 py-2 rounded-md text-base font-vt323 font-medium"
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}

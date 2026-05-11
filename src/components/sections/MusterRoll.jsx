@@ -1,6 +1,7 @@
 import React from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
+import DOMPurify from 'isomorphic-dompurify';
 
 export function MusterRoll() {
     const { musterRollDraft, updateMusterRoll } = useAppStore();
@@ -14,10 +15,17 @@ export function MusterRoll() {
     e.preventDefault();
     updateMusterRoll({ status: 'queued' });
 
+    const sanitizedData = {
+      alias: DOMPurify.sanitize(musterRollDraft.alias),
+      comms: DOMPurify.sanitize(musterRollDraft.comms),
+      skills: DOMPurify.sanitize(musterRollDraft.skills),
+      walletAddress: DOMPurify.sanitize(musterRollDraft.walletAddress)
+    };
+
     // Simulate Firestore Backend Sync to /artifacts/apf/users/
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
-      console.log('Syncing to Firestore /artifacts/apf/users/ ...', musterRollDraft);
+      console.log('Syncing to Firestore /artifacts/apf/users/ ...', sanitizedData);
       // alert('ENLISTMENT DATA COMMITTED TO THE SOVEREIGN LEDGER.');
       updateMusterRoll({ status: 'committed' });
     } catch (err) {
