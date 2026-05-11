@@ -4,13 +4,13 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 
 const ARTICLES = [
-  { id: 'I', title: "Every Pirate Matters", theme: "Unity & Equity" },
-  { id: 'II', title: "No Quarter for Corruption", theme: "Transparency / Anti-Corruption" },
-  { id: 'III', title: "Health of the Crew", theme: "Mutual Aid Healthcare" },
-  { id: 'IV', title: "A Fair Share of the Plunder", theme: "Fair Wages / Economic Reform" },
-  { id: 'V', title: "Hoist the Sails for Knowledge", theme: "Open Source / Anti-Censorship" },
-  { id: 'VI', title: "No Pirate Left Behind", theme: "Social Safety Nets" },
-  { id: 'VII', title: "A Pirate’s Right to Privacy", theme: "Data Sovereignty / Privacy" }
+  { id: 'I', title: "Every Pirate Matters", theme: "Unity & Equity", content: "Reject old-world hierarchies; unite as a single crew." },
+  { id: 'II', title: "No Quarter for Corruption", theme: "Transparency / Anti-Corruption", content: "Radical transparency; target Citizens United." },
+  { id: 'III', title: "Health of the Crew", theme: "Mutual Aid Healthcare", content: "Healthcare as a fundamental right; mutual aid networks." },
+  { id: 'IV', title: "A Fair Share of the Plunder", theme: "Fair Wages / Economic Reform", content: "Fair wages; challenge crony capitalism." },
+  { id: 'V', title: "Hoist the Sails for Knowledge", theme: "Open Source / Anti-Censorship", content: "Open-source tech; anti-censorship; public information access." },
+  { id: 'VI', title: "No Pirate Left Behind", theme: "Social Safety Nets", content: "Collective responsibility; strong social safety nets." },
+  { id: 'VII', title: "A Pirate’s Right to Privacy", theme: "Data Sovereignty / Privacy", content: "Data as private property; end data-plunder." }
 ];
 
 export function ThePirateCode() {
@@ -42,9 +42,7 @@ export function ThePirateCode() {
                 {article.theme}
               </p>
               <div className="prose prose-invert prose-sm opacity-0 group-hover:opacity-100 transition-all duration-500">
-                <p className="font-sans text-gray-300">
-                  Sacred Fragment Decrypting... This article serves as a foundational pillar of the Federation's digital and physical resistance.
-                </p>
+                <p className="font-vt323 text-gray-300 text-lg">{article.content}</p>
               </div>
             </motion.div>
           ))}

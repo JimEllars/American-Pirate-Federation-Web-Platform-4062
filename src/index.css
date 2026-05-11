@@ -7,7 +7,7 @@
     @apply bg-apf-black text-apf-white antialiased overflow-x-hidden selection:bg-apf-purple selection:text-white font-sans;
   }
   
-  h1, h2, h3, h4, .font-cinzel {
+  h1, h2, h3, h4 {
     @apply font-cinzel;
   }
 }

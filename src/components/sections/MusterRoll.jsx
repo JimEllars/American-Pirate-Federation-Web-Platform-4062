@@ -3,12 +3,26 @@ import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 
 export function MusterRoll() {
-  const { musterRollDraft, updateMusterRoll } = useAppStore();
+    const { musterRollDraft, updateMusterRoll } = useAppStore();
 
-  const handleSubmit = (e) => {
+  const handleConnectWallet = async () => {
+    // Simulated Web3 connection
+    updateMusterRoll({ walletAddress: '0x' + Math.random().toString(16).substr(2, 40) });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     updateMusterRoll({ status: 'queued' });
-    alert('ENLISTMENT DATA QUEUED FOR TRANSMISSION.');
+
+    // Simulate Firestore Backend Sync to /artifacts/apf/users/
+    try {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      console.log('Syncing to Firestore /artifacts/apf/users/ ...', musterRollDraft);
+      // alert('ENLISTMENT DATA COMMITTED TO THE SOVEREIGN LEDGER.');
+      updateMusterRoll({ status: 'committed' });
+    } catch (err) {
+      updateMusterRoll({ status: 'error' });
+    }
   };
 
   return (
@@ -26,7 +40,28 @@ export function MusterRoll() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-8">
+
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center gap-4">
+               <button
+                 type="button"
+                 onClick={handleConnectWallet}
+                 className="bg-apf-purple/20 hover:bg-apf-purple/40 border border-apf-purple text-white font-vt323 px-4 py-2 transition-colors flex items-center gap-2"
+               >
+                 <SafeIcon name="Key" />
+                 {musterRollDraft.walletAddress ? 'Wallet Connected' : 'Connect Wallet (Web3)'}
+               </button>
+               {musterRollDraft.walletAddress && (
+                 <span className="font-vt323 text-apf-purpleLight text-sm truncate max-w-[200px] block">
+                   {musterRollDraft.walletAddress}
+                 </span>
+               )}
+            </div>
+            <p className="font-vt323 text-xs text-gray-500 uppercase">Article VII: Data Ownership. Connect wallet to claim sovereign identity.</p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+
             <div className="space-y-2">
               <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="alias">
                 Alias_Callsign
@@ -81,8 +116,13 @@ export function MusterRoll() {
           </button>
           
           {musterRollDraft.status === 'queued' && (
-             <div className="text-green-500 font-vt323 text-center animate-pulse">
-                STATUS: DATA_QUEUED_FOR_SYNC_ON_NEXT_NODE_CONTACT
+             <div className="text-apf-purple font-vt323 text-center animate-pulse">
+                STATUS: SYNCING_TO_LEDGER...
+             </div>
+          )}
+          {musterRollDraft.status === 'committed' && (
+             <div className="text-green-500 font-vt323 text-center">
+                STATUS: ENLISTMENT_DATA_COMMITTED_TO_SOVEREIGN_LEDGER
              </div>
           )}
         </form>
