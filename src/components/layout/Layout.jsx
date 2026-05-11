@@ -13,8 +13,13 @@ export function Layout({ children }) {
       
       {/* Parallax Grid */}
       <motion.div 
-        className="bg-grid-pattern bg-grid-parallax"
-        style={{ y: -scrollOffset }}
+        className="bg-grid-pattern bg-grid-parallax opacity-30 pointer-events-none"
+        style={{ y: -scrollOffset * 0.5, scale: 1.5, zIndex: 0 }}
+      />
+
+      <motion.div
+        className="bg-grid-pattern bg-grid-parallax pointer-events-none"
+        style={{ y: -scrollOffset, zIndex: 0 }}
       />
 
       <Navbar />
@@ -23,7 +28,7 @@ export function Layout({ children }) {
         {children}
       </main>
 
-      <footer className="border-t border-apf-purple/20 bg-apf-black/80 py-8 text-center text-sm font-mono text-gray-500 relative z-10">
+      <footer className="border-t border-apf-purple/20 bg-apf-black/80 py-8 text-center text-sm font-vt323 text-gray-500 relative z-10">
         <p>SECURE NODE ESTABLISHED. APF © {new Date().getFullYear()}</p>
       </footer>
     </div>

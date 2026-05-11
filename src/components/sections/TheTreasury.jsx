@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../../hooks/usePirateIntel';
 
 const GUILDS = [
   {
     id: 'quartermaster',
-    name: "Quartermaster’s Provisions",
-    icon: 'Anchor',
-    meta: "Resilience: Level 4",
-    content: "Food security blueprints, community garden maps, and emergency rationing protocols.",
+    name: "The Quartermaster’s Exchange",
+    icon: 'Package',
+    meta: "Supply Rating: Nominal",
+    content: "Guides on localized agriculture, securing surplus electronics, and building community mesh-networks.",
     category: "quartermaster"
   },
   {
     id: 'shipwright',
     name: "The Shipwright’s Guild",
-    icon: 'Settings',
-    meta: "Sustainability Index: 0.89",
-    content: "Broadband mesh networks, energy blueprints, and 3D manufacturing open-source files.",
+    icon: 'Tool',
+    meta: "Infrastructure: Expanding",
+    content: "Open-source 3D printing schematics, off-grid power systems, and repair guides for proprietary hardware.",
     category: "shipwright"
   },
   {
@@ -38,18 +38,27 @@ const GUILDS = [
   }
 ];
 
-// Mock Treasury Data
-const TREASURY_LEDGER = [
-  { txId: '0x8f...3c9', amount: '$12,450', target: 'Community Aid - Article III', status: 'Settled', date: '2024-05-10' },
-  { txId: '0x2a...1b4', amount: '$4,200', target: 'Mesh Network Node Expansion', status: 'Settled', date: '2024-05-08' },
-  { txId: '0x9c...7f1', amount: '$8,900', target: 'Legal Defense Fund', status: 'Pending', date: '2024-05-11' },
-];
-
 export function TheTreasury() {
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
+  const [ledger, setLedger] = useState([]);
+  const [isAuditing, setIsAuditing] = useState(false);
 
   const { data: guides, loading, error } = usePirateIntel(`posts?search=${activeGuild.category}&_embed&per_page=3`);
+
+  // Simulate fetching live ledger data
+  useEffect(() => {
+    if (activeTab === 'ledger' && ledger.length === 0) {
+      setTimeout(() => {
+        setLedger([
+          { txId: '0x' + Math.random().toString(16).substr(2, 8), amount: '12,450 USDC', target: 'Tactical Funding: Community Aid', status: 'Settled', date: new Date(Date.now() - 86400000).toISOString().split('T')[0] },
+          { txId: '0x' + Math.random().toString(16).substr(2, 8), amount: '4,200 USDC', target: 'Resource Allocation: Node Expansion', status: 'Settled', date: new Date(Date.now() - 172800000).toISOString().split('T')[0] },
+          { txId: '0x' + Math.random().toString(16).substr(2, 8), amount: '8,900 USDC', target: 'Tactical Funding: Legal Defense', status: 'Pending', date: new Date().toISOString().split('T')[0] },
+          { txId: '0x' + Math.random().toString(16).substr(2, 8), amount: '1,500 USDC', target: 'Resource Allocation: Server Upkeep', status: 'Settled', date: new Date(Date.now() - 432000000).toISOString().split('T')[0] },
+        ]);
+      }, 800);
+    }
+  }, [activeTab, ledger.length]);
 
   return (
     <section className="py-24 bg-apf-black neon-grid relative">
@@ -62,7 +71,7 @@ export function TheTreasury() {
               <p className="font-vt323 text-apf-purple mt-2 tracking-widest">[ DECENTRALIZED_RESOURCE_ALLOCATION ]</p>
            </div>
 
-           <div className="flex gap-4 mt-6 md:mt-0 font-mono text-sm uppercase">
+           <div className="flex gap-4 mt-6 md:mt-0 font-vt323 text-sm uppercase">
              <button
                onClick={() => setActiveTab('guilds')}
                className={`pb-2 transition-colors ${activeTab === 'guilds' ? 'text-apf-purple border-b-2 border-apf-purple' : 'text-gray-500 hover:text-white'}`}
@@ -163,23 +172,41 @@ export function TheTreasury() {
               exit={{ opacity: 0, y: -10 }}
             >
               <div className="bg-black/60 border border-gray-800 p-8">
-                 <div className="flex justify-between items-center mb-8">
+                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
                    <div>
                      <h3 className="text-2xl font-bold uppercase text-white">Treasury Transparency</h3>
-                     <p className="font-mono text-gray-500 text-sm">Real-time ledger of federation resource allocation.</p>
+                     <p className="font-vt323 text-gray-500 text-sm">Real-time ledger of federation resource allocation.</p>
                    </div>
-                   <a
-                     href="ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi"
-                     target="_blank"
-                     rel="noreferrer"
-                     className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-mono text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors"
+                   <button
+                     onClick={() => setIsAuditing(!isAuditing)}
+                     className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-vt323 text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors"
                    >
-                     <SafeIcon name="Download" className="h-4 w-4" /> Download Full Audit (IPFS)
-                   </a>
+                     <SafeIcon name="Download" className="h-4 w-4" /> {isAuditing ? 'Close Audit View' : 'Verify Audit (IPFS)'}
+                   </button>
                  </div>
 
+                 {isAuditing && (
+                   <motion.div
+                     initial={{ opacity: 0, height: 0 }}
+                     animate={{ opacity: 1, height: 'auto' }}
+                     className="bg-black border border-apf-purple/50 p-4 mb-8 font-vt323 text-xs text-apf-purple overflow-x-auto"
+                   >
+                     <div className="mb-2 text-white">IPFS Hash: bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi</div>
+                     <pre className="text-gray-400">
+{JSON.stringify({
+  "@context": "apf-ledger",
+  "contract": "0xAPF...Treasury",
+  "lastSync": new Date().toISOString(),
+  "merkleRoot": "0x" + Math.random().toString(16).substring(2),
+  "verification": "SUCCESS",
+  "status": "Immutable"
+}, null, 2)}
+                     </pre>
+                   </motion.div>
+                 )}
+
                  <div className="overflow-x-auto">
-                    <table className="w-full text-left font-mono">
+                    <table className="w-full text-left font-vt323">
                       <thead className="text-xs text-gray-500 uppercase bg-gray-900 border-b border-gray-800">
                         <tr>
                           <th className="px-6 py-3">TxHash</th>
@@ -189,22 +216,30 @@ export function TheTreasury() {
                           <th className="px-6 py-3 text-right">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="text-sm">
-                        {TREASURY_LEDGER.map((tx, idx) => (
-                          <tr key={idx} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
-                            <td className="px-6 py-4 text-apf-purple">{tx.txId}</td>
-                            <td className="px-6 py-4 text-gray-400">{tx.date}</td>
-                            <td className="px-6 py-4 text-white font-bold">{tx.amount}</td>
-                            <td className="px-6 py-4 text-gray-300">{tx.target}</td>
-                            <td className="px-6 py-4 text-right">
-                               <span className={`px-2 py-1 text-[10px] uppercase tracking-widest border ${
-                                 tx.status === 'Settled' ? 'text-green-500 border-green-500/30 bg-green-500/10' : 'text-yellow-500 border-yellow-500/30 bg-yellow-500/10'
-                               }`}>
-                                 {tx.status}
-                               </span>
-                            </td>
-                          </tr>
-                        ))}
+                      <tbody className="text-sm relative min-h-[200px]">
+                        {ledger.length === 0 ? (
+                           <tr>
+                             <td colSpan="5" className="text-center py-12 text-apf-purple animate-pulse">
+                               SYNCING LEDGER FROM DECENTRALIZED NODES...
+                             </td>
+                           </tr>
+                        ) : (
+                          ledger.map((tx, idx) => (
+                            <tr key={idx} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
+                              <td className="px-6 py-4 text-apf-purple">{tx.txId}</td>
+                              <td className="px-6 py-4 text-gray-400">{tx.date}</td>
+                              <td className="px-6 py-4 text-white font-bold">{tx.amount}</td>
+                              <td className="px-6 py-4 text-gray-300">{tx.target}</td>
+                              <td className="px-6 py-4 text-right">
+                                 <span className={`px-2 py-1 text-[10px] uppercase tracking-widest border ${
+                                   tx.status === 'Settled' ? 'text-green-500 border-green-500/30 bg-green-500/10' : 'text-yellow-500 border-yellow-500/30 bg-yellow-500/10'
+                                 }`}>
+                                   {tx.status}
+                                 </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
                     </table>
                  </div>
