@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
+import { usePirateIntel } from '../../hooks/usePirateIntel';
 
 const GUILDS = [
   {
@@ -9,33 +10,43 @@ const GUILDS = [
     name: "Quartermaster’s Provisions",
     icon: 'Anchor',
     meta: "Resilience: Level 4",
-    content: "Food security blueprints, community garden maps, and emergency rationing protocols."
+    content: "Food security blueprints, community garden maps, and emergency rationing protocols.",
+    category: "quartermaster"
   },
   {
     id: 'shipwright',
     name: "The Shipwright’s Guild",
     icon: 'Settings',
     meta: "Sustainability Index: 0.89",
-    content: "Broadband mesh networks, energy blueprints, and 3D manufacturing open-source files."
+    content: "Broadband mesh networks, energy blueprints, and 3D manufacturing open-source files.",
+    category: "shipwright"
   },
   {
     id: 'navigator',
     name: "The Navigator’s Charts",
     icon: 'Compass',
     meta: "Civic Action: High",
-    content: "FOIA templates, campaign finance trackers, and lobbying strategies for the people."
+    content: "FOIA templates, campaign finance trackers, and lobbying strategies for the people.",
+    category: "navigator"
   },
   {
     id: 'surgeon',
     name: "The Surgeon’s Dispensary",
     icon: 'PlusSquare',
     meta: "Aid Priority: Critical",
-    content: "Mental health resources, mutual aid network directories, and medical supply chain maps."
+    content: "Mental health resources, mutual aid network directories, and medical supply chain maps.",
+    category: "surgeon"
   }
 ];
 
 export function TheTreasury() {
+
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
+
+  // Use category endpoints if backend supports it, else we fallback to a generic search / mock
+  // Let's assume WordPress API can query by a tag or search query, e.g., posts?search=${activeGuild.category}
+  const { data: guides, loading, error } = usePirateIntel(`posts?search=${activeGuild.category}&_embed&per_page=3`);
+
 
   return (
     <section className="py-24 bg-apf-black neon-grid relative">
@@ -85,7 +96,29 @@ export function TheTreasury() {
                   {activeGuild.content}
                 </p>
                 
+
+                <div className="mt-8 pt-8 border-t border-white/10">
+                  <h4 className="font-vt323 text-lg text-white mb-4 uppercase tracking-widest">[ DECRYPTED_BLUEPRINTS ]</h4>
+                  {loading && <p className="font-vt323 text-gray-500 animate-pulse">Syncing Intel...</p>}
+                  {error && <p className="font-vt323 text-red-500">SIGNAL INTERRUPTED: {error}</p>}
+                  {!loading && !error && guides && guides.length > 0 && (
+                    <ul className="space-y-3">
+                      {guides.map((guide) => (
+                        <li key={guide.id} className="border border-white/10 p-3 bg-black/40 hover:border-apf-purple transition-all cursor-pointer">
+                           <a href={guide.link} target="_blank" rel="noreferrer" className="block text-apf-purple hover:text-white font-vt323 text-lg uppercase">
+                              &gt; {guide.title?.rendered || "CLASSIFIED_DOCUMENT"}
+                           </a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {!loading && !error && (!guides || guides.length === 0) && (
+                     <p className="font-vt323 text-gray-500">No active blueprints currently verified for this sector.</p>
+                  )}
+                </div>
+
                 <div className="mt-8 pt-8 border-t border-white/10 grid grid-cols-2 gap-4">
+
                   <div className="p-4 border border-white/5 bg-white/5">
                     <span className="block text-[10px] font-vt323 text-gray-500 uppercase">Status</span>
                     <span className="text-green-500 font-vt323 uppercase">Verified_Node</span>

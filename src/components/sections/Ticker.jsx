@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 
 export function Ticker() {
-  const updates = [
+    const updates = [
     "NODE 01: OPERATIONAL",
-    "PROTOCOL V2.4 DEPLOYED",
-    "NEW DIRECTIVE ISSUED",
+    "MOTHERSHIP LEDGER: $12,450 ALLOCATED TO GUILD 4",
+    "TRANSPARENCY REPORT: Q3 FILED PUBLICLY",
+    "NEW DIRECTIVE ISSUED: INITIATE MESH NETWORKS",
     "MUSTER ROLL: +42 RECRUITS",
+    "RESOURCE ALLOCATION: 40% TO COMMUNITY AID",
     "SIGNAL STRENGTH: OPTIMAL"
   ];
 

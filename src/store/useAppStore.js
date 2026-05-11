@@ -8,6 +8,7 @@ export const useAppStore = create(
         alias: '',
         comms: '',
         skills: '',
+        walletAddress: '',
         status: 'idle'
       },
       updateMusterRoll: (data) => 
@@ -16,7 +17,7 @@ export const useAppStore = create(
         })),
       clearMusterRoll: () => 
         set({ 
-          musterRollDraft: { alias: '', comms: '', skills: '', status: 'idle' } 
+          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle' }
         }),
     }),
     {
