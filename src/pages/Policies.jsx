@@ -13,43 +13,55 @@ const POLICIES = [
     title: "Digital Sovereignty Act",
     code: "APF-001",
     summary: "Ensuring individual ownership of data and cryptographic identity across all federation nodes.",
-    status: "Active"
+    status: "Active",
+    consensus: 94,
+    sponsor: "Navigator's Guild",
+    lastRevision: "2023.11.04"
   },
   {
     title: "The Fleet Mutual Aid Pact",
     code: "APF-002",
     summary: "Protocol for resource sharing and legal defense of federation members under state pressure.",
-    status: "Active"
+    status: "Active",
+    consensus: 88,
+    sponsor: "Surgeon's Dispensary",
+    lastRevision: "2024.01.12"
   },
   {
     title: "Decentralized Governance Draft",
     code: "APF-003",
     summary: "Proposed framework for liquid democracy voting on federation resource allocation.",
-    status: "In Review"
+    status: "In Review",
+    consensus: 62,
+    sponsor: "Quartermaster's Provisions",
+    lastRevision: "2024.02.28"
   },
   {
     title: "Intellectual Property Abolition",
     code: "APF-004",
     summary: "The federation's stance on the open-source requirement for all assistive technologies.",
-    status: "Active"
+    status: "Active",
+    consensus: 75,
+    sponsor: "Shipwright's Guild",
+    lastRevision: "2023.09.15"
   }
 ];
 
 export function Policies() {
   return (
     <Layout>
-      <SEO title="Policies | The Code" description="The legislative drafts and sovereign protocols of the American Pirate Federation." />
+      <SEO title="Policies | The Chartroom" description="The legislative drafts and sovereign protocols of the American Pirate Federation." />
       <PageTransition>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
               <SafeIcon icon={FiBookOpen} className="h-10 w-10 text-apf-purple" />
               <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-                The Code
+                The Chartroom
               </h1>
             </div>
             <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-purple pl-6">
-              Sovereignty is not given; it is coded. These are the foundational protocols governing the American Pirate Federation and its autonomous nodes.
+              Sovereignty is not given; it is coded. These are the foundational protocols governing the American Pirate Federation.
             </p>
           </div>
 

@@ -5,6 +5,9 @@ import { AnimatePresence } from 'framer-motion';
 import { Home } from './pages/Home';
 import { Policies } from './pages/Policies';
 import { Events } from './pages/Events';
+import { NewsArchive } from './pages/NewsArchive';
+import { TransmissionHub } from './pages/TransmissionHub';
+import { Armory } from './pages/Armory';
 
 // Placeholder for remaining routes
 const Placeholder = ({ title }) => (
@@ -23,11 +26,11 @@ function App() {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/news" element={<Placeholder title="News Archive" />} />
+            <Route path="/news" element={<NewsArchive />} />
             <Route path="/policies" element={<Policies />} />
             <Route path="/events" element={<Events />} />
-            <Route path="/podcast" element={<Placeholder title="The Signal" />} />
-            <Route path="/shop" element={<Placeholder title="The Armory" />} />
+            <Route path="/podcast" element={<TransmissionHub />} />
+            <Route path="/shop" element={<Armory />} />
           </Routes>
         </AnimatePresence>
       </BrowserRouter>

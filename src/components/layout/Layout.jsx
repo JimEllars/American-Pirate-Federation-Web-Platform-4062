@@ -9,7 +9,7 @@ export function Layout({ children }) {
   return (
     <div className="min-h-screen relative apf-root-container flex flex-col">
       {/* Scanlines overlay */}
-      <div className="scanlines" />
+      <div className="scanlines pointer-events-none" />
       
       {/* Parallax Grid */}
       <motion.div 

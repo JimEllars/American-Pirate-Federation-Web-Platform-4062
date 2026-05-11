@@ -9,15 +9,31 @@ export const useAppStore = create(
         comms: '',
         skills: '',
         walletAddress: '',
-        status: 'idle'
+        status: 'idle',
       },
+      userRole: 'Unverified', // Roles: Unverified, Deckhand, Navigator, Guild Master
       updateMusterRoll: (data) => 
-        set((state) => ({ 
-          musterRollDraft: { ...state.musterRollDraft, ...data } 
-        })),
+        set((state) => {
+          let newRole = state.userRole;
+
+          // Basic logic to determine user role based on wallet or activity
+          if (data.walletAddress && state.userRole === 'Unverified') {
+            newRole = 'Deckhand';
+          }
+
+          if (data.status === 'committed' && newRole === 'Deckhand') {
+              newRole = 'Navigator';
+          }
+
+          return {
+            musterRollDraft: { ...state.musterRollDraft, ...data },
+            userRole: newRole
+          };
+        }),
       clearMusterRoll: () => 
         set({ 
-          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle' }
+          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle' },
+          userRole: 'Unverified'
         }),
     }),
     {
