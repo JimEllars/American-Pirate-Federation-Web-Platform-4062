@@ -47,6 +47,60 @@ const POLICIES = [
     sponsor: "Shipwright's Guild",
     lastRevision: "2023.09.15"
   }
+,  {
+    title: "Corporate Housing Nullification",
+    code: "APF-005",
+    summary: "Legal protocols to remove for-profit corporations from the single-family housing market.",
+    status: "Active",
+    consensus: 85,
+    sponsor: "Quartermaster's Provisions",
+    lastRevision: "2024.03.15"
+  },
+  {
+    title: "Universal Resource Guarantee",
+    code: "APF-006",
+    summary: "Infrastructure blueprints for public water and food distribution networks.",
+    status: "Active",
+    consensus: 91,
+    sponsor: "Surgeon's Dispensary",
+    lastRevision: "2024.03.20"
+  },
+  {
+    title: "Green Transit Initiative",
+    code: "APF-007",
+    summary: "Transitioning the fleet and public to renewable-energy-based transportation.",
+    status: "In Review",
+    consensus: 78,
+    sponsor: "Shipwright's Guild",
+    lastRevision: "2024.04.02"
+  },
+  {
+    title: "The 1950s Tax Restoration Act",
+    code: "APF-008",
+    summary: "Implementing high-bracket taxes on excessive wealth hoarding.",
+    status: "Active",
+    consensus: 95,
+    sponsor: "Federation Reserve",
+    lastRevision: "2024.04.10"
+  },
+  {
+    title: "Fleet Labor Accord",
+    code: "APF-009",
+    summary: "Tools for immediate unionization and collective bargaining support.",
+    status: "Active",
+    consensus: 89,
+    sponsor: "Navigator's Guild",
+    lastRevision: "2024.04.18"
+  },
+  {
+    title: "Open Academy Protocol",
+    code: "APF-010",
+    summary: "Proposals for free, high-tier decentralized education solutions.",
+    status: "In Review",
+    consensus: 82,
+    sponsor: "Shipwright's Guild",
+    lastRevision: "2024.04.25"
+  }
 ];
 
 export function Policies() {
@@ -55,14 +109,14 @@ export function Policies() {
 
   return (
     <Layout>
-      <SEO title="Policies | The Chartroom" description="The legislative drafts and sovereign protocols of the American Pirate Federation." />
+      <SEO title="Policies | American Pirate Federation" description="The legislative drafts and sovereign protocols of the American Pirate Federation." />
       <PageTransition>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
               <SafeIcon icon={FiBookOpen} className="h-10 w-10 text-apf-purple" />
               <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-                The Chartroom
+                Policies
               </h1>
             </div>
             <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-purple pl-6">
