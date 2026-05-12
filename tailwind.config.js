@@ -7,12 +7,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        apf: {
+                apf: {
           black: '#0A0A0A',
           gray: '#141414',
           purple: '#9400FF',
           purpleLight: '#d4adff',
-          white: '#FAFAFA'
+          white: '#FAFAFA',
+          emerald: '#10B981'
         }
       },
       fontFamily: {

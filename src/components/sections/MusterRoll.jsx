@@ -37,7 +37,7 @@ export function MusterRoll() {
     <div id="enlist" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="bg-apf-gray border border-apf-purple/30 p-12 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
-        
+
         <div className="mb-12 text-center">
           <h2 className="text-4xl font-cinzel font-black uppercase tracking-widest mb-4">
             Join the Fleet
@@ -122,7 +122,7 @@ export function MusterRoll() {
             <SafeIcon name="UploadCloud" />
             Commit to Ledger
           </button>
-          
+
           {musterRollDraft.status === 'queued' && (
              <div className="text-apf-purple font-vt323 text-center animate-pulse">
                 STATUS: SYNCING_TO_LEDGER...

@@ -19,7 +19,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
       <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity pointer-events-none">
         <SafeIcon icon={FiShield} className="h-24 w-24 text-apf-purple" />
       </div>
-      
+
       <div className="flex items-center justify-between mb-4 relative z-10">
         <div className="flex items-center gap-2">
           <span className="text-xs font-vt323 px-2 py-1 bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/30">
