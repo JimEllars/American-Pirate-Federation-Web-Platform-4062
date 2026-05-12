@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/pages/Armory.jsx
 import React, { useState } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -204,3 +205,4 @@ export function Armory() {
     </Layout>
   );
 }
+INNER_EOF

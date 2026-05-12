@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/components/layout/Layout.jsx
 import React from 'react';
 import { Navbar } from './Navbar';
 import { useParallax } from '../../hooks/useParallax';
@@ -42,3 +43,4 @@ export function Layout({ children }) {
     </div>
   );
 }
+INNER_EOF

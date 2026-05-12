@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/components/sections/MusterRoll.jsx
 import React from 'react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
@@ -140,3 +141,4 @@ export function MusterRoll() {
     </div>
   );
 }
+INNER_EOF

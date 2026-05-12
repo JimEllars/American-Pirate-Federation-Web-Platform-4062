@@ -13,38 +13,86 @@ export const useAppStore = create(
       },
       userRole: 'Unverified', // Roles: Unverified, Deckhand, Navigator, Guild Master
       policySignals: {}, // Track signaled policies { policyCode: true }
+      policyComments: {}, // Track comments { policyCode: [{ author, role, text, date }] }
       reputationPoints: 100, // Mock reputation
+      requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
+
       updateMusterRoll: (data) =>
         set((state) => {
+          const newState = {
+            musterRollDraft: { ...state.musterRollDraft, ...data }
+          };
+
           let newRole = state.userRole;
 
-          // Basic logic to determine user role based on wallet or activity
-          if (data.walletAddress && state.userRole === 'Unverified') {
+          // Sovereign Role Escalation
+          if (newState.musterRollDraft.walletAddress && state.userRole === 'Unverified') {
             newRole = 'Deckhand';
           }
 
-          if (data.status === 'committed' && newRole === 'Deckhand') {
+          if (newState.musterRollDraft.status === 'committed' && (newRole === 'Deckhand' || newRole === 'Unverified')) {
               newRole = 'Navigator';
           }
 
-          return {
-            musterRollDraft: { ...state.musterRollDraft, ...data },
-            userRole: newRole
-          };
+          if (state.reputationPoints > 500) {
+              newRole = 'Guild Master';
+          }
+
+          return { ...newState, userRole: newRole };
         }),
+
       clearMusterRoll: () =>
         set({
           musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle' },
           userRole: 'Unverified'
         }),
+
       signalPolicy: (policyCode) =>
         set((state) => ({
           policySignals: { ...state.policySignals, [policyCode]: !state.policySignals[policyCode] }
         })),
+
+      addPolicyComment: (policyCode, comment) =>
+        set((state) => {
+           const existing = state.policyComments[policyCode] || [];
+           return {
+               policyComments: {
+                   ...state.policyComments,
+                   [policyCode]: [...existing, comment]
+               }
+           };
+        }),
+
       spendReputation: (amount) =>
+        set((state) => {
+          const newRep = Math.max(0, state.reputationPoints - amount);
+          let newRole = state.userRole;
+
+          // Re-evaluate role on reputation change
+          if (newRep <= 500 && state.userRole === 'Guild Master') {
+              newRole = state.musterRollDraft.status === 'committed' ? 'Navigator' :
+                        (state.musterRollDraft.walletAddress ? 'Deckhand' : 'Unverified');
+          }
+
+          return { reputationPoints: newRep, userRole: newRole };
+        }),
+
+      addReputation: (amount) =>
+        set((state) => {
+          const newRep = state.reputationPoints + amount;
+          let newRole = state.userRole;
+
+          if (newRep > 500) {
+              newRole = 'Guild Master';
+          }
+
+          return { reputationPoints: newRep, userRole: newRole };
+        }),
+
+      addRequisition: (item) =>
         set((state) => ({
-          reputationPoints: Math.max(0, state.reputationPoints - amount)
-        })),
+           requisitionHistory: [{ ...item, date: new Date().toISOString(), status: 'AUTHORIZED' }, ...state.requisitionHistory]
+        }))
     }),
     {
       name: 'apf-muster-storage', // Save to local storage for resilience
@@ -56,7 +104,9 @@ export const useAppStore = create(
         },
         userRole: state.userRole,
         policySignals: state.policySignals,
-        reputationPoints: state.reputationPoints
+        policyComments: state.policyComments,
+        reputationPoints: state.reputationPoints,
+        requisitionHistory: state.requisitionHistory
       }), // Save only specific parts, ignoring volatile UI state like comms/skills draft
     }
   )
