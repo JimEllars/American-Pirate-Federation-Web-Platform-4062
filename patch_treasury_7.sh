@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/components/sections/TheTreasury.jsx
 import React, { useState, useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -289,3 +290,4 @@ export function TheTreasury() {
     </section>
   );
 }
+INNER_EOF

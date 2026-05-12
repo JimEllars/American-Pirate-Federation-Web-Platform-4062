@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/components/sections/PolicyCard.jsx
 import React, { useState } from 'react';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
@@ -205,3 +206,4 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
     </div>
   );
 }
+INNER_EOF

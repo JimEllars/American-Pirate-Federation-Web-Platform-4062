@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/pages/TransmissionHub.jsx
 import React, { useState } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -210,3 +211,4 @@ export function TransmissionHub() {
     </Layout>
   );
 }
+INNER_EOF
