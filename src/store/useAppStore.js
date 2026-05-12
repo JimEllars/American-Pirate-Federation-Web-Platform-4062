@@ -64,9 +64,38 @@ export const useAppStore = create(
         }),
 
       signalPolicy: (policyCode) =>
-        set((state) => ({
-          policySignals: { ...state.policySignals, [policyCode]: !state.policySignals[policyCode] }
-        })),
+        set((state) => {
+          const isSignaling = !state.policySignals[policyCode];
+          const isHumanRightPolicy = ['APF-005', 'APF-006', 'APF-007', 'APF-008', 'APF-009', 'APF-010'].includes(policyCode);
+
+          let newRep = state.reputationPoints;
+          let repHistory = state.reputationHistory;
+
+          if (isSignaling && isHumanRightPolicy) {
+              newRep += 20;
+              repHistory = [
+                 { action: `Authorized ${policyCode}`, amount: 20, date: new Date().toISOString() },
+                 ...state.reputationHistory
+              ];
+          } else if (!isSignaling && isHumanRightPolicy) {
+              newRep = Math.max(0, newRep - 20);
+          }
+
+          let newRole = state.userRole;
+          if (newRep > 500) {
+              newRole = 'Guild Master';
+          } else if (newRep <= 500 && state.userRole === 'Guild Master') {
+              newRole = state.musterRollDraft.status === 'committed' ? 'Navigator' :
+                        (state.musterRollDraft.walletAddress ? 'Deckhand' : 'Unverified');
+          }
+
+          return {
+            policySignals: { ...state.policySignals, [policyCode]: isSignaling },
+            reputationPoints: newRep,
+            reputationHistory: repHistory,
+            userRole: newRole
+          };
+        }),
 
       addPolicyComment: (policyCode, comment) =>
         set((state) => {

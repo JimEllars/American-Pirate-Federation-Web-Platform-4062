@@ -15,12 +15,12 @@ const ARTICLES = [
   { id: 'IX', title: "Free Speech & Open Frequencies", theme: "Freedom of Expression", content: "Unfettered communication; protect whisteblowers.", reference: "1st Amendment." },
   { id: 'X', title: "Freedom of Religion", theme: "Liberty of Belief", content: "Protect all faiths and non-faiths alike from state coercion.", reference: "1st Amendment." }
 ,
-  { id: 'XI', title: "The Right to Shelter", theme: "Housing Rights", content: "Housing is for living, not for corporate profit.", reference: "9th Amendment (Unenumerated rights of the people)" },
-  { id: 'XII', title: "Sovereign Sustenance", theme: "Resource Access", content: "Guaranteed access to Water and Food support, protected from corporate interests.", reference: "Preamble (Promote the general Welfare)" },
-  { id: 'XIII', title: "Innovation Beyond Extraction", theme: "Sustainable Future", content: "Transition from fossil fuels to renewable energy and public transit infrastructure.", reference: "Article I, Section 8 (Promotion of the Progress of Science)" },
-  { id: 'XIV', title: "Equitable Contribution", theme: "Wealth Taxation", content: "Wealth tax levels restored to 1950s standards (Hoarding is corruption).", reference: "16th Amendment" },
-  { id: 'XV', title: "The Strength of the Union", theme: "Labor Rights", content: "Absolute support for labor unions and worker assembly.", reference: "1st Amendment (Right to peaceably assemble)" },
-  { id: 'XVI', title: "Liberation Through Learning", theme: "Education Access", content: "Free or affordable education for the next generation.", reference: "1st Amendment (Foundation of free speech/press)" }
+  { id: 'XI', title: "The Right to Shelter", theme: "Housing Rights", content: "Housing is for citizens, not corporate profit.", reference: "9th Amendment (Unenumerated rights)." },
+  { id: 'XII', title: "Sovereign Sustenance", theme: "Resource Access", content: "Guaranteed access to Water and Food, protected from corporate extraction.", reference: "Preamble (General Welfare)." },
+  { id: 'XIII', title: "Innovation Beyond Extraction", theme: "Sustainable Future", content: "Strategic transition from oil to renewable energy and public transit.", reference: "Article I, Section 8 (Promotion of Science)." },
+  { id: 'XIV', title: "Equitable Contribution", theme: "Wealth Taxation", content: "Restoring wealth tax tiers to 1950s standards.", reference: "16th Amendment." },
+  { id: 'XV', title: "The Strength of the Union", theme: "Labor Rights", content: "Unwavering support for labor unions and worker assembly.", reference: "1st Amendment (Right to assemble)." },
+  { id: 'XVI', title: "Liberation Through Learning", theme: "Education Access", content: "Investing in the future through free or affordable education.", reference: "1st Amendment (Foundation of free speech)." }
 ];
 
 export function ThePirateCode() {

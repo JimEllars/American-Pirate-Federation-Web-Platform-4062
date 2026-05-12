@@ -50,7 +50,7 @@ const POLICIES = [
 ,  {
     title: "Corporate Housing Nullification",
     code: "APF-005",
-    summary: "Legal protocols to remove for-profit corporations from the single-family housing market.",
+    summary: "Human Right Provision: Legal protocols to remove for-profit corporations from single-family housing markets.",
     status: "Active",
     consensus: 85,
     sponsor: "Quartermaster's Provisions",
@@ -59,7 +59,7 @@ const POLICIES = [
   {
     title: "Universal Resource Guarantee",
     code: "APF-006",
-    summary: "Infrastructure blueprints for public water and food distribution networks.",
+    summary: "Human Right Provision: Blueprint for public water and food distribution infrastructure.",
     status: "Active",
     consensus: 91,
     sponsor: "Surgeon's Dispensary",
@@ -68,7 +68,7 @@ const POLICIES = [
   {
     title: "Green Transit Initiative",
     code: "APF-007",
-    summary: "Transitioning the fleet and public to renewable-energy-based transportation.",
+    summary: "Fossil Fuel Divestment Directive: Transitioning public infrastructure to renewable energy-based transportation.",
     status: "In Review",
     consensus: 78,
     sponsor: "Shipwright's Guild",
@@ -77,7 +77,7 @@ const POLICIES = [
   {
     title: "The 1950s Tax Restoration Act",
     code: "APF-008",
-    summary: "Implementing high-bracket taxes on excessive wealth hoarding.",
+    summary: "Equitable Contribution Directive: Implementing high-bracket taxes on excessive wealth hoarding.",
     status: "Active",
     consensus: 95,
     sponsor: "Federation Reserve",
@@ -86,7 +86,7 @@ const POLICIES = [
   {
     title: "Fleet Labor Accord",
     code: "APF-009",
-    summary: "Tools for immediate unionization and collective bargaining support.",
+    summary: "Union Assembly Protection: Comprehensive tools for immediate unionization support and collective bargaining.",
     status: "Active",
     consensus: 89,
     sponsor: "Navigator's Guild",
@@ -95,7 +95,7 @@ const POLICIES = [
   {
     title: "Open Academy Protocol",
     code: "APF-010",
-    summary: "Proposals for free, high-tier decentralized education solutions.",
+    summary: "Human Right Provision: Framework for free, high-tier decentralized education solutions.",
     status: "In Review",
     consensus: 82,
     sponsor: "Shipwright's Guild",

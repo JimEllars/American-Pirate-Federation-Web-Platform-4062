@@ -29,7 +29,7 @@ export function TransmissionHub() {
   const getMetadata = (episode) => {
     const author = episode._embedded?.author?.[0]?.name || "Anonymous Deckhand";
     const duration = Math.floor(Math.random() * 40 + 20) + ":" + Math.floor(Math.random() * 60).toString().padStart(2, '0');
-    const correlation = `Article ${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'][Math.floor(Math.random() * 7)]}`;
+    const correlation = `Article ${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'][Math.floor(Math.random() * 16)]}`;
     return { author, duration, correlation };
   };
 
