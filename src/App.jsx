@@ -8,16 +8,8 @@ import { Events } from './pages/Events';
 import { NewsArchive } from './pages/NewsArchive';
 import { TransmissionHub } from './pages/TransmissionHub';
 import { Armory } from './pages/Armory';
-
-// Placeholder for remaining routes
-const Placeholder = ({ title }) => (
-  <div className="min-h-screen flex items-center justify-center font-mono text-apf-purple bg-apf-black">
-    <div className="text-center">
-      <div className="text-4xl mb-4 font-black">[{title.toUpperCase()} PROTOCOL]</div>
-      <div className="text-xs uppercase tracking-[0.5em] text-gray-600 animate-pulse">Pending Activation... Space-Time Sync Required</div>
-    </div>
-  </div>
-);
+import { Census } from './pages/Census';
+import { Propose } from './pages/Propose';
 
 function App() {
   return (
@@ -31,6 +23,8 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/podcast" element={<TransmissionHub />} />
             <Route path="/shop" element={<Armory />} />
+            <Route path="/census" element={<Census />} />
+            <Route path="/propose" element={<Propose />} />
           </Routes>
         </AnimatePresence>
       </BrowserRouter>
