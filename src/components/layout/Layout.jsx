@@ -10,9 +10,9 @@ export function Layout({ children }) {
     <div className="min-h-screen relative apf-root-container flex flex-col">
       {/* Scanlines overlay */}
       <div className="scanlines pointer-events-none" />
-      
+
       {/* Parallax Grid */}
-      <motion.div 
+      <motion.div
         className="bg-grid-pattern bg-grid-parallax opacity-30 pointer-events-none"
         style={{ y: -scrollOffset * 0.5, scale: 1.5, zIndex: 0 }}
       />
@@ -23,7 +23,7 @@ export function Layout({ children }) {
       />
 
       <Navbar />
-      
+
       <main className="flex-grow pt-16 relative z-10">
         {children}
       </main>

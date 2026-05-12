@@ -23,7 +23,7 @@ export function Navbar() {
               P<span className="skewed-i">I</span>RATE FEDERATION
             </span>
           </Link>
-          
+
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-6">
               {navLinks.map((link) => (
@@ -40,7 +40,7 @@ export function Navbar() {
               </a>
             </div>
           </div>
-          
+
           <div className="-mr-2 flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -53,7 +53,7 @@ export function Navbar() {
       </div>
 
       {isOpen && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className="md:hidden bg-apf-black border-b border-apf-purple/20"

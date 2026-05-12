@@ -20,7 +20,23 @@ export function SEO({ title, description, type = 'website', articleData }) {
       <meta name="twitter:description" content={metaDesc} />
       <meta name="twitter:image" content="https://piratefederation.org/apf-social-card.jpg" />
       
+
+
       {/* Dynamic JSON-LD injection */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "name": "American Pirate Federation",
+          "url": "https://piratefederation.org",
+          "logo": "https://piratefederation.org/logo.png",
+          "description": "A professional federation of LLCs and DAO nodes reclaiming data sovereignty and economic reform.",
+          "sameAs": [
+            "https://twitter.com/piratefederation"
+          ]
+        })}
+      </script>
+
       {articleData && (
         <script type="application/ld+json">
           {JSON.stringify({

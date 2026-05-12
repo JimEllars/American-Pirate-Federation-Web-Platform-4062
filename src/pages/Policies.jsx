@@ -71,6 +71,24 @@ export function Policies() {
             ))}
           </div>
 
+
+          <div className="mt-16 p-8 border border-dashed border-gray-800 bg-black/20 text-center">
+            <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest">Proposed Amendments (Drafts)</h3>
+            <p className="text-gray-500 font-mono text-sm mb-6 max-w-2xl mx-auto">
+              Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to cast a signal.
+            </p>
+            <div className="flex flex-col gap-4 text-left max-w-2xl mx-auto">
+                <div className="border-l-2 border-gray-600 pl-4 py-2">
+                    <div className="text-gray-400 font-mono text-xs uppercase mb-1">DRAFT-001 // Signal Protocol</div>
+                    <div className="text-white font-bold">Standardized Encryption for Comms</div>
+                </div>
+                <div className="border-l-2 border-gray-600 pl-4 py-2">
+                    <div className="text-gray-400 font-mono text-xs uppercase mb-1">DRAFT-002 // Fleet Logistics</div>
+                    <div className="text-white font-bold">Decentralized Supply Chain Verification</div>
+                </div>
+            </div>
+          </div>
+
           <div className="mt-20 p-8 border border-dashed border-gray-800 text-center">
             <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">
               [ End of Current Legislative Stack ]

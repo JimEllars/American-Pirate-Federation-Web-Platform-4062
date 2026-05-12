@@ -14,7 +14,7 @@ export const useAppStore = create(
       userRole: 'Unverified', // Roles: Unverified, Deckhand, Navigator, Guild Master
       policySignals: {}, // Track signaled policies { policyCode: true }
       reputationPoints: 100, // Mock reputation
-      updateMusterRoll: (data) => 
+      updateMusterRoll: (data) =>
         set((state) => {
           let newRole = state.userRole;
 
@@ -32,8 +32,8 @@ export const useAppStore = create(
             userRole: newRole
           };
         }),
-      clearMusterRoll: () => 
-        set({ 
+      clearMusterRoll: () =>
+        set({
           musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle' },
           userRole: 'Unverified'
         }),
