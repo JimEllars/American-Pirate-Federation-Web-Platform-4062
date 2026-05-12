@@ -5,6 +5,8 @@ import { SEO } from '../components/seo/SEO';
 import { PolicyCard } from '../components/sections/PolicyCard';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
+import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store/useAppStore';
 
 const { FiBookOpen } = FiIcons;
 
@@ -48,6 +50,9 @@ const POLICIES = [
 ];
 
 export function Policies() {
+  const navigate = useNavigate();
+  const { proposedAmendments } = useAppStore();
+
   return (
     <Layout>
       <SEO title="Policies | The Chartroom" description="The legislative drafts and sovereign protocols of the American Pirate Federation." />
@@ -72,20 +77,39 @@ export function Policies() {
           </div>
 
 
-          <div className="mt-16 p-8 border border-dashed border-gray-800 bg-black/20 text-center">
-            <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest">Proposed Amendments (Drafts)</h3>
-            <p className="text-gray-500 font-mono text-sm mb-6 max-w-2xl mx-auto">
+          <div className="mt-16 p-8 border border-dashed border-gray-800 bg-black/20 text-center relative overflow-hidden">
+             <div className="absolute inset-0 scanlines opacity-30 pointer-events-none" />
+            <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Proposed Amendments (Drafts)</h3>
+            <p className="text-gray-500 font-mono text-sm mb-8 max-w-2xl mx-auto relative z-10">
               Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to cast a signal.
             </p>
-            <div className="flex flex-col gap-4 text-left max-w-2xl mx-auto">
-                <div className="border-l-2 border-gray-600 pl-4 py-2">
-                    <div className="text-gray-400 font-mono text-xs uppercase mb-1">DRAFT-001 // Signal Protocol</div>
-                    <div className="text-white font-bold">Standardized Encryption for Comms</div>
-                </div>
-                <div className="border-l-2 border-gray-600 pl-4 py-2">
-                    <div className="text-gray-400 font-mono text-xs uppercase mb-1">DRAFT-002 // Fleet Logistics</div>
-                    <div className="text-white font-bold">Decentralized Supply Chain Verification</div>
-                </div>
+            <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
+                {proposedAmendments && proposedAmendments.length > 0 ? (
+                    proposedAmendments.map((draft, idx) => (
+                        <div key={idx} className="border border-gray-800 bg-black/40 p-6 hover:border-apf-purple transition-colors">
+                            <div className="flex justify-between items-start mb-2">
+                                <div className="text-gray-400 font-vt323 text-xs uppercase tracking-widest border border-gray-800 px-2 py-1 bg-black">{draft.id}</div>
+                                <div className="text-gray-600 font-vt323 text-xs">{new Date(draft.date).toLocaleDateString()}</div>
+                            </div>
+                            <h4 className="text-white font-bold text-xl mb-2">{draft.title}</h4>
+                            <p className="text-gray-400 font-vt323 text-sm mb-4 leading-relaxed">{draft.summary}</p>
+
+                            <div className="flex flex-wrap gap-4 text-xs font-vt323 border-t border-gray-800/50 pt-4 mt-auto">
+                                <span className="text-apf-emerald flex items-center gap-1">
+                                    <SafeIcon name="CheckCircle" className="h-3 w-3" /> Alignment: {draft.alignment}
+                                </span>
+                                <span className="text-apf-purpleLight flex items-center gap-1">
+                                    <SafeIcon name="User" className="h-3 w-3" /> Sponsor: {draft.sponsor}
+                                </span>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <div className="border-l-2 border-gray-600 pl-4 py-2 opacity-50">
+                        <div className="text-gray-400 font-vt323 text-xs uppercase mb-1">SYSTEM_NOTICE</div>
+                        <div className="text-white font-bold">No active drafts in the queue.</div>
+                    </div>
+                )}
             </div>
           </div>
 
@@ -93,7 +117,7 @@ export function Policies() {
             <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">
               [ End of Current Legislative Stack ]
             </p>
-            <button className="mt-4 text-apf-purple hover:text-white font-mono text-xs uppercase underline underline-offset-4">
+            <button onClick={() => navigate('/propose')} className="mt-4 text-apf-purple hover:text-white font-mono text-xs uppercase underline underline-offset-4 tracking-widest">
               Propose New Protocol Revision
             </button>
           </div>

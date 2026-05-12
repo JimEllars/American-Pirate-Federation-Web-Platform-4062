@@ -34,8 +34,9 @@ const PROVISIONS = [
 ];
 
 export function Armory() {
-  const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition } = useAppStore();
+  const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory } = useAppStore();
   const [procuring, setProcuring] = useState(null);
+  const [showRepLog, setShowRepLog] = useState(false);
 
   const isEligible = (req) => {
     if (req === 'Unverified') return true;
@@ -84,7 +85,7 @@ export function Armory() {
             </div>
 
             {/* Clearance Status */}
-            <div className="bg-black/60 border border-gray-800 p-4 font-vt323 text-sm inline-block min-w-[250px]">
+            <div className="bg-black/60 border border-gray-800 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
                <div className="text-gray-500 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
                  <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
@@ -92,9 +93,30 @@ export function Armory() {
                    {userRole}
                  </span>
                </div>
-               <div className="flex justify-between items-center text-xs">
-                 <span className="text-gray-500 uppercase">Reputation:</span>
+               <div className="flex justify-between items-center text-xs relative cursor-pointer group" onClick={() => setShowRepLog(!showRepLog)}>
+                 <span className="text-gray-500 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
+                     Reputation: <SafeIcon name="Info" className="h-3 w-3" />
+                 </span>
                  <span className="text-apf-purpleLight font-bold">{reputationPoints} PTS</span>
+
+                 {/* Reputation Log Dropdown */}
+                 {showRepLog && (
+                     <div className="absolute top-full right-0 mt-2 w-64 bg-black border border-gray-800 shadow-2xl p-4 z-50 max-h-48 overflow-y-auto custom-scrollbar">
+                         <div className="text-gray-400 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
+                         {reputationHistory && reputationHistory.length > 0 ? (
+                             <ul className="space-y-2">
+                                 {reputationHistory.map((log, idx) => (
+                                     <li key={idx} className="flex justify-between items-start text-xs">
+                                         <span className="text-gray-300">{log.action}</span>
+                                         <span className="text-apf-emerald ml-2">+{log.amount}</span>
+                                     </li>
+                                 ))}
+                             </ul>
+                         ) : (
+                             <div className="text-gray-600 text-xs text-center py-2">No civic actions recorded.</div>
+                         )}
+                     </div>
+                 )}
                </div>
                {!musterRollDraft.walletAddress && (
                  <div className="mt-2 text-xs text-apf-purple">Connect wallet to upgrade clearance</div>
@@ -111,14 +133,14 @@ export function Armory() {
                  <div key={item.id} className="bg-black/40 backdrop-blur-xl border border-white/5 hover:border-apf-purple/50 transition-all group relative overflow-hidden flex flex-col">
                     {/* Item Image */}
                     <div className="h-64 relative overflow-hidden bg-gray-900 border-b border-white/5">
-                      <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10" />
+                      <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10 pointer-events-none" />
                       <img
                         src={item.image}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-700 ${eligible ? 'group-hover:scale-110' : 'grayscale opacity-50'}`}
                       />
                       {!eligible && (
-                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm">
+                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm pointer-events-none">
                            <div className="text-center font-vt323">
                               <SafeIcon name="Lock" className="mx-auto h-8 w-8 text-red-500 mb-2" />
                               <div className="text-red-500 font-bold uppercase tracking-widest text-sm">Restricted Access</div>
@@ -129,7 +151,7 @@ export function Armory() {
                     </div>
 
                     {/* Details */}
-                    <div className="p-6 flex-grow flex flex-col">
+                    <div className="p-6 flex-grow flex flex-col z-20">
                        <div className="flex justify-between items-start mb-4">
                          <div>
                            <span className="font-vt323 text-xs text-apf-purple uppercase tracking-widest border border-apf-purple/30 px-2 py-1 mb-2 inline-block bg-apf-purple/10">

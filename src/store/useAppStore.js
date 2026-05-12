@@ -10,11 +10,15 @@ export const useAppStore = create(
         skills: '',
         walletAddress: '',
         status: 'idle',
+        rsvps: [], // Track event RSVPs
       },
       userRole: 'Unverified', // Roles: Unverified, Deckhand, Navigator, Guild Master
+      guildAlignment: 'Unaligned',
       policySignals: {}, // Track signaled policies { policyCode: true }
       policyComments: {}, // Track comments { policyCode: [{ author, role, text, date }] }
+      proposedAmendments: [], // [{ id, title, summary, alignment, sponsor, date }]
       reputationPoints: 100, // Mock reputation
+      reputationHistory: [], // [{ action, amount, date }]
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
 
       updateMusterRoll: (data) =>
@@ -24,6 +28,7 @@ export const useAppStore = create(
           };
 
           let newRole = state.userRole;
+          let newGuild = state.guildAlignment;
 
           // Sovereign Role Escalation
           if (newState.musterRollDraft.walletAddress && state.userRole === 'Unverified') {
@@ -38,13 +43,24 @@ export const useAppStore = create(
               newRole = 'Guild Master';
           }
 
-          return { ...newState, userRole: newRole };
+          // Guild Assignment based on skillset
+          if (data.skills) {
+             const skillsLower = data.skills.toLowerCase();
+             if (skillsLower.includes('code') || skillsLower.includes('dev')) newGuild = "Shipwright's Guild";
+             else if (skillsLower.includes('health') || skillsLower.includes('medic')) newGuild = "Surgeon's Dispensary";
+             else if (skillsLower.includes('logistic') || skillsLower.includes('supply')) newGuild = "Quartermaster's Provisions";
+             else if (skillsLower.includes('agitprop') || skillsLower.includes('media')) newGuild = "Navigator's Guild";
+             else newGuild = "Federation Reserve";
+          }
+
+          return { ...newState, userRole: newRole, guildAlignment: newGuild };
         }),
 
       clearMusterRoll: () =>
         set({
-          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle' },
-          userRole: 'Unverified'
+          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle', rsvps: [] },
+          userRole: 'Unverified',
+          guildAlignment: 'Unaligned'
         }),
 
       signalPolicy: (policyCode) =>
@@ -63,6 +79,35 @@ export const useAppStore = create(
            };
         }),
 
+      addProposedAmendment: (amendment) =>
+        set((state) => ({
+           proposedAmendments: [{ ...amendment, id: `DRAFT-${state.proposedAmendments.length + 3}`, date: new Date().toISOString() }, ...state.proposedAmendments]
+        })),
+
+      registerSignal: (eventName) =>
+        set((state) => {
+          const newRsvps = [...(state.musterRollDraft.rsvps || []), eventName];
+          const repGain = 10;
+          const newRep = state.reputationPoints + repGain;
+          const repLog = {
+             action: `Signal Registered for ${eventName}`,
+             amount: repGain,
+             date: new Date().toISOString()
+          };
+
+          let newRole = state.userRole;
+          if (newRep > 500) {
+              newRole = 'Guild Master';
+          }
+
+          return {
+             musterRollDraft: { ...state.musterRollDraft, rsvps: newRsvps },
+             reputationPoints: newRep,
+             reputationHistory: [repLog, ...state.reputationHistory],
+             userRole: newRole
+          };
+        }),
+
       spendReputation: (amount) =>
         set((state) => {
           const newRep = Math.max(0, state.reputationPoints - amount);
@@ -77,7 +122,7 @@ export const useAppStore = create(
           return { reputationPoints: newRep, userRole: newRole };
         }),
 
-      addReputation: (amount) =>
+      addReputation: (amount, action = "Sovereign Action") =>
         set((state) => {
           const newRep = state.reputationPoints + amount;
           let newRole = state.userRole;
@@ -86,7 +131,17 @@ export const useAppStore = create(
               newRole = 'Guild Master';
           }
 
-          return { reputationPoints: newRep, userRole: newRole };
+          const repLog = {
+             action,
+             amount,
+             date: new Date().toISOString()
+          };
+
+          return {
+            reputationPoints: newRep,
+            userRole: newRole,
+            reputationHistory: [repLog, ...state.reputationHistory]
+          };
         }),
 
       addRequisition: (item) =>
@@ -100,12 +155,16 @@ export const useAppStore = create(
         musterRollDraft: {
             alias: state.musterRollDraft.alias,
             walletAddress: state.musterRollDraft.walletAddress,
-            status: state.musterRollDraft.status
+            status: state.musterRollDraft.status,
+            rsvps: state.musterRollDraft.rsvps
         },
         userRole: state.userRole,
+        guildAlignment: state.guildAlignment,
         policySignals: state.policySignals,
         policyComments: state.policyComments,
+        proposedAmendments: state.proposedAmendments,
         reputationPoints: state.reputationPoints,
+        reputationHistory: state.reputationHistory,
         requisitionHistory: state.requisitionHistory
       }), // Save only specific parts, ignoring volatile UI state like comms/skills draft
     }
