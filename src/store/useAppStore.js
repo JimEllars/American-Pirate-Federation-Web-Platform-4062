@@ -66,7 +66,7 @@ export const useAppStore = create(
       signalPolicy: (policyCode) =>
         set((state) => {
           const isSignaling = !state.policySignals[policyCode];
-          const isHumanRightPolicy = ['APF-005', 'APF-006', 'APF-007', 'APF-008', 'APF-009', 'APF-010'].includes(policyCode);
+          const isHumanRightPolicy = ['APF-005', 'APF-006', 'APF-007', 'APF-008', 'APF-009', 'APF-010', 'APF-011', 'APF-012', 'APF-013', 'APF-014'].includes(policyCode);
 
           let newRep = state.reputationPoints;
           let repHistory = state.reputationHistory;
