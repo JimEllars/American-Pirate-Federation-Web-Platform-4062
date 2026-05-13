@@ -60,6 +60,26 @@ export function Census() {
                           <div className="w-full bg-gray-900 h-2">
                               <div className="bg-apf-purple h-2" style={{ width: '11%' }}></div>
                           </div>
+                          <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-800">
+                              <span className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm flex items-center gap-2">
+                                  <SafeIcon name="Heart" className="h-4 w-4" /> Social Stability
+                              </span>
+                          </div>
+                          <div className="flex items-center justify-between mt-2">
+                              <span className="font-vt323 text-white uppercase text-xs">Resource Security</span>
+                              <span className="font-vt323 text-apf-emerald font-bold">88%</span>
+                          </div>
+                          <div className="w-full bg-gray-900 h-1 mb-2">
+                              <div className="bg-apf-emerald h-1" style={{ width: '88%' }}></div>
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                              <span className="font-vt323 text-white uppercase text-xs">Labor Density</span>
+                              <span className="font-vt323 text-apf-purple font-bold">75%</span>
+                          </div>
+                          <div className="w-full bg-gray-900 h-1">
+                              <div className="bg-apf-purple h-1" style={{ width: '75%' }}></div>
+                          </div>
+
                       </div>
                   </div>
               </div>
