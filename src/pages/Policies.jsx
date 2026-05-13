@@ -100,6 +100,42 @@ const POLICIES = [
     consensus: 82,
     sponsor: "Shipwright's Guild",
     lastRevision: "2024.04.25"
+  },
+  {
+    title: "The Accountability Act",
+    code: "APF-011",
+    summary: "Institutional Reform: Protocols for strict congressional and judicial term limits.",
+    status: "In Review",
+    consensus: 88,
+    sponsor: "Navigator's Guild",
+    lastRevision: "2024.05.01"
+  },
+  {
+    title: "Leadership Competency Accord",
+    code: "APF-012",
+    summary: "Systemic Reform: Establishing age-based eligibility tiers and cognitive verifications for high office.",
+    status: "In Review",
+    consensus: 81,
+    sponsor: "Surgeon's Dispensary",
+    lastRevision: "2024.05.05"
+  },
+  {
+    title: "Infrastructure Sovereignty Protocol",
+    code: "APF-013",
+    summary: "Community Nullification: Requiring sovereign community nodes to authorize high-impact project permits like private datacenters.",
+    status: "Active",
+    consensus: 93,
+    sponsor: "Shipwright's Guild",
+    lastRevision: "2024.05.10"
+  },
+  {
+    title: "Corporate Resource Nullification",
+    code: "APF-014",
+    summary: "Human Right Provision: Legal frameworks to legally strip massive land/water acquisitions from corrupt entities.",
+    status: "Active",
+    consensus: 89,
+    sponsor: "Federation Reserve",
+    lastRevision: "2024.05.12"
   }
 ];
 

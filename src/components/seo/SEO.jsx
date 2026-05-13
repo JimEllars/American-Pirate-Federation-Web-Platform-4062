@@ -30,7 +30,7 @@ export function SEO({ title, description, type = 'website', articleData }) {
           "name": "American Pirate Federation",
           "url": "https://piratefederation.org",
           "logo": "https://piratefederation.org/logo.png",
-          "description": "A professional federation of LLCs and DAO nodes reclaiming data sovereignty and economic reform.",
+          "description": "A Hybrid Federation of DAO Nodes and Sovereign LLCs.",
           "sameAs": [
             "https://twitter.com/piratefederation"
           ]
