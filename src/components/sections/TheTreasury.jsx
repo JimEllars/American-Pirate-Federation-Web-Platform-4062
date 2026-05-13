@@ -42,7 +42,10 @@ export function TheTreasury() {
   const { data: guides, loading, error } = usePirateIntel('posts?categories=3'); // Mocking 'guides' category
 
   // Mock Ledger Data
-  const [ledger, setLedger] = useState([]);
+  const [ledger, setLedger] = useState([
+      { txId: "0x3e4...b92", date: new Date(Date.now() - 4800000).toISOString().split('T')[0], amount: "50,000 USDC", target: "Labor Union Support Node", alignment: "Article XV", status: "Settled" },
+      { txId: "0x1a2...c34", date: new Date(Date.now() - 7200000).toISOString().split('T')[0], amount: "25,000 USDC", target: "Education Grants Pool", alignment: "Article XVI", status: "Settled" },
+]);
 
   useEffect(() => {
     // Simulate fetching ledger data

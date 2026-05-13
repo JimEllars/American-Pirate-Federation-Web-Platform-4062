@@ -20,7 +20,11 @@ const ARTICLES = [
   { id: 'XIII', title: "Innovation Beyond Extraction", theme: "Sustainable Future", content: "Strategic transition from oil to renewable energy and public transit.", reference: "Article I, Section 8 (Promotion of Science)." },
   { id: 'XIV', title: "Equitable Contribution", theme: "Wealth Taxation", content: "Restoring wealth tax tiers to 1950s standards.", reference: "16th Amendment." },
   { id: 'XV', title: "The Strength of the Union", theme: "Labor Rights", content: "Unwavering support for labor unions and worker assembly.", reference: "1st Amendment (Right to assemble)." },
-  { id: 'XVI', title: "Liberation Through Learning", theme: "Education Access", content: "Investing in the future through free or affordable education.", reference: "1st Amendment (Foundation of free speech)." }
+  { id: 'XVI', title: "Liberation Through Learning", theme: "Education Access", content: "Investing in the future through free or affordable education.", reference: "1st Amendment (Foundation of free speech)." },
+  { id: 'XVII', title: "Temporal Limits of Authority", theme: "Term Limits", content: "Strict Term Limits for all Government Officials to prevent the stagnation of power.", reference: "22nd Amendment (Expanded)." },
+  { id: 'XVIII', title: "Generational Stewardship", theme: "Age Caps", content: "Implementation of Age Caps for all government officials to ensure leadership remains connected to the active working generation.", reference: "Systemic Reform Directive." },
+  { id: 'XIX', title: "Public Domain Infrastructure", theme: "Community Infrastructure", content: "Massive infrastructure projects (e.g., Datacenters) require direct public approval to ensure community resources aren't seized for private gain.", reference: "Article I, Section 8 (General Welfare)." },
+  { id: 'XX', title: "Restriction of Corporate Reign", theme: "Corporate Nullification", content: "Nullification of corporate \"free reign\" over public money and resources; aggressive penalties for systemic corrupt practices.", reference: "Article I, Section 8 (Commerce Clause context)." }
 ];
 
 export function ThePirateCode() {
