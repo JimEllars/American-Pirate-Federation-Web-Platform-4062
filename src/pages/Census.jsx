@@ -66,19 +66,20 @@ export function Census() {
                               </span>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                              <span className="font-vt323 text-white uppercase text-xs">Resource Security</span>
-                              <span className="font-vt323 text-apf-emerald font-bold">88%</span>
+                              <span className="font-vt323 text-white uppercase text-xs">Labor Solidarity</span>
+                              <span className="font-vt323 text-apf-emerald font-bold">82%</span>
                           </div>
                           <div className="w-full bg-gray-900 h-1 mb-2">
-                              <div className="bg-apf-emerald h-1" style={{ width: '88%' }}></div>
+                              <div className="bg-apf-emerald h-1" style={{ width: '82%' }}></div>
                           </div>
                           <div className="flex items-center justify-between mt-1">
-                              <span className="font-vt323 text-white uppercase text-xs">Labor Density</span>
-                              <span className="font-vt323 text-apf-purple font-bold">75%</span>
+                              <span className="font-vt323 text-white uppercase text-xs">Resource Security</span>
+                              <span className="font-vt323 text-apf-purple font-bold">91%</span>
                           </div>
-                          <div className="w-full bg-gray-900 h-1">
-                              <div className="bg-apf-purple h-1" style={{ width: '75%' }}></div>
+                          <div className="w-full bg-gray-900 h-1 mb-2">
+                              <div className="bg-apf-purple h-1" style={{ width: '91%' }}></div>
                           </div>
+
 
                       </div>
                   </div>

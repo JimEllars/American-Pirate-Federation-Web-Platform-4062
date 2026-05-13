@@ -29,7 +29,24 @@ export function TransmissionHub() {
   const getMetadata = (episode) => {
     const author = episode._embedded?.author?.[0]?.name || "Anonymous Deckhand";
     const duration = Math.floor(Math.random() * 40 + 20) + ":" + Math.floor(Math.random() * 60).toString().padStart(2, '0');
-    const correlation = `Article ${['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI'][Math.floor(Math.random() * 16)]}`;
+
+    // Map all dispatches to the new Articles (XI-XX)
+    const newArticles = [
+      "Article XI: The Right to Shelter",
+      "Article XII: Sovereign Sustenance",
+      "Article XIII: Innovation Beyond Extraction",
+      "Article XIV: Equitable Contribution",
+      "Article XV: The Strength of the Union",
+      "Article XVI: Liberation Through Learning",
+      "Article XVII: Temporal Limits of Authority",
+      "Article XVIII: Generational Stewardship",
+      "Article XIX: Public Domain Infrastructure",
+      "Article XX: Restriction of Corporate Reign"
+    ];
+
+    // Use episode.id to deterministically pick one of the new articles
+    const correlation = newArticles[episode.id % 10];
+
     return { author, duration, correlation };
   };
 
