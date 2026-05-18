@@ -170,7 +170,7 @@ export function TheTreasury() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <div className="bg-black/60 border border-gray-800 p-8">
+              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8">
                  <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
                    <div>
                      <h3 className="text-2xl font-bold uppercase text-white">Treasury Transparency</h3>

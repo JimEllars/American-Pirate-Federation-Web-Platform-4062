@@ -47,8 +47,8 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
       {hasSignaled && (
         <motion.div
           initial={{ scale: 3, opacity: 0, rotate: -20 }}
-          animate={{ scale: 1, opacity: 0.15, rotate: -20 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 mix-blend-screen"
+          animate={{ scale: 1, rotate: -20 }}
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 mix-blend-screen opacity-10 md:opacity-15"
         >
           <div className="border-4 border-apf-emerald text-apf-emerald font-cinzel text-4xl font-black p-4 uppercase tracking-[0.3em] whitespace-nowrap">
             Authorized
@@ -162,7 +162,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add peer review..."
-                  className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple font-sans"
+                  className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple focus:ring-1 focus:ring-apf-purple font-vt323"
                 />
                 <button type="submit" className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
                   <SafeIcon icon={FiMessageSquare} className="h-4 w-4" />

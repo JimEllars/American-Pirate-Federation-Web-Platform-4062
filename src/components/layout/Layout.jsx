@@ -15,13 +15,13 @@ export function Layout({ children }) {
       {/* Deepest Horizon Layer */}
       <motion.div
         className="fixed inset-0 bg-digital-sea !pointer-events-none"
-        style={{ y: -scrollOffset * 0.2, scale: 2, zIndex: 0, opacity: 0.03 }}
+        style={{ y: -scrollOffset * 0.15, scale: 2, zIndex: 0, opacity: 0.03 }}
       />
 
       {/* Mid Layer */}
       <motion.div
         className="fixed inset-0 bg-digital-sea opacity-20 !pointer-events-none"
-        style={{ y: -scrollOffset * 0.5, scale: 1.5, zIndex: 0 }}
+        style={{ y: -scrollOffset * 0.4, scale: 1.5, zIndex: 0 }}
       />
 
       {/* Fore Layer */}
