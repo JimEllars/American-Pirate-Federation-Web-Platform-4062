@@ -25,7 +25,7 @@ export function Census() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {/* Member Distribution (Skills) */}
-              <div className="bg-black/60 border border-apf-purple/50 p-6 neon-grid relative overflow-hidden group">
+              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl p-6 transition-colors neon-grid relative overflow-hidden group">
                   <div className="absolute inset-0 scanlines opacity-50 z-0" />
                   <div className="relative z-10">
                       <h3 className="font-vt323 text-xl text-apf-emerald uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -66,14 +66,14 @@ export function Census() {
                               </span>
                           </div>
                           <div className="flex items-center justify-between mt-2">
-                              <span className="font-vt323 text-white uppercase text-xs">Labor Solidarity</span>
+                              <span className="font-vt323 text-white uppercase text-xs">Labor Union Density Tracking</span>
                               <span className="font-vt323 text-apf-emerald font-bold">82%</span>
                           </div>
                           <div className="w-full bg-gray-900 h-1 mb-2">
                               <div className="bg-apf-emerald h-1" style={{ width: '82%' }}></div>
                           </div>
                           <div className="flex items-center justify-between mt-1">
-                              <span className="font-vt323 text-white uppercase text-xs">Resource Security</span>
+                              <span className="font-vt323 text-white uppercase text-xs">Resource Security Index</span>
                               <span className="font-vt323 text-apf-purple font-bold">91%</span>
                           </div>
                           <div className="w-full bg-gray-900 h-1 mb-2">
@@ -86,7 +86,7 @@ export function Census() {
               </div>
 
                {/* Consensus Velocity */}
-               <div className="bg-black/60 border border-apf-purple/50 p-6 neon-grid relative overflow-hidden group">
+               <div className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl p-6 transition-colors neon-grid relative overflow-hidden group">
                    <div className="absolute inset-0 scanlines opacity-50 z-0" />
                    <div className="relative z-10 flex flex-col h-full">
                       <h3 className="font-vt323 text-xl text-apf-purpleLight uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -112,7 +112,7 @@ export function Census() {
                </div>
 
                 {/* Readiness Score */}
-                <div className="bg-black/60 border border-apf-purple/50 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
+                <div className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl p-6 transition-colors neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
                     <div className="absolute inset-0 scanlines opacity-50 z-0" />
                     <div className="relative z-10">
                         <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4 animate-pulse" />

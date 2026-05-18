@@ -15,127 +15,85 @@ const POLICIES = [
     title: "Digital Sovereignty Act",
     code: "APF-001",
     summary: "Ensuring individual ownership of data and cryptographic identity across all federation nodes.",
-    status: "Active",
-    consensus: 94,
-    sponsor: "Navigator's Guild",
-    lastRevision: "2023.11.04"
+    status: "Active", consensus: 94, sponsor: "Navigator's Guild", lastRevision: "2024.11.04"
   },
   {
     title: "The Fleet Mutual Aid Pact",
     code: "APF-002",
     summary: "Protocol for resource sharing and legal defense of federation members under state pressure.",
-    status: "Active",
-    consensus: 88,
-    sponsor: "Surgeon's Dispensary",
-    lastRevision: "2024.01.12"
+    status: "Active", consensus: 88, sponsor: "Surgeon's Dispensary", lastRevision: "2025.01.12"
   },
   {
     title: "Decentralized Governance Draft",
     code: "APF-003",
     summary: "Proposed framework for liquid democracy voting on federation resource allocation.",
-    status: "In Review",
-    consensus: 62,
-    sponsor: "Quartermaster's Provisions",
-    lastRevision: "2024.02.28"
+    status: "In Review", consensus: 62, sponsor: "Quartermaster's Provisions", lastRevision: "2025.02.28"
   },
   {
     title: "Intellectual Property Abolition",
     code: "APF-004",
     summary: "The federation's stance on the open-source requirement for all assistive technologies.",
-    status: "Active",
-    consensus: 75,
-    sponsor: "Shipwright's Guild",
-    lastRevision: "2023.09.15"
-  }
-,  {
-    title: "Corporate Housing Nullification",
+    status: "Active", consensus: 75, sponsor: "Shipwright's Guild", lastRevision: "2024.09.15"
+  },
+  {
+    title: "Corporate Housing Nullification Act",
     code: "APF-005",
-    summary: "Human Right Provision: Legal protocols to remove for-profit corporations from single-family housing markets.",
-    status: "Active",
-    consensus: 85,
-    sponsor: "Quartermaster's Provisions",
-    lastRevision: "2024.03.15"
+    summary: "Legal and logistical frameworks designed to prevent for-profit corporations from purchasing single-family residential properties, protecting housing as a human asset.",
+    status: "Active", consensus: 91, sponsor: "Quartermaster's Provisions", lastRevision: "2025.05.10"
   },
   {
-    title: "Universal Resource Guarantee",
+    title: "Universal Sustenance Guarantee",
     code: "APF-006",
-    summary: "Human Right Provision: Blueprint for public water and food distribution infrastructure.",
-    status: "Active",
-    consensus: 91,
-    sponsor: "Surgeon's Dispensary",
-    lastRevision: "2024.03.20"
+    summary: "Establishing secure public distribution infrastructure for water and food support, completely insulated from speculative corporate profiteering.",
+    status: "Active", consensus: 89, sponsor: "Surgeon's Dispensary", lastRevision: "2025.06.01"
   },
   {
-    title: "Green Transit Initiative",
+    title: "Green Transit & Energy Transition Accord",
     code: "APF-007",
-    summary: "Fossil Fuel Divestment Directive: Transitioning public infrastructure to renewable energy-based transportation.",
-    status: "In Review",
-    consensus: 78,
-    sponsor: "Shipwright's Guild",
-    lastRevision: "2024.04.02"
+    summary: "Strategic deployment blueprints for non-fossil fuel transportation networks and localized public energy infrastructure to end corporate resource extraction reliance.",
+    status: "Active", consensus: 82, sponsor: "Shipwright's Guild", lastRevision: "2025.08.14"
   },
   {
     title: "The 1950s Tax Restoration Act",
     code: "APF-008",
-    summary: "Equitable Contribution Directive: Implementing high-bracket taxes on excessive wealth hoarding.",
-    status: "Active",
-    consensus: 95,
-    sponsor: "Federation Reserve",
-    lastRevision: "2024.04.10"
+    summary: "Re-establishing historical high-bracket tax tiers on multi-million dollar asset hoarding to redistribute resources away from institutional corruption.",
+    status: "Active", consensus: 95, sponsor: "Navigator's Guild", lastRevision: "2025.10.19"
   },
   {
-    title: "Fleet Labor Accord",
+    title: "The Collective Labor Protection Mandate",
     code: "APF-009",
-    summary: "Union Assembly Protection: Comprehensive tools for immediate unionization support and collective bargaining.",
-    status: "Active",
-    consensus: 89,
-    sponsor: "Navigator's Guild",
-    lastRevision: "2024.04.18"
+    summary: "Providing defensive legal assets, cryptographic coordination channels, and direct mutual aid to support union organization and basic worker autonomy across all sectors.",
+    status: "Active", consensus: 87, sponsor: "Navigator's Guild", lastRevision: "2025.11.02"
   },
   {
-    title: "Open Academy Protocol",
+    title: "Open Generations Education Protocol",
     code: "APF-010",
-    summary: "Human Right Provision: Framework for free, high-tier decentralized education solutions.",
-    status: "In Review",
-    consensus: 82,
-    sponsor: "Shipwright's Guild",
-    lastRevision: "2024.04.25"
+    summary: "A structural complete alternative to cost-prohibitive secondary degrees, deploying free, verified, open-source educational assets globally.",
+    status: "Active", consensus: 93, sponsor: "Shipwright's Guild", lastRevision: "2026.01.20"
   },
   {
-    title: "The Accountability Act",
+    title: "The Public Servant Accountability Directive",
     code: "APF-011",
-    summary: "Institutional Reform: Protocols for strict congressional and judicial term limits.",
-    status: "In Review",
-    consensus: 88,
-    sponsor: "Navigator's Guild",
-    lastRevision: "2024.05.01"
+    summary: "Enforcing absolute term limits across all branches of federal and local government to permanently eliminate career-politician corruption corridors.",
+    status: "Active", consensus: 96, sponsor: "Navigator's Guild", lastRevision: "2026.03.04"
   },
   {
-    title: "Leadership Competency Accord",
+    title: "Generational Stewardship & Competency Cap",
     code: "APF-012",
-    summary: "Systemic Reform: Establishing age-based eligibility tiers and cognitive verifications for high office.",
-    status: "In Review",
-    consensus: 81,
-    sponsor: "Surgeon's Dispensary",
-    lastRevision: "2024.05.05"
+    summary: "Amending administrative eligibility criteria to establish an upper age limit for government officials, ensuring active leadership remains synced with the working class.",
+    status: "Active", consensus: 79, sponsor: "Navigator's Guild", lastRevision: "2026.03.15"
   },
   {
-    title: "Infrastructure Sovereignty Protocol",
+    title: "Industrial Infrastructure Permitting Sovereignty",
     code: "APF-013",
-    summary: "Community Nullification: Requiring sovereign community nodes to authorize high-impact project permits like private datacenters.",
-    status: "Active",
-    consensus: 93,
-    sponsor: "Shipwright's Guild",
-    lastRevision: "2024.05.10"
+    summary: "Mandating that high-impact environmental or digital mega-projects, including corporate datacenters, receive direct, localized cryptographic consensus approval prior to asset allocation.",
+    status: "Active", consensus: 86, sponsor: "Shipwright's Guild", lastRevision: "2026.04.11"
   },
   {
-    title: "Corporate Resource Nullification",
+    title: "Corporate Free Reign Nullification Act",
     code: "APF-014",
-    summary: "Human Right Provision: Legal frameworks to legally strip massive land/water acquisitions from corrupt entities.",
-    status: "Active",
-    consensus: 89,
-    sponsor: "Federation Reserve",
-    lastRevision: "2024.05.12"
+    summary: "Aggressive regulatory framework defining corporate market dominance and currency manipulation as systemic corruption, enabling immediate asset reclamation.",
+    status: "Active", consensus: 92, sponsor: "Quartermaster's Provisions", lastRevision: "2026.05.01"
   }
 ];
 
@@ -171,7 +129,7 @@ export function Policies() {
              <div className="absolute inset-0 scanlines opacity-30 pointer-events-none" />
             <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Proposed Amendments (Drafts)</h3>
             <p className="text-gray-500 font-mono text-sm mb-8 max-w-2xl mx-auto relative z-10">
-              Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to cast a signal.
+              Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to Signal Consensus.
             </p>
             <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
                 {proposedAmendments && proposedAmendments.length > 0 ? (
