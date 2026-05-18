@@ -67,7 +67,7 @@ export function MusterRoll() {
                  </div>
                )}
             </div>
-            <p className="font-vt323 text-xs text-gray-500 uppercase">Article VII: Data Ownership. Connect wallet to claim sovereign identity.</p>
+            <p className="font-vt323 text-xs text-gray-500 uppercase">Article VII: Data Ownership. Authorize Entry Protocol to claim sovereign identity.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

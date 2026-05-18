@@ -119,7 +119,7 @@ export function Armory() {
                  )}
                </div>
                {!musterRollDraft.walletAddress && (
-                 <div className="mt-2 text-xs text-apf-purple">Connect wallet to upgrade clearance</div>
+                 <div className="mt-2 text-xs text-apf-purple">Authorize Entry Protocol to upgrade clearance</div>
                )}
             </div>
           </div>
@@ -130,7 +130,7 @@ export function Armory() {
                const canAfford = reputationPoints >= item.price;
 
                return (
-                 <div key={item.id} className="bg-black/40 backdrop-blur-xl border border-white/5 hover:border-apf-purple/50 transition-all group relative overflow-hidden flex flex-col">
+                 <div key={item.id} className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl transition-all group relative overflow-hidden flex flex-col">
                     {/* Item Image */}
                     <div className="h-64 relative overflow-hidden bg-gray-900 border-b border-white/5">
                       <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10 pointer-events-none" />
@@ -186,7 +186,7 @@ export function Armory() {
           {/* Requisition History Logs */}
           <div className="mt-16 border-t border-gray-800 pt-8">
             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> Sovereign Provisioning Logs
+                <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> Fleet Resource Ledger
             </h3>
             {requisitionHistory && requisitionHistory.length > 0 ? (
                 <div className="overflow-x-auto">

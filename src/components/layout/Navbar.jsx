@@ -10,7 +10,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Census', path: '/census' },
-    { name: 'News', path: '/news' },
+    { name: 'Bridge Dispatches', path: '/news' },
     { name: 'Policies', path: '/policies' },
     { name: 'Events', path: '/events' },
     { name: 'Podcast', path: '/podcast' },
