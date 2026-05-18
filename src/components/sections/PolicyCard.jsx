@@ -20,17 +20,18 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
 
   const hasSignaled = policySignals[code] || false;
   const canSignal = ['Navigator', 'Guild Master'].includes(userRole);
+  const canComment = ['Deckhand', 'Navigator', 'Guild Master'].includes(userRole);
   const currentConsensus = hasSignaled ? Math.min(100, consensus + 2) : consensus; // simulate QV bump
 
   const sanitizedTitle = DOMPurify.sanitize(title);
   const sanitizedSummary = DOMPurify.sanitize(summary);
 
   const handleAddComment = () => {
-    if (newComment.trim() && canSignal) {
+    if (newComment.trim() && canComment) {
       addPolicyComment(code, {
           author: "You",
           role: userRole,
-          text: newComment,
+          text: DOMPurify.sanitize(newComment),
           date: new Date().toLocaleDateString()
       });
       setNewComment('');
@@ -38,7 +39,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   };
 
   return (
-    <div className="bg-black/40 backdrop-blur-xl border border-white/5 hover:border-apf-purple/50 p-6 transition-all group relative overflow-hidden flex flex-col">
+    <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity pointer-events-none">
         <SafeIcon icon={FiShield} className="h-24 w-24 text-apf-purple" />
       </div>
@@ -82,7 +83,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
         </div>
       </div>
 
-      <h3 className="text-xl font-bold mb-3 text-white group-hover:text-apf-purpleLight transition-colors relative z-10" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
+      <h3 className="text-xl font-bold mb-3 text-white group-hover:text-apf-purpleLight transition-colors relative z-10 font-cinzel" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
 
       <AnimatePresence mode="wait">
         {!showHistory && !showComments ? (
@@ -154,20 +155,19 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                 </div>
               ))}
             </div>
-            {canSignal ? (
-              <div className="flex gap-2 mt-auto">
+            {canComment ? (
+              <form onSubmit={(e) => { e.preventDefault(); handleAddComment(); }} className="flex gap-2 mt-auto">
                 <input
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add peer review..."
                   className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple font-sans"
-                  onKeyDown={(e) => e.key === 'Enter' && handleAddComment()}
                 />
-                <button onClick={handleAddComment} className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
+                <button type="submit" className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
                   <SafeIcon icon={FiMessageSquare} className="h-4 w-4" />
                 </button>
-              </div>
+              </form>
             ) : (
               <div className="mt-auto text-center p-2 border border-dashed border-gray-800 text-gray-500 text-xs font-vt323">
                 [ Clearance required for active annotation ]

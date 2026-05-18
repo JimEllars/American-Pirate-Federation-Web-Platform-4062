@@ -109,11 +109,11 @@ export function Policies() {
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
               <SafeIcon icon={FiBookOpen} className="h-10 w-10 text-apf-purple" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
+              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-cinzel">
                 Policies
               </h1>
             </div>
-            <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-purple pl-6">
+            <p className="max-w-2xl text-gray-400 font-sans text-lg border-l-2 border-apf-purple pl-6">
               Sovereignty is not given; it is coded. These are the foundational protocols governing the American Pirate Federation.
             </p>
           </div>
@@ -128,19 +128,19 @@ export function Policies() {
           <div className="mt-16 p-8 border border-dashed border-gray-800 bg-black/20 text-center relative overflow-hidden">
              <div className="absolute inset-0 scanlines opacity-30 pointer-events-none" />
             <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Proposed Amendments (Drafts)</h3>
-            <p className="text-gray-500 font-mono text-sm mb-8 max-w-2xl mx-auto relative z-10">
+            <p className="text-gray-500 font-sans text-sm mb-8 max-w-2xl mx-auto relative z-10">
               Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to Signal Consensus.
             </p>
             <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
                 {proposedAmendments && proposedAmendments.length > 0 ? (
                     proposedAmendments.map((draft, idx) => (
-                        <div key={idx} className="border border-gray-800 bg-black/40 p-6 hover:border-apf-purple transition-colors">
+                        <div key={idx} className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="text-gray-400 font-vt323 text-xs uppercase tracking-widest border border-gray-800 px-2 py-1 bg-black">{draft.id}</div>
                                 <div className="text-gray-600 font-vt323 text-xs">{new Date(draft.date).toLocaleDateString()}</div>
                             </div>
-                            <h4 className="text-white font-bold text-xl mb-2">{draft.title}</h4>
-                            <p className="text-gray-400 font-vt323 text-sm mb-4 leading-relaxed">{draft.summary}</p>
+                            <h4 className="text-white font-bold text-xl mb-2 font-cinzel">{draft.title}</h4>
+                            <p className="text-gray-400 font-sans text-sm mb-4 leading-relaxed">{draft.summary}</p>
 
                             <div className="flex flex-wrap gap-4 text-xs font-vt323 border-t border-gray-800/50 pt-4 mt-auto">
                                 <span className="text-apf-emerald flex items-center gap-1">
@@ -162,10 +162,10 @@ export function Policies() {
           </div>
 
           <div className="mt-20 p-8 border border-dashed border-gray-800 text-center">
-            <p className="text-gray-500 font-mono text-sm uppercase tracking-widest">
+            <p className="text-gray-500 font-vt323 text-sm uppercase tracking-widest">
               [ End of Current Legislative Stack ]
             </p>
-            <button onClick={() => navigate('/propose')} className="mt-4 text-apf-purple hover:text-white font-mono text-xs uppercase underline underline-offset-4 tracking-widest">
+            <button onClick={() => navigate('/propose')} className="mt-4 text-apf-purple hover:text-white font-vt323 text-xs uppercase underline underline-offset-4 tracking-widest">
               Propose New Protocol Revision
             </button>
           </div>
