@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
@@ -6,6 +6,21 @@ import SafeIcon from '../common/SafeIcon';
 import { motion } from 'framer-motion';
 
 export function Census() {
+
+
+  const [nodes, setNodes] = useState([]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNodes(prev => {
+        const newNode = '0x' + Math.random().toString(16).substring(2, 10).toUpperCase() + '...';
+        const newNodes = [newNode, ...prev].slice(0, 5);
+        return newNodes;
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <Layout>
       <SEO title="Fleet Census | Pirate Federation" description="Organizational health and readiness of the American Pirate Federation." />
@@ -14,18 +29,18 @@ export function Census() {
           <div className="mb-12">
              <div className="flex items-center gap-4 mb-6">
                 <SafeIcon name="Activity" className="h-10 w-10 text-apf-purple" />
-                <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white">
+                <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white font-cinzel">
                   Fleet Census
                 </h1>
               </div>
-              <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
+              <p className="max-w-2xl text-gray-400 font-sans text-lg border-l-2 border-apf-purple pl-6">
                 Real-time organizational telemetry and federation readiness metrics.
               </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
               {/* Member Distribution (Skills) */}
-              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl p-6 transition-colors neon-grid relative overflow-hidden group">
+              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
                   <div className="absolute inset-0 scanlines opacity-50 z-0" />
                   <div className="relative z-10">
                       <h3 className="font-vt323 text-xl text-apf-emerald uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -86,7 +101,7 @@ export function Census() {
               </div>
 
                {/* Consensus Velocity */}
-               <div className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl p-6 transition-colors neon-grid relative overflow-hidden group">
+               <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
                    <div className="absolute inset-0 scanlines opacity-50 z-0" />
                    <div className="relative z-10 flex flex-col h-full">
                       <h3 className="font-vt323 text-xl text-apf-purpleLight uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -112,7 +127,7 @@ export function Census() {
                </div>
 
                 {/* Readiness Score */}
-                <div className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl p-6 transition-colors neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
+                <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
                     <div className="absolute inset-0 scanlines opacity-50 z-0" />
                     <div className="relative z-10">
                         <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4 animate-pulse" />
@@ -124,7 +139,7 @@ export function Census() {
           </div>
 
           {/* Node Heatmap Placeholder */}
-          <div className="bg-black/80 border border-gray-800 p-8 relative overflow-hidden">
+          <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8 relative overflow-hidden">
              <div className="absolute inset-0 neon-grid opacity-30 z-0" />
              <div className="relative z-10">
                   <h3 className="font-vt323 text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -153,8 +168,33 @@ export function Census() {
              </div>
           </div>
 
+
+          {/* Terminal Feed */}
+          <div className="mt-8 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-6 relative overflow-hidden">
+             <div className="absolute inset-0 scanlines opacity-50 z-0 pointer-events-none" />
+             <div className="relative z-10">
+                 <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
+                     [ RESOLVED_NODE_CONNECTIONS ]
+                 </h4>
+                 <div className="font-vt323 text-gray-400 text-xs flex flex-col gap-1 h-24 overflow-hidden">
+                     {nodes.map((node, i) => (
+                         <motion.div
+                             key={node + i}
+                             initial={{ opacity: 0, x: -10 }}
+                             animate={{ opacity: 1, x: 0 }}
+                             className="flex gap-4"
+                         >
+                             <span className="text-gray-600">{new Date().toISOString().split('T')[1].substring(0,8)}</span>
+                             <span className="text-apf-emerald">NODE_SYNC</span>
+                             <span>{node} connected to consensus cluster</span>
+                         </motion.div>
+                     ))}
+                 </div>
+             </div>
+          </div>
         </div>
       </PageTransition>
+
     </Layout>
   );
 }
