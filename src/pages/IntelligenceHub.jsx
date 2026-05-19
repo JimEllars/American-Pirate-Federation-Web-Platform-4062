@@ -169,7 +169,7 @@ export function IntelligenceHub() {
 
 
               {/* Terminal Feed */}
-              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-6 relative overflow-hidden">
+              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 relative overflow-hidden">
                  <div className="absolute inset-0 scanlines opacity-50 z-0 pointer-events-none" />
                  <div className="relative z-10">
                      <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
@@ -200,12 +200,12 @@ export function IntelligenceHub() {
               </h2>
 
               {loading ? (
-                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8">
+                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8">
                   <SafeIcon name="Loader" className="animate-spin mr-2 h-8 w-8" />
                   SYNCING ARCHIVES...
                 </div>
               ) : error || !posts ? (
-                <div className="py-12 flex justify-center bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8">
+                <div className="py-12 flex justify-center bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8">
                   <div className="border border-red-500/50 bg-red-500/10 p-6 rounded text-red-400 font-mono flex items-center gap-3">
                     <SafeIcon name="AlertTriangle" className="h-6 w-6" />
                     <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH ARCHIVES</span>
@@ -256,7 +256,7 @@ export function IntelligenceHub() {
               )}
 
               {!loading && !error && posts && (
-                <div className="mt-12 p-8 border border-dashed border-gray-800 text-center bg-black/60 backdrop-blur-2xl">
+                <div className="mt-12 p-8 text-center bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500">
                    <button className="text-apf-purple hover:text-white font-mono text-xs uppercase tracking-widest border border-apf-purple/50 px-6 py-3 hover:bg-apf-purple/10 transition-colors">
                      Load Older Transmissions
                    </button>

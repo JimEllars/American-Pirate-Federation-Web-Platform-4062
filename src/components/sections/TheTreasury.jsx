@@ -116,7 +116,7 @@ export function TheTreasury() {
               </div>
 
               {/* Guild Details */}
-              <div className="lg:w-2/3 min-h-[400px] border border-apf-purple/30 bg-black/60 backdrop-blur-2xl p-8 relative overflow-hidden">
+              <div className="lg:w-2/3 min-h-[400px] bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 font-vt323 text-apf-purple opacity-30">
                   {activeGuild.meta}
                 </div>

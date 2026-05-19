@@ -48,10 +48,10 @@ export function Propose() {
                       <SafeIcon name="Lock" className="mx-auto h-16 w-16 text-red-500 mb-6" />
                       <h1 className="text-4xl font-black uppercase tracking-tighter text-white mb-4">Clearance Required</h1>
                       <p className="text-gray-400 font-vt323 text-lg border border-red-500/30 bg-red-500/10 p-6 inline-block">
-                          Access Denied. Only Navigators and Guild Masters may submit formal protocol revisions to the Chartroom.
+                          Access Denied. Only Navigators and Guild Masters may submit formal protocol revisions to the Federation.
                       </p>
                       <button onClick={() => navigate('/policies')} className="mt-8 block mx-auto text-apf-purple hover:text-white font-vt323 uppercase tracking-widest underline underline-offset-4">
-                          Return to Chartroom
+                          Return to Policies
                       </button>
                   </div>
               </PageTransition>
@@ -61,7 +61,7 @@ export function Propose() {
 
   return (
     <Layout>
-      <SEO title="Propose Revision | Chartroom" description="Submit a new protocol draft to the Federation." />
+      <SEO title="Propose Revision | Policies" description="Submit a new protocol draft to the Federation." />
       <PageTransition>
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
           <div className="mb-12">
@@ -76,7 +76,7 @@ export function Propose() {
               </p>
           </div>
 
-          <div className="bg-black/60 border border-gray-800 p-8 relative flex-grow">
+          <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8 relative flex-grow">
               <div className="absolute inset-0 scanlines opacity-30 pointer-events-none" />
 
               <form onSubmit={handleSubmit} className="relative z-10 space-y-8">

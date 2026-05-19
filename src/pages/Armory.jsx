@@ -85,7 +85,7 @@ export function Armory() {
             </div>
 
             {/* Clearance Status */}
-            <div className="bg-black/60 border border-gray-800 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
+            <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
                <div className="text-gray-500 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
                  <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
