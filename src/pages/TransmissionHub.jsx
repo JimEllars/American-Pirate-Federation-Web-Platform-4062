@@ -178,7 +178,7 @@ export function TransmissionHub() {
                     <div
                       key={episode.id}
                       className={`p-6 border transition-all cursor-pointer ${
-                        activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/5' : 'border-gray-800 bg-black/40 hover:border-apf-purple/50'
+                        activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/5' : 'border-gray-800 bg-black/60 hover:border-apf-purple/40'
                       }`}
                       onClick={() => togglePlay(episode)}
                     >

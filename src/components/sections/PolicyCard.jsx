@@ -188,7 +188,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             className={`relative overflow-hidden px-4 py-2 text-xs font-vt323 uppercase tracking-widest transition-all border ${
               hasSignaled
                 ? 'bg-apf-purple/20 border-apf-emerald text-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                : 'border-gray-800 text-gray-500 hover:border-apf-purple/50 hover:text-apf-purple'
+                : 'border-gray-800 text-gray-500 hover:border-apf-purple/40 hover:text-apf-purple'
             }`}
           >
             <span className="relative z-10 flex items-center gap-2">

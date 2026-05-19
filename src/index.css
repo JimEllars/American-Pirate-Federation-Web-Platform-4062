@@ -17,11 +17,6 @@
     @apply font-cinzel font-black tracking-widest uppercase;
   }
   
-  .skewed-i {
-    display: inline-block;
-    transform: skewX(-15deg);
-    color: #9400FF;
-  }
 
   .scanlines::before {
     content: " ";

@@ -48,7 +48,7 @@ export function ThePirateCode() {
             >
               <div className="absolute inset-0 bg-apf-purple/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <span className="font-vt323 text-apf-purple text-2xl mb-2 block">ARTICLE {article.id}</span>
-              <h3 className="text-2xl font-bold text-white mb-2 group-hover:glitch-hover transition-all">
+              <h3 className="text-2xl font-bold text-white mb-2 group-hover:glitch-hover transition-all duration-500">
                 {article.title}
               </h3>
               <p className="font-vt323 text-gray-500 uppercase text-xs tracking-widest mb-4">

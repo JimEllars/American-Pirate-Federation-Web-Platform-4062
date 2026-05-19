@@ -153,7 +153,7 @@ export function Events() {
                           </button>
                       </div>
 
-                      <div className="relative z-10 p-6 overflow-y-auto custom-scrollbar flex-grow bg-black/40">
+                      <div className="relative z-10 p-6 overflow-y-auto custom-scrollbar flex-grow bg-black/60">
                           <div className="font-vt323 text-apf-purple mb-2 uppercase tracking-widest text-sm">
                               {activeReport.date} // {activeReport.location}
                           </div>

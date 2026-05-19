@@ -33,13 +33,13 @@ export function MusterRoll() {
   };
 
   return (
-    <div id="enlist" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div id="join" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="bg-apf-gray border border-apf-purple/30 p-12 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
 
         <div className="mb-12 text-center">
           <h2 className="text-4xl font-cinzel font-black uppercase tracking-widest mb-4">
-            Join the Fleet
+            Authorize Connection Sequence
           </h2>
           <p className="font-vt323 text-apf-purple text-lg uppercase tracking-[0.3em]">
             [ INITIALIZE_CONNECTION_SEQUENCE ]
@@ -122,7 +122,7 @@ export function MusterRoll() {
             className="w-full bg-apf-purple hover:bg-white hover:text-apf-black text-white font-cinzel font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl shadow-[0_0_20px_rgba(148,0,255,0.3)]"
           >
             <SafeIcon name="UploadCloud" />
-            Execute Enlistment Directive
+            Authorize Entry Protocol
           </button>
 
           {musterRollDraft.status === 'queued' && (
@@ -132,7 +132,7 @@ export function MusterRoll() {
           )}
           {musterRollDraft.status === 'committed' && (
              <div className="text-green-500 font-vt323 text-center">
-                STATUS: ENLISTMENT_DATA_COMMITTED_TO_SOVEREIGN_LEDGER
+                STATUS: AUTHORIZATION_DATA_COMMITTED_TO_SOVEREIGN_LEDGER
              </div>
           )}
         </form>
