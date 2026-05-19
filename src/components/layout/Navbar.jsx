@@ -9,8 +9,7 @@ export function Navbar() {
   const { musterRollDraft, guildAlignment } = useAppStore();
 
   const navLinks = [
-    { name: 'Census', path: '/census' },
-    { name: 'Bridge Dispatches', path: '/news' },
+    { name: 'Intelligence Hub', path: '/intelligence' },
     { name: 'Policies', path: '/policies' },
     { name: 'Events', path: '/events' },
     { name: 'Podcast', path: '/podcast' },
@@ -34,7 +33,7 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex-shrink-0 flex items-center group">
             <span className="logo-text text-xl sm:text-2xl">
-              P<span className="skewed-i">I</span>RATE FEDERATION
+              PIRATE FEDERATION
             </span>
           </Link>
 
@@ -61,8 +60,8 @@ export function Navbar() {
                       </div>
                   </div>
               ) : (
-                  <a href="/#enlist" className="bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-4 rounded transition-all shadow-[0_0_15px_rgba(113,0,255,0.5)] hover:shadow-[0_0_25px_rgba(113,0,255,0.8)] font-vt323 tracking-widest text-lg">
-                    ENLIST
+                  <a href="/#join" className="bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-4 rounded transition-all shadow-[0_0_15px_rgba(113,0,255,0.5)] hover:shadow-[0_0_25px_rgba(113,0,255,0.8)] font-vt323 tracking-widest text-lg">
+                    JOIN THE FLEET
                   </a>
               )}
             </div>
@@ -107,8 +106,8 @@ export function Navbar() {
                       </div>
                   </div>
               ) : (
-                  <a href="/#enlist" onClick={() => setIsOpen(false)} className="block mt-4 text-center bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-4 rounded transition-all font-vt323 tracking-widest text-lg">
-                    ENLIST
+                  <a href="/#join" onClick={() => setIsOpen(false)} className="block mt-4 text-center bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-4 rounded transition-all font-vt323 tracking-widest text-lg">
+                    JOIN THE FLEET
                   </a>
               )}
           </div>

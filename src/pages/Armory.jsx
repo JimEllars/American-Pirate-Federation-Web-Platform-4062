@@ -186,7 +186,7 @@ export function Armory() {
           {/* Requisition History Logs */}
           <div className="mt-16 border-t border-gray-800 pt-8">
             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // ACQUISITION_TRANSCRIPTS ]
+                <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // PROVISION_TRANSCRIPTS ]
             </h3>
             <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 overflow-hidden">
               {requisitionHistory && requisitionHistory.length > 0 ? (
@@ -218,7 +218,7 @@ export function Armory() {
                   </div>
               ) : (
                   <div className="p-8 text-center text-gray-500 font-vt323 text-sm uppercase">
-                      [ NO LOGISTICAL PROVISIONS ENLISTED TO CURRENT NODE ID ]
+                      [ NO LOGISTICAL PROVISIONS AUTHORIZED TO CURRENT NODE ID ]
                   </div>
               )}
             </div>

@@ -23,7 +23,7 @@ export function Hero() {
           </p>
           
           <div className="mt-10 flex justify-center gap-4">
-            <a href="#enlist" className="px-8 py-4 border border-apf-purple bg-apf-purple/10 hover:bg-apf-purple/30 text-white font-mono transition-all">
+            <a href="#join" className="px-8 py-4 border border-apf-purple bg-apf-purple/10 hover:bg-apf-purple/30 text-white font-mono transition-all duration-500">
               Initialize Connection
             </a>
           </div>
