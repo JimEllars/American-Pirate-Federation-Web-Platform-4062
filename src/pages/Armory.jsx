@@ -186,40 +186,42 @@ export function Armory() {
           {/* Requisition History Logs */}
           <div className="mt-16 border-t border-gray-800 pt-8">
             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> Fleet Resource Ledger
+                <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // ACQUISITION_TRANSCRIPTS ]
             </h3>
-            {requisitionHistory && requisitionHistory.length > 0 ? (
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left font-vt323 text-sm">
-                        <thead className="text-xs text-gray-500 uppercase bg-gray-900/50 border-y border-gray-800">
-                            <tr>
-                                <th className="px-4 py-2">Date</th>
-                                <th className="px-4 py-2">Item</th>
-                                <th className="px-4 py-2 text-right">Cost</th>
-                                <th className="px-4 py-2 text-right">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {requisitionHistory.map((req, idx) => (
-                                <tr key={idx} className="border-b border-gray-800/50 hover:bg-white/5 transition-colors">
-                                    <td className="px-4 py-3 text-gray-400">{new Date(req.date).toLocaleString()}</td>
-                                    <td className="px-4 py-3 text-white">{DOMPurify.sanitize(req.name)}</td>
-                                    <td className="px-4 py-3 text-right text-red-400">-{req.cost} PTS</td>
-                                    <td className="px-4 py-3 text-right">
-                                        <span className="text-[10px] uppercase tracking-widest border border-apf-emerald/30 text-apf-emerald bg-apf-emerald/10 px-2 py-1">
-                                            {DOMPurify.sanitize(req.status)}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            ) : (
-                <div className="p-8 text-center border border-dashed border-gray-800 text-gray-500 font-vt323 text-sm uppercase">
-                    [ No active requisitions found for this sovereign identity ]
-                </div>
-            )}
+            <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 overflow-hidden">
+              {requisitionHistory && requisitionHistory.length > 0 ? (
+                  <div className="overflow-x-auto">
+                      <table className="w-full text-left font-vt323 text-sm">
+                          <thead className="text-xs text-gray-500 uppercase bg-gray-900/50 border-y border-gray-800">
+                              <tr>
+                                  <th className="px-4 py-2">Item</th>
+                                  <th className="px-4 py-2">Type</th>
+                                  <th className="px-4 py-2 text-right">Cost</th>
+                                  <th className="px-4 py-2 text-right">Status</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              {requisitionHistory.map((req, idx) => (
+                                  <tr key={idx} className="border-b border-gray-800/50 hover:bg-white/5 transition-colors">
+                                      <td className="px-4 py-3 text-white">{DOMPurify.sanitize(req.name)}</td>
+                                      <td className="px-4 py-3 text-gray-400">{DOMPurify.sanitize(req.type || 'Standard')}</td>
+                                      <td className="px-4 py-3 text-right text-red-400">-{req.cost} PTS</td>
+                                      <td className="px-4 py-3 text-right">
+                                          <span className="text-[10px] uppercase tracking-widest border border-[#10B981] text-[#10B981] bg-[#10B981]/10 px-2 py-1">
+                                              STATUS: AUTHORIZED
+                                          </span>
+                                      </td>
+                                  </tr>
+                              ))}
+                          </tbody>
+                      </table>
+                  </div>
+              ) : (
+                  <div className="p-8 text-center text-gray-500 font-vt323 text-sm uppercase">
+                      [ NO LOGISTICAL PROVISIONS ENLISTED TO CURRENT NODE ID ]
+                  </div>
+              )}
+            </div>
           </div>
         </div>
       </PageTransition>

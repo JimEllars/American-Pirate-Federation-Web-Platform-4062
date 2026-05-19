@@ -114,7 +114,7 @@ export function Policies() {
               </h1>
             </div>
             <p className="max-w-2xl text-gray-400 font-sans text-lg border-l-2 border-apf-purple pl-6">
-              Sovereignty is not given; it is coded. These are the foundational protocols governing the American Pirate Federation.
+              Sovereignty is not given; it is coded. These are the active foundational protocols and civic mandates governing the American Pirate Federation.
             </p>
           </div>
 
