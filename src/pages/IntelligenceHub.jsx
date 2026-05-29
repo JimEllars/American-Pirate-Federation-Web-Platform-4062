@@ -33,7 +33,7 @@ export function IntelligenceHub() {
           </div>
 
           {/* Section 1: Fleet Telemetry (Census) */}
-          <section className="space-y-8">
+          <section className="space-y-8 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8">
               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
                  <SafeIcon name="Database" className="text-apf-purple h-8 w-8" /> Fleet Telemetry
               </h2>
@@ -194,7 +194,7 @@ export function IntelligenceHub() {
           </section>
 
           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
-          <section className="space-y-8 pt-8 border-t border-apf-purple/20">
+          <section className="space-y-8 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8">
               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
                  <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
               </h2>
