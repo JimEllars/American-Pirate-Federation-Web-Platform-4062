@@ -34,7 +34,7 @@ export function MusterRoll() {
 
   return (
     <div id="join" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="bg-apf-gray border border-apf-purple/30 p-12 relative">
+      <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-12 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
 
         <div className="mb-12 text-center">

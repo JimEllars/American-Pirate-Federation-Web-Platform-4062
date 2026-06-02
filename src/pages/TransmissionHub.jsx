@@ -71,7 +71,7 @@ export function TransmissionHub() {
 
             {/* Audio Player Panel */}
             <div className="lg:col-span-1">
-               <div className={`sticky top-24 bg-black/60 border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-apf-purple/30'} p-6 backdrop-blur-md transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
+               <div className={`sticky top-24 bg-black/60 backdrop-blur-2xl border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-white/5 shadow-2xl hover:border-apf-purple/40'} p-6 transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
                  <div className="mb-6 border-b border-gray-800 pb-4 relative min-h-[80px]">
                     <span className="font-vt323 text-xs uppercase text-apf-purple tracking-widest block mb-2">Current Frequency</span>
                     <AnimatePresence mode="wait">
@@ -177,9 +177,7 @@ export function TransmissionHub() {
                     return (
                     <div
                       key={episode.id}
-                      className={`p-6 border transition-all cursor-pointer ${
-                        activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/5' : 'border-gray-800 bg-black/60 hover:border-apf-purple/40'
-                      }`}
+                      className={`p-6 border transition-all duration-500 cursor-pointer shadow-2xl backdrop-blur-2xl ${activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'}`}
                       onClick={() => togglePlay(episode)}
                     >
                        <div className="flex justify-between items-start mb-2">

@@ -45,7 +45,7 @@ export function NewsFeed() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
               key={post.id} 
-              className="bg-black border border-gray-800 hover:border-apf-purple transition-colors overflow-hidden group"
+              className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 overflow-hidden group"
             >
               {featuredMedia && (
                 <div className="h-48 overflow-hidden">
