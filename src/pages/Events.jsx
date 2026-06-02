@@ -142,7 +142,7 @@ export function Events() {
                       exit={{ scale: 0.95, y: 20 }}
                       className="bg-apf-black border border-apf-purple/50 max-w-2xl w-full max-h-[80vh] flex flex-col relative overflow-hidden neon-grid"
                   >
-                      <div className="absolute inset-0 scanlines opacity-50 z-0 pointer-events-none" />
+                      <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
 
                       <div className="relative z-10 flex justify-between items-center p-4 border-b border-gray-800 bg-black/80">
                           <h3 className="font-vt323 text-xl text-white uppercase tracking-widest flex items-center gap-2">

@@ -41,7 +41,7 @@ export function IntelligenceHub() {
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Personnel Distribution */}
                   <div className="lg:col-span-1 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
-                      <div className="absolute inset-0 scanlines opacity-50 z-0" />
+                      <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                       <div className="relative z-10">
                           <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                               <SafeIcon name="Users" className="h-5 w-5 text-apf-purpleLight" /> Active Personnel
@@ -101,7 +101,7 @@ export function IntelligenceHub() {
 
                    {/* Consensus Velocity */}
                    <div className="lg:col-span-1 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
-                       <div className="absolute inset-0 scanlines opacity-50 z-0" />
+                       <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                        <div className="relative z-10 flex flex-col h-full">
                           <h3 className="font-vt323 text-xl text-apf-purpleLight uppercase tracking-widest mb-6 flex items-center gap-2">
                               <SafeIcon name="TrendingUp" className="h-5 w-5" /> Consensus Velocity
@@ -127,7 +127,7 @@ export function IntelligenceHub() {
 
                     {/* Readiness Score */}
                     <div className="lg:col-span-1 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
-                        <div className="absolute inset-0 scanlines opacity-50 z-0" />
+                        <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                         <div className="relative z-10">
                             <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4 animate-pulse" />
                             <div className="text-6xl font-black text-white font-cinzel mb-2">94<span className="text-3xl text-apf-emerald">%</span></div>
@@ -145,7 +145,7 @@ export function IntelligenceHub() {
                           <SafeIcon name="Map" className="h-6 w-6 text-apf-purple" /> Active Synchronization Clusters
                       </h3>
                       <div className="h-64 border border-gray-800/50 bg-black/50 relative overflow-hidden flex items-center justify-center">
-                         <div className="absolute inset-0 scanlines opacity-50 z-10 pointer-events-none" />
+                         <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-10" />
                          {/* Stylized Abstract SVG Map Placeholder */}
                          <svg viewBox="0 0 800 400" className="w-full h-full opacity-60">
                             <path d="M100,100 Q150,50 200,150 T300,100 T400,200 T500,150 T600,250 T700,100" fill="none" stroke="#9400FF" strokeWidth="2" className="opacity-50" />
@@ -170,7 +170,7 @@ export function IntelligenceHub() {
 
               {/* Terminal Feed */}
               <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 relative overflow-hidden">
-                 <div className="absolute inset-0 scanlines opacity-50 z-0 pointer-events-none" />
+                 <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                  <div className="relative z-10">
                      <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
                          [ RESOLVED_NODE_CONNECTIONS ]

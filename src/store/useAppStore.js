@@ -20,6 +20,8 @@ export const useAppStore = create(
       reputationPoints: 100, // Mock reputation
       reputationHistory: [], // [{ action, amount, date }]
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
+      treasuryAddress: null,
+      deploymentStatus: 'idle', // idle, pending, success, failed
 
       updateMusterRoll: (data) =>
         set((state) => {
@@ -173,6 +175,9 @@ export const useAppStore = create(
           };
         }),
 
+      setTreasuryAddress: (address) => set({ treasuryAddress: address }),
+      setDeploymentStatus: (status) => set({ deploymentStatus: status }),
+
       addRequisition: (item) =>
         set((state) => ({
            requisitionHistory: [{ ...item, date: new Date().toISOString(), status: 'AUTHORIZED' }, ...state.requisitionHistory]
@@ -194,7 +199,9 @@ export const useAppStore = create(
         proposedAmendments: state.proposedAmendments,
         reputationPoints: state.reputationPoints,
         reputationHistory: state.reputationHistory,
-        requisitionHistory: state.requisitionHistory
+        requisitionHistory: state.requisitionHistory,
+        treasuryAddress: state.treasuryAddress,
+        deploymentStatus: state.deploymentStatus
       }), // Save only specific parts, ignoring volatile UI state like comms/skills draft
     }
   )

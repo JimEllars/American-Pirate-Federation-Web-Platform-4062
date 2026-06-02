@@ -126,7 +126,7 @@ export function Policies() {
 
 
           <div className="mt-16 p-8 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 text-center relative overflow-hidden">
-             <div className="absolute inset-0 scanlines opacity-30 pointer-events-none" />
+             <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
             <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Proposed Amendments (Drafts)</h3>
             <p className="text-gray-500 font-sans text-sm mb-8 max-w-2xl mx-auto relative z-10">
               Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to Signal Consensus.

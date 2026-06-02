@@ -77,7 +77,7 @@ export function Propose() {
           </div>
 
           <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8 relative flex-grow">
-              <div className="absolute inset-0 scanlines opacity-30 pointer-events-none" />
+              <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
 
               <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
                   <div className="space-y-2">
