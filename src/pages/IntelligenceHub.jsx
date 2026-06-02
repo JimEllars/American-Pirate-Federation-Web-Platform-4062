@@ -185,7 +185,7 @@ export function IntelligenceHub() {
                              >
                                  <span className="text-gray-600">{new Date().toISOString().split('T')[1].substring(0,8)}</span>
                                  <span className="text-apf-emerald">NODE_SYNC</span>
-                                 <span>{node} connected to consensus cluster</span>
+                                 <span className="truncate">{node} connected to consensus cluster</span>
                              </motion.div>
                          ))}
                      </div>

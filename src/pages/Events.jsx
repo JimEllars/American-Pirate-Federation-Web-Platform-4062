@@ -108,8 +108,8 @@ export function Events() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                {PAST_EVENTS.map(event => (
-                   <div key={event.id} className="group flex flex-col">
-                      <div className="h-48 bg-gray-900 border border-gray-800 overflow-hidden relative mb-4 cursor-pointer" onClick={() => setActiveReport(event)}>
+                   <div key={event.id} className="group flex flex-col bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 cursor-pointer" onClick={() => setActiveReport(event)}>
+                      <div className="h-48 bg-black/40 overflow-hidden relative mb-4">
                          <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay group-hover:bg-transparent transition-colors z-10" />
                          <img src={event.image} alt="Past Event" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
                       </div>
