@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../../hooks/usePirateIntel';
 import { GasWarningCard } from '../web3/GasWarningCard';
 import { VaultDeployed } from '../web3/VaultDeployed';
+import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
 import DOMPurify from 'isomorphic-dompurify';
 
@@ -39,15 +40,28 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setTreasuryAddress } = useAppStore();
+  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setTreasuryAddress, isArbitrumNetwork, mockEthBalance, treasuryDeploymentStatus, setTreasuryDeploymentStatus, setIsArbitrumNetwork } = useAppStore();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
+  const [showNetworkModal, setShowNetworkModal] = useState(false);
+  const [showGasWarning, setShowGasWarning] = useState(false);
   const [triggerError, setTriggerError] = useState(false);
 
   const handleDeployVault = () => {
-    setDeploymentStatus('pending');
+    if (!isArbitrumNetwork) {
+      setShowNetworkModal(true);
+      return;
+    }
+    if (mockEthBalance < 5) {
+      setShowGasWarning(true);
+      return;
+    }
+
+    setShowGasWarning(false);
+    setTreasuryDeploymentStatus('deploying');
+
     setTimeout(() => {
       setTreasuryAddress('0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''));
-      setDeploymentStatus('success');
+      setTreasuryDeploymentStatus('success');
     }, 2000);
   };
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
@@ -77,13 +91,16 @@ export function TheTreasury() {
   }, []);
 
   return (
+    <>
+      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={() => { setIsArbitrumNetwork(true); setShowNetworkModal(false); }} />
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <GasWarningCard ethBalance={walletBalance} />
+          {showGasWarning && <GasWarningCard ethBalance={mockEthBalance} />}
           <div className="mt-2 flex gap-2">
-            <button onClick={() => setWalletBalance(0)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 0 ETH</button>
-            <button onClick={() => setWalletBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
+            <button onClick={() => useAppStore.getState().setMockEthBalance(3)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 3 ETH</button>
+            <button onClick={() => useAppStore.getState().setMockEthBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
+            <button onClick={() => setIsArbitrumNetwork(!isArbitrumNetwork)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Toggle Network (Current: {isArbitrumNetwork ? 'Arbitrum' : 'Wrong'})</button>
           </div>
         </div>
 
@@ -311,10 +328,10 @@ export function TheTreasury() {
                  <div className="mt-8 flex justify-center">
                    <button
                      onClick={handleDeployVault}
-                     disabled={deploymentStatus === 'pending' || deploymentStatus === 'success' || walletBalance < 5}
-                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${deploymentStatus === 'pending' ? 'bg-gray-600 cursor-not-allowed' : deploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' : walletBalance < 5 ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'}`}
+                     disabled={treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success'}
+                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' : treasuryDeploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' : 'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'}`}
                    >
-                     {deploymentStatus === 'pending' ? 'Deploying...' : deploymentStatus === 'success' ? 'Deployed' : 'Deploy Vault'}
+                     {treasuryDeploymentStatus === 'deploying' ? 'Deploying...' : treasuryDeploymentStatus === 'success' ? 'Deployed' : 'Initialize Treasury'}
                    </button>
                  </div>
                  <VaultDeployed />
@@ -328,5 +345,6 @@ export function TheTreasury() {
 
       </div>
     </section>
+    </>
   );
 }

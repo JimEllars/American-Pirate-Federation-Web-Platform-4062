@@ -3,9 +3,9 @@ import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 
 export function VaultDeployed() {
-  const { treasuryAddress, deploymentStatus } = useAppStore();
+  const { treasuryAddress, treasuryDeploymentStatus } = useAppStore();
 
-  if (deploymentStatus !== 'success' || !treasuryAddress) return null;
+  if (treasuryDeploymentStatus !== 'success' || !treasuryAddress) return null;
 
   return (
     <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 relative overflow-hidden text-center mt-8">
