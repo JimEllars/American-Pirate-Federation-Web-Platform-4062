@@ -6,7 +6,7 @@ import { useAppStore } from '../../store/useAppStore';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment } = useAppStore();
+  const { musterRollDraft, guildAlignment, walletConnected, setWalletConnected } = useAppStore();
 
   const navLinks = [
     { name: 'Intelligence Hub', path: '/intelligence' },
@@ -64,6 +64,26 @@ export function Navbar() {
                     JOIN THE FLEET
                   </a>
               )}
+
+              {!walletConnected ? (
+                <button
+                  onClick={() => setWalletConnected(true)}
+                  className="bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
+                >
+                  Connect Wallet
+                </button>
+              ) : (
+                <button
+                  onClick={() => setWalletConnected(false)}
+                  className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald transition-colors"
+                >
+                  <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
+                    0x4F...a1B2
+                  </span>
+                </button>
+              )}
+
             </div>
           </div>
 
@@ -110,6 +130,26 @@ export function Navbar() {
                     JOIN THE FLEET
                   </a>
               )}
+
+              {!walletConnected ? (
+                <button
+                  onClick={() => { setWalletConnected(true); setIsOpen(false); }}
+                  className="block mt-4 w-full text-center bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
+                >
+                  Connect Wallet
+                </button>
+              ) : (
+                <button
+                  onClick={() => { setWalletConnected(false); setIsOpen(false); }}
+                  className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald transition-colors"
+                >
+                  <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
+                    0x4F...a1B2
+                  </span>
+                </button>
+              )}
+
           </div>
         </motion.div>
       )}
