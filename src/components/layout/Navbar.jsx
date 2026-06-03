@@ -79,7 +79,7 @@ export function Navbar() {
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    0x4F...a1B2
+                    0x7a...4D2b
                   </span>
                 </button>
               )}
@@ -145,7 +145,7 @@ export function Navbar() {
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    0x4F...a1B2
+                    0x7a...4D2b
                   </span>
                 </button>
               )}
