@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../../hooks/usePirateIntel';
+import { GasWarningCard } from '../web3/GasWarningCard';
+import { VaultDeployed } from '../web3/VaultDeployed';
+import { useAppStore } from '../../store/useAppStore';
 import DOMPurify from 'isomorphic-dompurify';
 
 const GUILDS = [
@@ -36,7 +39,17 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
+  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setTreasuryAddress } = useAppStore();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
+  const [triggerError, setTriggerError] = useState(false);
+
+  const handleDeployVault = () => {
+    setDeploymentStatus('pending');
+    setTimeout(() => {
+      setTreasuryAddress('0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''));
+      setDeploymentStatus('success');
+    }, 2000);
+  };
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
   const [isAuditing, setIsAuditing] = useState(false);
   const { data: guides, loading, error } = usePirateIntel('posts?categories=3'); // Mocking 'guides' category
@@ -46,6 +59,10 @@ export function TheTreasury() {
       { txId: "0x3e4...b92", date: new Date(Date.now() - 4800000).toISOString().split('T')[0], amount: "50,000 USDC", target: "Labor Union Support Node", alignment: "Article XV", status: "Settled" },
       { txId: "0x1a2...c34", date: new Date(Date.now() - 7200000).toISOString().split('T')[0], amount: "25,000 USDC", target: "Education Grants Pool", alignment: "Article XVI", status: "Settled" },
 ]);
+
+  if (triggerError) {
+    throw new Error("Simulated APF System Integrity Failure for Testing");
+  }
 
   useEffect(() => {
     // Simulate fetching ledger data
@@ -62,11 +79,22 @@ export function TheTreasury() {
   return (
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <GasWarningCard ethBalance={walletBalance} />
+          <div className="mt-2 flex gap-2">
+            <button onClick={() => setWalletBalance(0)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 0 ETH</button>
+            <button onClick={() => setWalletBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
+          </div>
+        </div>
 
         {/* Navigation / Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-800 pb-4">
            <div>
-              <h2 className="text-4xl font-black uppercase tracking-tighter text-white">Federation Assets</h2>
+              <h2
+                 className="text-4xl font-black uppercase tracking-tighter text-white cursor-pointer"
+                 onDoubleClick={() => setTriggerError(true)}
+                 title="Double click to test Error Boundary"
+              >Federation Assets</h2>
               <p className="font-vt323 text-apf-purple mt-2 tracking-widest">[ DECENTRALIZED_RESOURCE_ALLOCATION ]</p>
            </div>
 
@@ -280,6 +308,16 @@ export function TheTreasury() {
                     </table>
                  </div>
 
+                 <div className="mt-8 flex justify-center">
+                   <button
+                     onClick={handleDeployVault}
+                     disabled={deploymentStatus === 'pending' || deploymentStatus === 'success' || walletBalance < 5}
+                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${deploymentStatus === 'pending' ? 'bg-gray-600 cursor-not-allowed' : deploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' : walletBalance < 5 ? 'bg-gray-800 text-gray-500 cursor-not-allowed' : 'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'}`}
+                   >
+                     {deploymentStatus === 'pending' ? 'Deploying...' : deploymentStatus === 'success' ? 'Deployed' : 'Deploy Vault'}
+                   </button>
+                 </div>
+                 <VaultDeployed />
                  <div className="mt-6 text-center font-vt323 text-gray-500 text-sm">
                    [ FULFILLING_ARTICLE_II: RADICAL_TRANSPARENCY ]
                  </div>
