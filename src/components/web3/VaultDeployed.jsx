@@ -3,9 +3,9 @@ import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 
 export function VaultDeployed() {
-  const { treasuryAddress, treasuryDeploymentStatus } = useAppStore();
+  const { deployedVaultAddress, treasuryDeploymentStatus } = useAppStore();
 
-  if (treasuryDeploymentStatus !== 'success' || !treasuryAddress) return null;
+  if (treasuryDeploymentStatus !== 'success' || !deployedVaultAddress) return null;
 
   return (
     <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 relative overflow-hidden text-center mt-8">
@@ -30,7 +30,7 @@ export function VaultDeployed() {
             Contract Address
           </div>
           <div className="font-mono text-apf-emerald text-sm break-all select-all">
-            {treasuryAddress}
+            {deployedVaultAddress}
           </div>
         </div>
 

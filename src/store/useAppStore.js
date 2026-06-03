@@ -21,12 +21,13 @@ export const useAppStore = create(
       reputationHistory: [], // [{ action, amount, date }]
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
       treasuryAddress: null,
+      deployedVaultAddress: '',
       deploymentStatus: 'idle', // idle, pending, success, failed
       isCorrectNetwork: true,
       walletBalance: 0,
       walletConnected: false,
       isArbitrumNetwork: true,
-      mockEthBalance: 10.00,
+      mockEthBalance: 12.50,
       treasuryDeploymentStatus: 'idle',
 
       updateMusterRoll: (data) =>
@@ -182,6 +183,7 @@ export const useAppStore = create(
         }),
 
       setTreasuryAddress: (address) => set({ treasuryAddress: address }),
+      setDeployedVaultAddress: (address) => set({ deployedVaultAddress: address }),
       setDeploymentStatus: (status) => set({ deploymentStatus: status }),
       setIsCorrectNetwork: (status) => set({ isCorrectNetwork: status }),
       setWalletBalance: (balance) => set({ walletBalance: balance }),
@@ -213,6 +215,7 @@ export const useAppStore = create(
         reputationHistory: state.reputationHistory,
         requisitionHistory: state.requisitionHistory,
         treasuryAddress: state.treasuryAddress,
+        deployedVaultAddress: state.deployedVaultAddress,
         deploymentStatus: state.deploymentStatus,
         isCorrectNetwork: state.isCorrectNetwork,
         walletBalance: state.walletBalance,

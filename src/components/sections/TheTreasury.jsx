@@ -40,14 +40,14 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setTreasuryAddress, isArbitrumNetwork, mockEthBalance, treasuryDeploymentStatus, setTreasuryDeploymentStatus, setIsArbitrumNetwork } = useAppStore();
+  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setDeployedVaultAddress, isCorrectNetwork, setIsCorrectNetwork, mockEthBalance, setMockEthBalance, treasuryDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showGasWarning, setShowGasWarning] = useState(false);
   const [triggerError, setTriggerError] = useState(false);
 
   const handleDeployVault = () => {
-    if (!isArbitrumNetwork) {
+    if (!isCorrectNetwork) {
       setShowNetworkModal(true);
       return;
     }
@@ -60,7 +60,7 @@ export function TheTreasury() {
     setTreasuryDeploymentStatus('deploying');
 
     setTimeout(() => {
-      setTreasuryAddress('0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''));
+      setDeployedVaultAddress('0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''));
       setTreasuryDeploymentStatus('success');
     }, 2000);
   };
@@ -92,15 +92,15 @@ export function TheTreasury() {
 
   return (
     <>
-      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={() => { setIsArbitrumNetwork(true); setShowNetworkModal(false); }} />
+      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={() => { setIsCorrectNetwork(true); setShowNetworkModal(false); }} />
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           {showGasWarning && <GasWarningCard ethBalance={mockEthBalance} />}
           <div className="mt-2 flex gap-2">
-            <button onClick={() => useAppStore.getState().setMockEthBalance(3)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 3 ETH</button>
-            <button onClick={() => useAppStore.getState().setMockEthBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
-            <button onClick={() => setIsArbitrumNetwork(!isArbitrumNetwork)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Toggle Network (Current: {isArbitrumNetwork ? 'Arbitrum' : 'Wrong'})</button>
+            <button onClick={() => setMockEthBalance(3)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 3 ETH</button>
+            <button onClick={() => setMockEthBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
+            <button onClick={() => setIsCorrectNetwork(!isCorrectNetwork)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Toggle Network (Current: {isCorrectNetwork ? 'Arbitrum' : 'Wrong'})</button>
           </div>
         </div>
 
