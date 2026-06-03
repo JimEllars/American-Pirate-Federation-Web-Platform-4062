@@ -22,6 +22,8 @@ export const useAppStore = create(
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
       treasuryAddress: null,
       deploymentStatus: 'idle', // idle, pending, success, failed
+      isCorrectNetwork: true,
+      walletBalance: 0,
 
       updateMusterRoll: (data) =>
         set((state) => {
@@ -177,6 +179,8 @@ export const useAppStore = create(
 
       setTreasuryAddress: (address) => set({ treasuryAddress: address }),
       setDeploymentStatus: (status) => set({ deploymentStatus: status }),
+      setIsCorrectNetwork: (status) => set({ isCorrectNetwork: status }),
+      setWalletBalance: (balance) => set({ walletBalance: balance }),
 
       addRequisition: (item) =>
         set((state) => ({
@@ -201,7 +205,9 @@ export const useAppStore = create(
         reputationHistory: state.reputationHistory,
         requisitionHistory: state.requisitionHistory,
         treasuryAddress: state.treasuryAddress,
-        deploymentStatus: state.deploymentStatus
+        deploymentStatus: state.deploymentStatus,
+        isCorrectNetwork: state.isCorrectNetwork,
+        walletBalance: state.walletBalance
       }), // Save only specific parts, ignoring volatile UI state like comms/skills draft
     }
   )

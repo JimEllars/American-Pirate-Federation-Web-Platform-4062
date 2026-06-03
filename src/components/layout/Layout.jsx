@@ -1,13 +1,20 @@
 import React from 'react';
 import { Navbar } from './Navbar';
+import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
+import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
 import { motion } from 'framer-motion';
 
 export function Layout({ children }) {
+  const { isCorrectNetwork, setIsCorrectNetwork } = useAppStore();
   const scrollOffset = useParallax();
 
   return (
     <div className="min-h-screen relative apf-root-container flex flex-col bg-apf-black">
+      <NetworkSwitchModal
+        isWrongNetwork={!isCorrectNetwork}
+        onSwitchNetwork={() => setIsCorrectNetwork(true)}
+      />
       {/* Scanlines overlay */}
       <div className="scanlines !pointer-events-none" />
 
