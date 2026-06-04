@@ -92,11 +92,11 @@ export function TheTreasury() {
 
   return (
     <>
-      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={() => { setIsCorrectNetwork(true); setShowNetworkModal(false); }} />
+      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={() => { setIsCorrectNetwork(true); setShowNetworkModal(false); }} onDismiss={() => { setShowNetworkModal(false); setTreasuryDeploymentStatus('idle'); }} />
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          {showGasWarning && <GasWarningCard ethBalance={mockEthBalance} />}
+          {showGasWarning && <GasWarningCard ethBalance={mockEthBalance} onDismiss={() => { setShowGasWarning(false); setTreasuryDeploymentStatus('idle'); }} />}
           <div className="mt-2 flex gap-2">
             <button onClick={() => setMockEthBalance(3)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 3 ETH</button>
             <button onClick={() => setMockEthBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
@@ -325,7 +325,12 @@ export function TheTreasury() {
                     </table>
                  </div>
 
-                 <div className="mt-8 flex justify-center">
+                 <div className="mt-8 flex justify-center flex-col items-center gap-4">
+                   {treasuryDeploymentStatus === 'deploying' && (
+                     <div className="font-vt323 text-apf-emerald text-sm uppercase tracking-widest animate-pulse border border-apf-emerald/30 bg-apf-emerald/10 px-4 py-2">
+                       [ AWAITING ARBITRUM ONE BLOCK CONFIRMATION... ]
+                     </div>
+                   )}
                    <button
                      onClick={handleDeployVault}
                      disabled={treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success'}

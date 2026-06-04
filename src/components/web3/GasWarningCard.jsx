@@ -1,7 +1,7 @@
 import React from 'react';
 import SafeIcon from '../../common/SafeIcon';
 
-export function GasWarningCard({ ethBalance }) {
+export function GasWarningCard({ ethBalance, onDismiss }) {
   // We assume ethBalance is a number representing the USD value of the ETH balance
   const hasEnoughGas = ethBalance >= 5;
 
@@ -32,6 +32,14 @@ export function GasWarningCard({ ethBalance }) {
               ${ethBalance?.toFixed(2) || '0.00'} ETH
             </span>
           </div>
+          {onDismiss && (
+            <button
+              onClick={onDismiss}
+              className="mt-4 bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 px-4 py-1 font-vt323 text-sm uppercase transition-colors"
+            >
+              Dismiss
+            </button>
+          )}
         </div>
       </div>
     </div>

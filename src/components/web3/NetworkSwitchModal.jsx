@@ -1,7 +1,19 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 
-export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork }) {
+export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss }) {
+  useEffect(() => {
+    if (isWrongNetwork) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'auto';
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isWrongNetwork]);
+
   if (!isWrongNetwork) return null;
 
   return (
@@ -23,12 +35,23 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork }) {
           The connected node is outside the primary network zone. Switch to Arbitrum One for low-latency confirmations and minimal gas overhead.
         </p>
 
-        <button
-          onClick={onSwitchNetwork}
-          className="relative z-10 bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full"
-        >
-          Align to Arbitrum One
-        </button>
+        <div className="flex flex-col gap-3 w-full relative z-10">
+          <button
+            onClick={onSwitchNetwork}
+            className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full"
+          >
+            Align to Arbitrum One
+          </button>
+
+          {onDismiss && (
+            <button
+              onClick={onDismiss}
+              className="bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 px-8 py-2 font-vt323 text-sm uppercase transition-colors w-full"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
