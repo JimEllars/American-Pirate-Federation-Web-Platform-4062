@@ -6,7 +6,7 @@ import { useParallax } from '../../hooks/useParallax';
 import { motion } from 'framer-motion';
 
 export function Layout({ children }) {
-  const { isCorrectNetwork, setIsCorrectNetwork } = useAppStore();
+  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus } = useAppStore();
   const scrollOffset = useParallax();
 
   return (
@@ -14,6 +14,7 @@ export function Layout({ children }) {
       <NetworkSwitchModal
         isWrongNetwork={!isCorrectNetwork}
         onSwitchNetwork={() => setIsCorrectNetwork(true)}
+        onDismiss={() => { setIsCorrectNetwork(true); setTreasuryDeploymentStatus('idle'); }}
       />
       {/* Scanlines overlay */}
       <div className="scanlines !pointer-events-none" />

@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 
 export function VaultDeployed() {
   const { deployedVaultAddress, treasuryDeploymentStatus } = useAppStore();
+  const [copied, setCopied] = useState(false);
 
   if (treasuryDeploymentStatus !== 'success' || !deployedVaultAddress) return null;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(deployedVaultAddress);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 relative overflow-hidden text-center mt-8">
@@ -25,11 +32,18 @@ export function VaultDeployed() {
           The Safe Multisig Treasury Vault has been successfully deployed to the Arbitrum One network.
         </p>
 
-        <div className="bg-black/50 border border-apf-emerald/20 p-4 mb-6">
-          <div className="font-vt323 text-gray-500 text-xs uppercase tracking-widest mb-1">
-            Contract Address
+        <div className="bg-black/50 border border-apf-emerald/20 p-4 mb-6 relative">
+          <div className="font-vt323 text-gray-500 text-xs uppercase tracking-widest mb-1 flex justify-between items-center">
+            <span>Contract Address</span>
+            <button
+              onClick={handleCopy}
+              className="text-apf-emerald hover:text-white transition-colors flex items-center gap-1"
+            >
+              <SafeIcon name="Copy" className="h-3 w-3" />
+              {copied ? <span className="text-apf-emerald font-bold">[ ADDRESS COPIED ]</span> : "Copy"}
+            </button>
           </div>
-          <div className="font-mono text-apf-emerald text-sm break-all select-all">
+          <div className="font-vt323 text-apf-emerald text-lg break-all select-all text-left mt-2">
             {deployedVaultAddress}
           </div>
         </div>
