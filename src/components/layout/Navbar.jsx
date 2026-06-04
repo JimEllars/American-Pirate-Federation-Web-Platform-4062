@@ -37,7 +37,7 @@ export function Navbar() {
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center">
+          <div className="hidden lg:flex items-center">
             <div className="ml-10 flex items-baseline space-x-6">
               {navLinks.map((link) => (
                 <Link
@@ -54,7 +54,7 @@ export function Navbar() {
                       <SafeIcon name={getGuildIcon()} className="h-4 w-4 text-apf-purple" />
                       <div className="flex flex-col">
                           <span className="font-vt323 text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1">{guildAlignment}</span>
-                          <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none">
+                          <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none truncate max-w-[100px]">
                               {musterRollDraft.walletAddress.substring(0, 6)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 4)}
                           </span>
                       </div>
@@ -87,7 +87,7 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="-mr-2 flex md:hidden">
+          <div className="-mr-2 flex lg:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none"
@@ -102,7 +102,7 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-apf-black border-b border-apf-purple/20"
+          className="lg:hidden bg-apf-black border-b border-apf-purple/20"
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => (
@@ -120,7 +120,7 @@ export function Navbar() {
                       <SafeIcon name={getGuildIcon()} className="h-5 w-5 text-apf-purple" />
                       <div className="flex flex-col">
                           <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest">{guildAlignment}</span>
-                          <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider">
+                          <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider truncate">
                               {musterRollDraft.walletAddress.substring(0, 8)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 6)}
                           </span>
                       </div>
