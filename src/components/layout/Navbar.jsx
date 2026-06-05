@@ -31,8 +31,8 @@ export function Navbar() {
     <nav className="fixed top-0 w-full z-40 bg-apf-black/80 backdrop-blur-md border-b border-apf-purple/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex-shrink-0 flex items-center group">
-            <span className="logo-text text-xl sm:text-2xl whitespace-nowrap truncate">
+          <Link to="/" className="flex-shrink-0 flex items-center group w-1/2 md:w-auto">
+            <span className="logo-text text-lg sm:text-xl md:text-2xl whitespace-nowrap truncate">
               PIRATE FEDERATION
             </span>
           </Link>
@@ -87,10 +87,21 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="-mr-2 flex lg:hidden">
+          <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
+              {walletConnected && (
+                <div
+                  className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald/30 bg-black/50 rounded max-w-full overflow-hidden"
+                  title="0x7a...4D2b"
+                >
+                  <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none truncate">
+                    0x7a...4D2b
+                  </span>
+                </div>
+              )}
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none flex-shrink-0"
             >
               <SafeIcon name={isOpen ? "X" : "Menu"} className="h-6 w-6" />
             </button>
@@ -102,7 +113,7 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:hidden bg-apf-black border-b border-apf-purple/20"
+          className="lg:hidden bg-apf-black border-b border-apf-purple/20 max-h-[calc(100vh-4rem)] overflow-y-auto"
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => (
@@ -118,8 +129,8 @@ export function Navbar() {
              {musterRollDraft.walletAddress ? (
                   <div className="flex items-center gap-3 px-3 py-2 mt-4 border-t border-apf-purple/30">
                       <SafeIcon name={getGuildIcon()} className="h-5 w-5 text-apf-purple" />
-                      <div className="flex flex-col">
-                          <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest">{guildAlignment}</span>
+                      <div className="flex flex-col min-w-0">
+                          <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest truncate">{guildAlignment}</span>
                           <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider truncate">
                               {musterRollDraft.walletAddress.substring(0, 8)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 6)}
                           </span>
@@ -145,7 +156,7 @@ export function Navbar() {
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    0x7a...4D2b
+                    Disconnect (0x7a...4D2b)
                   </span>
                 </button>
               )}

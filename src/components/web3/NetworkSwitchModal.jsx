@@ -14,6 +14,21 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
     };
   }, [isWrongNetwork]);
 
+  const handleDismiss = () => {
+    document.body.style.overflow = '';
+    if (onDismiss) {
+      onDismiss();
+    }
+  };
+
+  const handleSwitch = () => {
+    // Note: If switch network is asynchronous and doesn't immediately dismiss the modal,
+    // we should wait for it to succeed. However, this is just a dummy so let's allow the normal flow.
+    if (onSwitchNetwork) {
+      onSwitchNetwork();
+    }
+  };
+
   if (!isWrongNetwork) return null;
 
   return (
@@ -37,7 +52,7 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
 
         <div className="flex flex-col gap-3 w-full relative z-10">
           <button
-            onClick={onSwitchNetwork}
+            onClick={handleSwitch}
             className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full"
           >
             Align to Arbitrum One
@@ -45,7 +60,7 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
 
           {onDismiss && (
             <button
-              onClick={onDismiss}
+              onClick={handleDismiss}
               className="bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 px-8 py-2 font-vt323 text-sm uppercase transition-colors w-full"
             >
               Cancel
