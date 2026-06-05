@@ -11,13 +11,13 @@ export function VaultDeployed() {
   const handleCopy = () => {
     navigator.clipboard.writeText(deployedVaultAddress);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
     <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 relative overflow-hidden text-center mt-8">
       <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
-      <div className="absolute inset-0 bg-apf-emerald/5 mix-blend-overlay pointer-events-none" />
+      <div className="absolute inset-0 bg-apf-emerald/5 mix-blend-overlay !pointer-events-none" />
 
       <div className="relative z-10">
         <div className="inline-flex items-center justify-center p-4 bg-apf-emerald/10 rounded-full mb-6 ring-1 ring-apf-emerald/50 animate-pulse">

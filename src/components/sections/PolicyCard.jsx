@@ -40,7 +40,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
 
   return (
     <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity pointer-events-none">
+      <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity !pointer-events-none">
         <SafeIcon icon={FiShield} className="h-24 w-24 text-apf-purple" />
       </div>
 

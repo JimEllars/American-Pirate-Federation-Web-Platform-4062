@@ -133,14 +133,14 @@ export function Armory() {
                  <div key={item.id} className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl transition-all group relative overflow-hidden flex flex-col">
                     {/* Item Image */}
                     <div className="h-64 relative overflow-hidden bg-gray-900 border-b border-white/5">
-                      <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10 pointer-events-none" />
+                      <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10 !pointer-events-none" />
                       <img
                         src={item.image}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-700 ${eligible ? 'group-hover:scale-110' : 'grayscale opacity-50'}`}
                       />
                       {!eligible && (
-                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm pointer-events-none">
+                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm !pointer-events-none">
                            <div className="text-center font-vt323">
                               <SafeIcon name="Lock" className="mx-auto h-8 w-8 text-red-500 mb-2" />
                               <div className="text-red-500 font-bold uppercase tracking-widest text-sm">Restricted Access</div>
