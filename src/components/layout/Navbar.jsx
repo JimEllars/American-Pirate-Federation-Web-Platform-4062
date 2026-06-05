@@ -3,10 +3,22 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
+import { useAddress, useConnect, useDisconnect, metamaskWallet } from '@thirdweb-dev/react';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment, walletConnected, setWalletConnected } = useAppStore();
+  const { musterRollDraft, guildAlignment } = useAppStore();
+  const address = useAddress();
+  const connect = useConnect();
+  const disconnect = useDisconnect();
+
+  const handleConnect = async () => {
+    try {
+      await connect(metamaskWallet());
+    } catch (e) {
+      alert('[ WALLET EXTENSION NOT DETECTED ]');
+    }
+  };
 
   const navLinks = [
     { name: 'Intelligence Hub', path: '/intelligence' },
@@ -65,21 +77,21 @@ export function Navbar() {
                   </a>
               )}
 
-              {!walletConnected ? (
+              {!address ? (
                 <button
-                  onClick={() => setWalletConnected(true)}
+                  onClick={handleConnect}
                   className="bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
                 >
                   Connect Wallet
                 </button>
               ) : (
                 <button
-                  onClick={() => setWalletConnected(false)}
+                  onClick={disconnect}
                   className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    0x7a...4D2b
+                    {`${address?.substring(0, 4)}...${address?.substring(address?.length - 4)}`}
                   </span>
                 </button>
               )}
@@ -88,14 +100,14 @@ export function Navbar() {
           </div>
 
           <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
-              {walletConnected && (
+              {address && (
                 <div
                   className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald/30 bg-black/50 rounded max-w-full overflow-hidden"
-                  title="0x7a...4D2b"
+                  title="{`${address?.substring(0, 4)}...${address?.substring(address?.length - 4)}`}"
                 >
                   <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none truncate">
-                    0x7a...4D2b
+                    {`${address?.substring(0, 4)}...${address?.substring(address?.length - 4)}`}
                   </span>
                 </div>
               )}
@@ -142,21 +154,21 @@ export function Navbar() {
                   </a>
               )}
 
-              {!walletConnected ? (
+              {!address ? (
                 <button
-                  onClick={() => { setWalletConnected(true); setIsOpen(false); }}
+                  onClick={() => { handleConnect(); setIsOpen(false); }}
                   className="block mt-4 w-full text-center bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
                 >
                   Connect Wallet
                 </button>
               ) : (
                 <button
-                  onClick={() => { setWalletConnected(false); setIsOpen(false); }}
+                  onClick={() => { disconnect(); setIsOpen(false); }}
                   className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    Disconnect (0x7a...4D2b)
+                    Disconnect ({`${address?.substring(0, 4)}...${address?.substring(address?.length - 4)}`})
                   </span>
                 </button>
               )}

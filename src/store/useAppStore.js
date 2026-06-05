@@ -23,11 +23,6 @@ export const useAppStore = create(
       treasuryAddress: null,
       deployedVaultAddress: '',
       deploymentStatus: 'idle', // idle, pending, success, failed
-      isCorrectNetwork: true,
-      walletBalance: 0,
-      walletConnected: false,
-      isArbitrumNetwork: true,
-      mockEthBalance: 12.50,
       treasuryDeploymentStatus: 'idle',
 
       updateMusterRoll: (data) =>
@@ -185,11 +180,6 @@ export const useAppStore = create(
       setTreasuryAddress: (address) => set({ treasuryAddress: address }),
       setDeployedVaultAddress: (address) => set({ deployedVaultAddress: address }),
       setDeploymentStatus: (status) => set({ deploymentStatus: status }),
-      setIsCorrectNetwork: (status) => set({ isCorrectNetwork: status }),
-      setWalletBalance: (balance) => set({ walletBalance: balance }),
-      setWalletConnected: (status) => set({ walletConnected: status }),
-      setIsArbitrumNetwork: (status) => set({ isArbitrumNetwork: status }),
-      setMockEthBalance: (balance) => set({ mockEthBalance: balance }),
       setTreasuryDeploymentStatus: (status) => set({ treasuryDeploymentStatus: status }),
 
       addRequisition: (item) =>
@@ -217,11 +207,6 @@ export const useAppStore = create(
         treasuryAddress: state.treasuryAddress,
         deployedVaultAddress: state.deployedVaultAddress,
         deploymentStatus: state.deploymentStatus,
-        isCorrectNetwork: state.isCorrectNetwork,
-        walletBalance: state.walletBalance,
-        walletConnected: state.walletConnected,
-        isArbitrumNetwork: state.isArbitrumNetwork,
-        mockEthBalance: state.mockEthBalance,
         treasuryDeploymentStatus: state.treasuryDeploymentStatus
       }), // Save only specific parts, ignoring volatile UI state like comms/skills draft
     }

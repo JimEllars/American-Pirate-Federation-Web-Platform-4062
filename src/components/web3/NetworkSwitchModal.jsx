@@ -6,16 +6,16 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
     if (isWrongNetwork) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = '';
+      document.body.style.overflow = 'unset';
     }
 
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = 'unset';
     };
   }, [isWrongNetwork]);
 
   const handleDismiss = () => {
-    document.body.style.overflow = '';
+    document.body.style.overflow = 'unset';
     if (onDismiss) {
       onDismiss();
     }
