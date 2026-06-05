@@ -6,11 +6,11 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
     if (isWrongNetwork) {
       document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
     }
 
     return () => {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = '';
     };
   }, [isWrongNetwork]);
 

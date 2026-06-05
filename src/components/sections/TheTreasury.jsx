@@ -259,7 +259,7 @@ export function TheTreasury() {
                              transition={{ duration: 0.5, delay: i * 0.05 }}
                              className="flex-1 bg-apf-emerald/50 border border-apf-emerald hover:bg-apf-emerald transition-colors relative group"
                            >
-                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black border border-apf-emerald text-apf-emerald px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
+                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black border border-apf-emerald text-apf-emerald px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 !pointer-events-none">
                                Impact: +{Math.floor(Math.random() * 50 + 10)}%
                              </div>
                            </motion.div>
@@ -306,7 +306,7 @@ export function TheTreasury() {
                         ) : (
                           ledger.map((tx, idx) => (
                             <tr key={idx} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
-                              <td className="px-6 py-4 text-apf-purple">{DOMPurify.sanitize(tx.txId)}</td>
+                              <td className="px-6 py-4 text-apf-purple truncate max-w-[120px] sm:max-w-none">{DOMPurify.sanitize(tx.txId)}</td>
                               <td className="px-6 py-4 text-gray-400">{DOMPurify.sanitize(tx.date)}</td>
                               <td className="px-6 py-4 text-white font-bold">{DOMPurify.sanitize(tx.amount)}</td>
                               <td className="px-6 py-4 text-gray-300">{DOMPurify.sanitize(tx.target)}</td>

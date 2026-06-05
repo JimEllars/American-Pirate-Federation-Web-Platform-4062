@@ -25,7 +25,6 @@ export function MusterRoll() {
     // Simulate Firestore Backend Sync to /artifacts/apf/users/
     try {
       await new Promise(resolve => setTimeout(resolve, 800));
-      console.log('Syncing to Firestore /artifacts/apf/users/ ...', sanitizedData);
       updateMusterRoll({ status: 'committed' });
     } catch (err) {
       updateMusterRoll({ status: 'error' });

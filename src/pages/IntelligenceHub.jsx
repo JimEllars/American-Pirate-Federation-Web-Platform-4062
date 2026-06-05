@@ -139,7 +139,7 @@ export function IntelligenceHub() {
 
               {/* Node Heatmap Placeholder */}
               <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8 relative overflow-hidden">
-                 <div className="absolute inset-0 neon-grid opacity-30 z-0 pointer-events-none" />
+                 <div className="absolute inset-0 neon-grid opacity-30 z-0 !pointer-events-none" />
                  <div className="relative z-10">
                       <h3 className="font-vt323 text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
                           <SafeIcon name="Map" className="h-6 w-6 text-apf-purple" /> Active Synchronization Clusters
@@ -160,7 +160,7 @@ export function IntelligenceHub() {
                             <circle cx="700" cy="100" r="12" fill="#10B981" className="opacity-50" />
                             <circle cx="250" cy="250" r="20" fill="#9400FF" className="animate-pulse opacity-60" />
                          </svg>
-                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-500 uppercase pointer-events-none">
+                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-500 uppercase !pointer-events-none">
                              [ LIVE TELEMETRY FEED ]
                          </div>
                       </div>
