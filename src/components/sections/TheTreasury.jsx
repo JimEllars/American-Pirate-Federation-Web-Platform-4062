@@ -6,6 +6,8 @@ import { GasWarningCard } from '../web3/GasWarningCard';
 import { VaultDeployed } from '../web3/VaultDeployed';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
+import { useBalance, useNetworkMismatch, useSwitchChain, useAddress } from '@thirdweb-dev/react';
+import { Arbitrum } from '@thirdweb-dev/chains';
 import DOMPurify from 'isomorphic-dompurify';
 
 const GUILDS = [
@@ -40,18 +42,22 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setDeployedVaultAddress, isCorrectNetwork, setIsCorrectNetwork, mockEthBalance, setMockEthBalance, treasuryDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
+  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
+  const address = useAddress();
+  const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
+  const isMismatched = useNetworkMismatch();
+  const switchChain = useSwitchChain();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showGasWarning, setShowGasWarning] = useState(false);
   const [triggerError, setTriggerError] = useState(false);
 
   const handleDeployVault = () => {
-    if (!isCorrectNetwork) {
+    if (isMismatched) {
       setShowNetworkModal(true);
       return;
     }
-    if (mockEthBalance < 5) {
+    if (!balanceData || parseFloat(balanceData.displayValue) < 0.002) {
       setShowGasWarning(true);
       return;
     }
@@ -92,16 +98,12 @@ export function TheTreasury() {
 
   return (
     <>
-      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={() => { setIsCorrectNetwork(true); setShowNetworkModal(false); }} onDismiss={() => { setShowNetworkModal(false); setTreasuryDeploymentStatus('idle'); }} />
+      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={async () => { try { await switchChain(Arbitrum.chainId); setShowNetworkModal(false); } catch(e) { console.error('Failed to switch network', e); } }} onDismiss={() => { setShowNetworkModal(false); setTreasuryDeploymentStatus('idle'); }} />
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          {showGasWarning && <GasWarningCard ethBalance={mockEthBalance} onDismiss={() => { setShowGasWarning(false); setTreasuryDeploymentStatus('idle'); }} />}
-          <div className="mt-2 flex gap-2">
-            <button onClick={() => setMockEthBalance(3)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 3 ETH</button>
-            <button onClick={() => setMockEthBalance(10)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Simulate 10 ETH</button>
-            <button onClick={() => setIsCorrectNetwork(!isCorrectNetwork)} className="text-xs bg-black/50 border border-white/10 px-2 py-1 text-gray-400 hover:text-white">Toggle Network (Current: {isCorrectNetwork ? 'Arbitrum' : 'Wrong'})</button>
-          </div>
+          {showGasWarning && <GasWarningCard ethBalance={balanceData ? parseFloat(balanceData.displayValue) : 0} onDismiss={() => { setShowGasWarning(false); setTreasuryDeploymentStatus('idle'); }} />}
+
         </div>
 
         {/* Navigation / Header */}
@@ -333,10 +335,10 @@ export function TheTreasury() {
                    )}
                    <button
                      onClick={handleDeployVault}
-                     disabled={treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success'}
+                     disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success'}
                      className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' : treasuryDeploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' : 'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'}`}
                    >
-                     {treasuryDeploymentStatus === 'deploying' ? 'Deploying...' : treasuryDeploymentStatus === 'success' ? 'Deployed' : 'Initialize Treasury'}
+                     {isBalanceLoading ? '[ SYNCING ARBITRUM NODE... ]' : treasuryDeploymentStatus === 'deploying' ? 'Deploying...' : treasuryDeploymentStatus === 'success' ? 'Deployed' : 'Initialize Treasury'}
                    </button>
                  </div>
                  <VaultDeployed />

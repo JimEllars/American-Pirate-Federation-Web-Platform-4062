@@ -3,7 +3,7 @@ import SafeIcon from '../../common/SafeIcon';
 
 export function GasWarningCard({ ethBalance, onDismiss }) {
   // We assume ethBalance is a number representing the USD value of the ETH balance
-  const hasEnoughGas = ethBalance >= 5;
+  const hasEnoughGas = ethBalance >= 0.002;
 
   useEffect(() => {
     // Add overflow hidden when mounted
@@ -11,13 +11,13 @@ export function GasWarningCard({ ethBalance, onDismiss }) {
 
     // Clean up when unmounted to ensure scroll is restored
     return () => {
-      document.body.style.overflow = '';
+      document.body.style.overflow = 'unset';
     };
   }, []);
 
   const handleDismiss = () => {
     // Also explicitly remove on dismiss before the unmount effect might run
-    document.body.style.overflow = '';
+    document.body.style.overflow = 'unset';
     if (onDismiss) {
       onDismiss();
     }
@@ -51,7 +51,7 @@ export function GasWarningCard({ ethBalance, onDismiss }) {
             <div className="flex items-center gap-2 mt-4 font-vt323 text-xs uppercase tracking-widest">
               <span className="text-gray-500">Current Balance:</span>
               <span className={hasEnoughGas ? 'text-apf-emerald' : 'text-apf-purple'}>
-                ${ethBalance?.toFixed(2) || '0.00'} ETH
+                {ethBalance?.toFixed(4) || '0.0000'} ETH
               </span>
             </div>
             {onDismiss && (
