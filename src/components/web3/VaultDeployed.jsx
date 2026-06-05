@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -6,12 +6,23 @@ export function VaultDeployed() {
   const { deployedVaultAddress, treasuryDeploymentStatus } = useAppStore();
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    let timeoutId;
+    if (copied) {
+      timeoutId = setTimeout(() => setCopied(false), 2500);
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [copied]);
+
   if (treasuryDeploymentStatus !== 'success' || !deployedVaultAddress) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(deployedVaultAddress);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2500);
   };
 
   return (
@@ -37,10 +48,17 @@ export function VaultDeployed() {
             <span>Contract Address</span>
             <button
               onClick={handleCopy}
-              className="text-apf-emerald hover:text-white transition-colors flex items-center gap-1"
+              className="text-apf-emerald hover:text-white transition-colors flex items-center gap-1 relative"
             >
               <SafeIcon name="Copy" className="h-3 w-3" />
-              {copied ? <span className="text-apf-emerald font-bold">[ ADDRESS COPIED ]</span> : "Copy"}
+              <div className="relative w-[120px] h-[16px]">
+                <span className={`absolute right-0 transition-opacity duration-300 ${copied ? 'opacity-0' : 'opacity-100'}`}>
+                  Copy
+                </span>
+                <span className={`absolute right-0 text-apf-emerald font-bold transition-opacity duration-300 ${copied ? 'opacity-100' : 'opacity-0'} whitespace-nowrap`}>
+                  [ ADDRESS COPIED ]
+                </span>
+              </div>
             </button>
           </div>
           <div className="font-vt323 text-apf-emerald text-lg break-all select-all text-left mt-2">

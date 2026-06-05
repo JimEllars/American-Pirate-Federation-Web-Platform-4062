@@ -6,16 +6,27 @@ export function GasWarningCard({ ethBalance, onDismiss }) {
   const hasEnoughGas = ethBalance >= 5;
 
   useEffect(() => {
+    // Add overflow hidden when mounted
     document.body.style.overflow = 'hidden';
+
+    // Clean up when unmounted to ensure scroll is restored
     return () => {
       document.body.style.overflow = '';
     };
   }, []);
 
+  const handleDismiss = () => {
+    // Also explicitly remove on dismiss before the unmount effect might run
+    document.body.style.overflow = '';
+    if (onDismiss) {
+      onDismiss();
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onDismiss} />
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleDismiss} />
 
       <div className="relative z-10 w-full max-w-lg bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-6 hover:border-apf-purple/40 transition-all duration-500 overflow-hidden">
         <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
@@ -45,7 +56,7 @@ export function GasWarningCard({ ethBalance, onDismiss }) {
             </div>
             {onDismiss && (
               <button
-                onClick={onDismiss}
+                onClick={handleDismiss}
                 className="mt-4 bg-transparent border border-gray-600 text-gray-400 hover:text-white hover:border-gray-400 px-4 py-1 font-vt323 text-sm uppercase transition-colors"
               >
                 Dismiss
