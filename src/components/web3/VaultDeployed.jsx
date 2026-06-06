@@ -68,7 +68,7 @@ export function VaultDeployed() {
 
         <div className="flex items-center justify-center gap-2 font-vt323 text-xs text-apf-purple uppercase tracking-widest">
           <SafeIcon name="Activity" className="h-4 w-4" />
-          <span>Telemetry Uplink Confirmed. Core Spine Sync Complete.</span>
+          <span className="text-apf-emerald">[ TELEMETRY UPLINK ESTABLISHED ]</span>
         </div>
       </div>
     </div>

@@ -1,0 +1,30 @@
+export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Phase29',
+        event_type: 'contract.write.initiated',
+        timestamp: new Date().toISOString()
+      },
+      telemetry: {
+        target_contract: vaultAddress,
+        wallet_address: deployerAddress,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    // Asynchronous mock uplink
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch((e) => {
+      console.warn('[Telemetry] Async uplink failed, preserving main thread:', e.message);
+    });
+
+    console.log('[ TELEMETRY UPLINK ESTABLISHED ]', payload);
+  } catch (error) {
+    console.error('[Telemetry] Critical uplink error:', error.message);
+  }
+};
