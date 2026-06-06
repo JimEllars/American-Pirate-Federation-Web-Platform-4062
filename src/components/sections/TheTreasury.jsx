@@ -9,6 +9,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { useBalance, useNetworkMismatch, useSwitchChain, useAddress } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
+import { logTreasuryDeployment } from '../../lib/api/telemetry';
 
 const GUILDS = [
   {
@@ -72,6 +73,7 @@ export function TheTreasury() {
       const mockAddress = await initializeSafeTreasury(address);
       setDeployedVaultAddress(mockAddress);
       setTreasuryDeploymentStatus('success');
+      logTreasuryDeployment(mockAddress, address);
     } catch (e) {
       setTreasuryError(e.message || 'TRANSACTION REJECTED');
       setTreasuryDeploymentStatus('error');

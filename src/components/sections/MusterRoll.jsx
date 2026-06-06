@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAddress } from '@thirdweb-dev/react';
+import { useAddress, useSigner } from '@thirdweb-dev/react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
@@ -7,6 +7,7 @@ import DOMPurify from 'isomorphic-dompurify';
 export function MusterRoll() {
     const { musterRollDraft, updateMusterRoll } = useAppStore();
   const address = useAddress();
+  const signer = useSigner();
 
   useEffect(() => {
     if (address && musterRollDraft.walletAddress !== address) {
@@ -30,12 +31,19 @@ export function MusterRoll() {
     };
     console.log('Sanitized Data Ready for Sync:', sanitizedData);
 
-    // Simulate Firestore Backend Sync to /artifacts/apf/users/
     try {
+      if (signer) {
+        await signer.signMessage("Authorize APF Entry for: " + sanitizedData.alias);
+      }
+      // Simulate Firestore Backend Sync to /artifacts/apf/users/
       await new Promise(resolve => setTimeout(resolve, 500));
       updateMusterRoll({ status: 'committed' });
     } catch (err) {
-      updateMusterRoll({ status: 'error' });
+      if (err.message && err.message.toLowerCase().includes('user rejected')) {
+        updateMusterRoll({ status: 'rejected' });
+      } else {
+        updateMusterRoll({ status: 'error' });
+      }
     }
   };
 
@@ -151,6 +159,11 @@ export function MusterRoll() {
           {musterRollDraft.status === 'committed' && (
              <div className="text-green-500 font-vt323 text-center">
                 STATUS: AUTHORIZATION_DATA_COMMITTED_TO_SOVEREIGN_LEDGER
+             </div>
+          )}
+          {musterRollDraft.status === 'rejected' && (
+             <div className="text-red-500 font-vt323 text-center border border-red-500/30 bg-red-500/10 p-2">
+                [ ENCRYPTION SIGNATURE REJECTED ]
              </div>
           )}
         </form>

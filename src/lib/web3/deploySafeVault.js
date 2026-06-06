@@ -1,4 +1,12 @@
+import { safeWallet } from '@thirdweb-dev/react';
 export const initializeSafeTreasury = async (userAddress) => {
+  // Production Thirdweb Smart Wallet Payload Prep
+  const safeConfig = {
+    chain: 42161, // Arbitrum One
+    factoryAddress: '0xPlaceholderFactory', // Use thirdweb default or specific factory address
+    gasless: false // Strict constraint: User covers the <$5 deployment
+  };
+  console.log('[Deployer] Safe Config Prepped:', safeConfig);
   // Simulate an async delay for building the Safe Proxy payload
   await new Promise(res => setTimeout(res, 3500));
 
