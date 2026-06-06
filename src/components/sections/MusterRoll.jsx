@@ -1,18 +1,25 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useAddress } from '@thirdweb-dev/react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 
 export function MusterRoll() {
     const { musterRollDraft, updateMusterRoll } = useAppStore();
+  const address = useAddress();
 
-  const handleConnectWallet = async () => {
-    // Simulated Web3 connection
-    updateMusterRoll({ walletAddress: '0x' + Math.random().toString(16).substr(2, 40) });
-  };
+  useEffect(() => {
+    if (address && musterRollDraft.walletAddress !== address) {
+      updateMusterRoll({ walletAddress: address });
+    } else if (!address && musterRollDraft.walletAddress) {
+      updateMusterRoll({ walletAddress: '' });
+    }
+  }, [address, musterRollDraft.walletAddress, updateMusterRoll]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!address) return;
     updateMusterRoll({ status: 'queued' });
 
     const sanitizedData = {
@@ -21,10 +28,11 @@ export function MusterRoll() {
       skills: DOMPurify.sanitize(musterRollDraft.skills),
       walletAddress: DOMPurify.sanitize(musterRollDraft.walletAddress)
     };
+    console.log('Sanitized Data Ready for Sync:', sanitizedData);
 
     // Simulate Firestore Backend Sync to /artifacts/apf/users/
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 500));
       updateMusterRoll({ status: 'committed' });
     } catch (err) {
       updateMusterRoll({ status: 'error' });
@@ -47,24 +55,30 @@ export function MusterRoll() {
 
         <form onSubmit={handleSubmit} className="space-y-8">
 
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center gap-4">
-               <button
-                 type="button"
-                 onClick={handleConnectWallet}
-                 className="bg-apf-purple/20 hover:bg-apf-purple/40 border border-apf-purple text-white font-vt323 px-4 py-2 transition-colors flex items-center gap-2"
-               >
-                 <SafeIcon name="Key" />
-                 {musterRollDraft.walletAddress ? 'Identity Connected' : 'Connect Wallet (Web3)'}
-               </button>
-               {musterRollDraft.walletAddress && (
-                 <div className="flex flex-col">
-                   <span className="font-vt323 text-gray-500 text-[10px] uppercase tracking-widest">Primary Sovereign Identifier</span>
-                   <span className="font-vt323 text-apf-emerald text-sm truncate max-w-[200px] block">
-                     {musterRollDraft.walletAddress}
-                   </span>
-                 </div>
-               )}
+          <div className="space-y-4 mb-8 relative">
+            {!address && (
+              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+                <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase">
+                  [ ENCRYPTION KEY REQUIRED. CONNECT WALLET TO AUTHORIZE CONNECTION SEQUENCE. ]
+                </p>
+              </div>
+            )}
+            <div className="space-y-2">
+              <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="walletAddress">
+                Primary Sovereign Identifier
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  id="walletAddress"
+                  type="text"
+                  readOnly
+                  disabled
+                  value={musterRollDraft.walletAddress || ''}
+                  className="w-full bg-black border-b border-gray-800 p-3 text-white opacity-70 font-vt323 text-lg transition-colors cursor-not-allowed"
+                  placeholder="0x..."
+                />
+                <SafeIcon name="Key" className="text-apf-emerald" />
+              </div>
             </div>
             <p className="font-vt323 text-xs text-gray-500 uppercase">Article VII: Data Ownership. Authorize Entry Protocol to claim sovereign identity.</p>
           </div>
@@ -118,10 +132,15 @@ export function MusterRoll() {
 
           <button
             type="submit"
-            className="w-full bg-apf-purple hover:bg-white hover:text-apf-black text-white font-cinzel font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl shadow-[0_0_20px_rgba(148,0,255,0.3)]"
+            disabled={!address}
+            className={`w-full font-cinzel font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl ${
+              address
+                ? 'bg-apf-purple hover:bg-white hover:text-apf-black text-white shadow-[0_0_20px_rgba(148,0,255,0.3)]'
+                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+            }`}
           >
             <SafeIcon name="UploadCloud" />
-            Authorize Entry Protocol
+            {address ? '[ SIGN PAYLOAD & AUTHORIZE ENTRY ]' : 'Authorize Entry Protocol'}
           </button>
 
           {musterRollDraft.status === 'queued' && (

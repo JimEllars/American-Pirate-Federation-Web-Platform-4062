@@ -7,8 +7,8 @@ import { VaultDeployed } from '../web3/VaultDeployed';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
 import { useBalance, useNetworkMismatch, useSwitchChain, useAddress } from '@thirdweb-dev/react';
-import { Arbitrum } from '@thirdweb-dev/chains';
 import DOMPurify from 'isomorphic-dompurify';
+import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
 
 const GUILDS = [
   {
@@ -42,7 +42,7 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { walletBalance, setWalletBalance, deploymentStatus, setDeploymentStatus, setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
+  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
   const address = useAddress();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
   const isMismatched = useNetworkMismatch();
@@ -52,7 +52,9 @@ export function TheTreasury() {
   const [showGasWarning, setShowGasWarning] = useState(false);
   const [triggerError, setTriggerError] = useState(false);
 
-  const handleDeployVault = () => {
+  const [treasuryError, setTreasuryError] = useState(null);
+
+  const handleDeployVault = async () => {
     if (isMismatched) {
       setShowNetworkModal(true);
       return;
@@ -63,12 +65,17 @@ export function TheTreasury() {
     }
 
     setShowGasWarning(false);
+    setTreasuryError(null);
     setTreasuryDeploymentStatus('deploying');
 
-    setTimeout(() => {
-      setDeployedVaultAddress('0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join(''));
+    try {
+      const mockAddress = await initializeSafeTreasury(address);
+      setDeployedVaultAddress(mockAddress);
       setTreasuryDeploymentStatus('success');
-    }, 2000);
+    } catch (e) {
+      setTreasuryError(e.message || 'TRANSACTION REJECTED');
+      setTreasuryDeploymentStatus('error');
+    }
   };
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
   const [isAuditing, setIsAuditing] = useState(false);
@@ -98,7 +105,7 @@ export function TheTreasury() {
 
   return (
     <>
-      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={async () => { try { await switchChain(Arbitrum.chainId); setShowNetworkModal(false); } catch(e) { console.error('Failed to switch network', e); } }} onDismiss={() => { setShowNetworkModal(false); setTreasuryDeploymentStatus('idle'); }} />
+      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={async () => { try { await switchChain(42161); setShowNetworkModal(false); } catch(e) { console.warn('[Network Switch Rejected]:', e); } }} onDismiss={() => { setShowNetworkModal(false); setTreasuryDeploymentStatus('idle'); }} />
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
@@ -331,6 +338,11 @@ export function TheTreasury() {
                    {treasuryDeploymentStatus === 'deploying' && (
                      <div className="font-vt323 text-apf-emerald text-sm uppercase tracking-widest animate-pulse border border-apf-emerald/30 bg-apf-emerald/10 px-4 py-2">
                        [ AWAITING ARBITRUM ONE BLOCK CONFIRMATION... ]
+                     </div>
+                   )}
+                   {treasuryDeploymentStatus === 'error' && (
+                     <div className="font-vt323 text-red-500 text-sm uppercase tracking-widest border border-red-500/30 bg-red-500/10 px-4 py-2 mb-2">
+                       [ DEPLOYMENT FAILED: {treasuryError || 'TRANSACTION REJECTED'} ]
                      </div>
                    )}
                    <button
