@@ -5,6 +5,7 @@ import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 
 export function MusterRoll() {
+  const [rejectError, setRejectError] = React.useState(false);
     const { musterRollDraft, updateMusterRoll } = useAppStore();
   const address = useAddress();
   const signer = useSigner();
@@ -39,8 +40,10 @@ export function MusterRoll() {
       await new Promise(resolve => setTimeout(resolve, 500));
       updateMusterRoll({ status: 'committed' });
     } catch (err) {
-      if (err.message && err.message.toLowerCase().includes('user rejected')) {
-        updateMusterRoll({ status: 'rejected' });
+      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        updateMusterRoll({ status: 'idle' });
+        setRejectError(true);
+        setTimeout(() => setRejectError(false), 5000);
       } else {
         updateMusterRoll({ status: 'error' });
       }
@@ -161,9 +164,9 @@ export function MusterRoll() {
                 STATUS: AUTHORIZATION_DATA_COMMITTED_TO_SOVEREIGN_LEDGER
              </div>
           )}
-          {musterRollDraft.status === 'rejected' && (
-             <div className="text-red-500 font-vt323 text-center border border-red-500/30 bg-red-500/10 p-2">
-                [ ENCRYPTION SIGNATURE REJECTED ]
+          {rejectError && (
+             <div className="text-red-500 font-vt323 text-center border border-white/5 bg-black/60 backdrop-blur-2xl shadow-2xl p-4">
+                [ ENCRYPTION SIGNATURE REJECTED BY USER ]
              </div>
           )}
         </form>

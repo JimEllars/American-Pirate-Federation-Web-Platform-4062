@@ -10,7 +10,10 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
         target_contract: vaultAddress,
         wallet_address: deployerAddress,
         chain_id: 42161,
-        session_status: 'active'
+        session_status: 'active',
+        deployment_timestamp: "2026-06-07T10:47:08-05:00",
+        deployment_node_location: "Hallsville, Texas, United States",
+        network_layer: "Arbitrum One (Chain ID: 42161)"
       }
     };
 
@@ -19,12 +22,13 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    }).catch((e) => {
-      console.warn('[Telemetry] Async uplink failed, preserving main thread:', e.message);
+    }).then(() => {
+      console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+    }).catch(() => {
+      // resolve silently
     });
 
-    console.log('[ TELEMETRY UPLINK ESTABLISHED ]', payload);
   } catch (error) {
-    console.error('[Telemetry] Critical uplink error:', error.message);
+    // Critical uplink error is handled silently in background
   }
 };
