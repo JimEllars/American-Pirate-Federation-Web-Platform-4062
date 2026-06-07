@@ -6,7 +6,7 @@ import { GasWarningCard } from '../web3/GasWarningCard';
 import { VaultDeployed } from '../web3/VaultDeployed';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
-import { useBalance, useNetworkMismatch, useSwitchChain, useAddress } from '@thirdweb-dev/react';
+import { useBalance, useNetworkMismatch, useSwitchChain, useAddress, useWallet } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
 import { logTreasuryDeployment } from '../../lib/api/telemetry';
@@ -48,6 +48,7 @@ export function TheTreasury() {
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
   const isMismatched = useNetworkMismatch();
   const switchChain = useSwitchChain();
+  const personalWallet = useWallet();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showGasWarning, setShowGasWarning] = useState(false);
@@ -70,13 +71,18 @@ export function TheTreasury() {
     setTreasuryDeploymentStatus('deploying');
 
     try {
-      const mockAddress = await initializeSafeTreasury(address);
+      const mockAddress = await initializeSafeTreasury(address, personalWallet);
       setDeployedVaultAddress(mockAddress);
       setTreasuryDeploymentStatus('success');
       logTreasuryDeployment(mockAddress, address);
     } catch (e) {
-      setTreasuryError(e.message || 'TRANSACTION REJECTED');
-      setTreasuryDeploymentStatus('error');
+      if (e.code === 4001 || (e.message && e.message.toLowerCase().includes('user rejected'))) {
+        setTreasuryError('[ ENCRYPTION SIGNATURE REJECTED BY USER ]');
+        setTreasuryDeploymentStatus('idle');
+      } else {
+        setTreasuryError(e.message || 'TRANSACTION REJECTED');
+        setTreasuryDeploymentStatus('error');
+      }
     }
   };
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
@@ -342,9 +348,9 @@ export function TheTreasury() {
                        [ AWAITING ARBITRUM ONE BLOCK CONFIRMATION... ]
                      </div>
                    )}
-                   {treasuryDeploymentStatus === 'error' && (
+                   {(treasuryDeploymentStatus === 'error' || treasuryError === '[ ENCRYPTION SIGNATURE REJECTED BY USER ]') && (
                      <div className="font-vt323 text-red-500 text-sm uppercase tracking-widest border border-red-500/30 bg-red-500/10 px-4 py-2 mb-2">
-                       [ DEPLOYMENT FAILED: {treasuryError || 'TRANSACTION REJECTED'} ]
+                       {treasuryError === '[ ENCRYPTION SIGNATURE REJECTED BY USER ]' ? treasuryError : `[ DEPLOYMENT FAILED: ${treasuryError || 'TRANSACTION REJECTED'} ]`}
                      </div>
                    )}
                    <button
