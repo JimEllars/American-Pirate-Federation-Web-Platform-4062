@@ -7,7 +7,7 @@ import { useAddress, useConnect, useDisconnect, metamaskWallet } from '@thirdweb
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment } = useAppStore();
+  const { musterRollDraft, guildAlignment, addToast } = useAppStore();
   const address = useAddress();
   const connect = useConnect();
   const disconnect = useDisconnect();
@@ -16,7 +16,7 @@ export function Navbar() {
     try {
       await connect(metamaskWallet());
     } catch (e) {
-      alert('[ WALLET EXTENSION NOT DETECTED ]');
+      addToast('[ WALLET EXTENSION NOT DETECTED ]', 'error');
     }
   };
 
