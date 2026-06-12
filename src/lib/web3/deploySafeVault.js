@@ -1,6 +1,6 @@
 import { SmartWallet } from '@thirdweb-dev/wallets';
 
-export const initializeSafeTreasury = async (userAddress, personalWallet) => {
+export const initializeSafeTreasury = async (userAddress, signer) => {
   // Production Thirdweb Smart Wallet Payload Prep
   const safeConfig = {
     chain: 42161, // Arbitrum One
@@ -17,10 +17,10 @@ export const initializeSafeTreasury = async (userAddress, personalWallet) => {
     clientId: import.meta.env?.VITE_THIRDWEB_CLIENT_ID || 'client-id-placeholder'
   });
 
-  if (personalWallet) {
+  if (signer) {
     try {
       // Connect and deploy the smart wallet, awaiting transaction confirmation
-      await smartWallet.connect({ personalWallet });
+      await smartWallet.connect({ personalWallet: signer });
       const address = await smartWallet.getAddress();
       return address;
     } catch (err) {

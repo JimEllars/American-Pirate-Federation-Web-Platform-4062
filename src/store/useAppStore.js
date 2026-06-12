@@ -19,11 +19,31 @@ export const useAppStore = create(
       proposedAmendments: [], // [{ id, title, summary, alignment, sponsor, date }]
       reputationPoints: 100, // Mock reputation
       reputationHistory: [], // [{ action, amount, date }]
+      toasts: [],
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
       treasuryAddress: null,
       deployedVaultAddress: '',
       deploymentStatus: 'idle', // idle, pending, success, failed
       treasuryDeploymentStatus: 'idle',
+
+      addToast: (message, type = 'info') => {
+        const id = Date.now() + Math.random().toString(36).substring(2, 9);
+        useAppStore.getState()._scheduleToastRemoval(id);
+        return set((state) => ({
+          toasts: [...state.toasts, { id, message, type }]
+        }));
+      },
+
+      _scheduleToastRemoval: (id) => {
+         setTimeout(() => {
+            useAppStore.getState().removeToast(id);
+         }, 4000);
+      },
+
+      removeToast: (id) =>
+        set((state) => ({
+          toasts: state.toasts.filter((t) => t.id !== id)
+        })),
 
       updateMusterRoll: (data) =>
         set((state) => {

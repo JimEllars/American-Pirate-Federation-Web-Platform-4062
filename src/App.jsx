@@ -10,6 +10,7 @@ import { IntelligenceHub } from './pages/IntelligenceHub';
 import { TransmissionHub } from './pages/TransmissionHub';
 import { Armory } from './pages/Armory';
 import { Propose } from './pages/Propose';
+import { ToastContainer } from './components/ui/ToastContainer';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
               <Route path="/propose" element={<Propose />} />
             </Routes>
           </AnimatePresence>
+          <ToastContainer />
         </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>

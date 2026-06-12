@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
-import { useAddress, useSigner } from '@thirdweb-dev/react';
+import { useAddress, useSDK } from '@thirdweb-dev/react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 
 export function MusterRoll() {
-  const [rejectError, setRejectError] = React.useState(false);
-    const { musterRollDraft, updateMusterRoll } = useAppStore();
+      const { musterRollDraft, updateMusterRoll, addToast } = useAppStore();
   const address = useAddress();
-  const signer = useSigner();
+  const sdk = useSDK();
 
   useEffect(() => {
     if (address && musterRollDraft.walletAddress !== address) {
@@ -30,22 +29,21 @@ export function MusterRoll() {
       skills: DOMPurify.sanitize(musterRollDraft.skills),
       walletAddress: DOMPurify.sanitize(musterRollDraft.walletAddress)
     };
-    console.log('Sanitized Data Ready for Sync:', sanitizedData);
+    // Removed console.log for production
 
     try {
-      if (signer) {
-        await signer.signMessage("Authorize APF Entry for: " + sanitizedData.alias);
+      if (sdk) {
+        await sdk.wallet.sign("Authorize Sovereign Entry to American Pirate Federation.");
       }
-      // Simulate Firestore Backend Sync to /artifacts/apf/users/
-      await new Promise(resolve => setTimeout(resolve, 500));
       updateMusterRoll({ status: 'committed' });
+      addToast('[ IDENTITY CRYPTOGRAPHICALLY VERIFIED ]', 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
         updateMusterRoll({ status: 'idle' });
-        setRejectError(true);
-        setTimeout(() => setRejectError(false), 5000);
+        addToast('[ SIGNATURE REJECTED - CLEARANCE DENIED ]', 'error');
       } else {
         updateMusterRoll({ status: 'error' });
+        addToast('[ SIGNATURE FAILED ]', 'error');
       }
     }
   };
@@ -151,24 +149,12 @@ export function MusterRoll() {
             }`}
           >
             <SafeIcon name="UploadCloud" />
-            {address ? '[ SIGN PAYLOAD & AUTHORIZE ENTRY ]' : 'Authorize Entry Protocol'}
+            {address ? (musterRollDraft.status === 'queued' ? '[ AWAITING WALLET SIGNATURE... ]' : '[ SIGN PAYLOAD & AUTHORIZE ENTRY ]') : 'Authorize Entry Protocol'}
           </button>
 
-          {musterRollDraft.status === 'queued' && (
-             <div className="text-apf-purple font-vt323 text-center animate-pulse">
-                STATUS: SYNCING_TO_LEDGER...
-             </div>
-          )}
-          {musterRollDraft.status === 'committed' && (
-             <div className="text-green-500 font-vt323 text-center">
-                STATUS: AUTHORIZATION_DATA_COMMITTED_TO_SOVEREIGN_LEDGER
-             </div>
-          )}
-          {rejectError && (
-             <div className="text-red-500 font-vt323 text-center border border-white/5 bg-black/60 backdrop-blur-2xl shadow-2xl p-4">
-                [ ENCRYPTION SIGNATURE REJECTED BY USER ]
-             </div>
-          )}
+
+
+
         </form>
       </div>
     </div>

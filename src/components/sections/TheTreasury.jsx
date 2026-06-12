@@ -6,7 +6,7 @@ import { GasWarningCard } from '../web3/GasWarningCard';
 import { VaultDeployed } from '../web3/VaultDeployed';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
-import { useBalance, useNetworkMismatch, useSwitchChain, useAddress, useWallet } from '@thirdweb-dev/react';
+import { useBalance, useNetworkMismatch, useSwitchChain, useAddress, useSigner } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
 import { logTreasuryDeployment } from '../../lib/api/telemetry';
@@ -43,12 +43,12 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
+  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast } = useAppStore();
   const address = useAddress();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
   const isMismatched = useNetworkMismatch();
   const switchChain = useSwitchChain();
-  const personalWallet = useWallet();
+  const signer = useSigner();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showGasWarning, setShowGasWarning] = useState(false);
@@ -71,16 +71,18 @@ export function TheTreasury() {
     setTreasuryDeploymentStatus('deploying');
 
     try {
-      const mockAddress = await initializeSafeTreasury(address, personalWallet);
+      const mockAddress = await initializeSafeTreasury(address, signer);
       setDeployedVaultAddress(mockAddress);
       setTreasuryDeploymentStatus('success');
       logTreasuryDeployment(mockAddress, address);
     } catch (e) {
       if (e.code === 4001 || (e.message && e.message.toLowerCase().includes('user rejected'))) {
         setTreasuryError('[ ENCRYPTION SIGNATURE REJECTED BY USER ]');
+        addToast('[ ENCRYPTION SIGNATURE REJECTED BY USER ]', 'error');
         setTreasuryDeploymentStatus('idle');
       } else {
         setTreasuryError(e.message || 'TRANSACTION REJECTED');
+        addToast('[ DEPLOYMENT FAILED: ' + (e.message || 'TRANSACTION REJECTED') + ' ]', 'error');
         setTreasuryDeploymentStatus('error');
       }
     }
