@@ -27,7 +27,7 @@ export const useAppStore = create(
       treasuryDeploymentStatus: 'idle',
 
       addToast: (message, type = 'info') => {
-        const id = Date.now() + Math.random().toString(36).substring(2, 9);
+        const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
         useAppStore.getState()._scheduleToastRemoval(id);
         return set((state) => ({
           toasts: [...state.toasts, { id, message, type }]
@@ -47,8 +47,12 @@ export const useAppStore = create(
 
       updateMusterRoll: (data) =>
         set((state) => {
+          const processedData = { ...data };
+          if (processedData.walletAddress) {
+            processedData.walletAddress = processedData.walletAddress.toLowerCase();
+          }
           const newState = {
-            musterRollDraft: { ...state.musterRollDraft, ...data }
+            musterRollDraft: { ...state.musterRollDraft, ...processedData }
           };
 
           let newRole = state.userRole;

@@ -32,3 +32,37 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
     // Critical uplink error is handled silently in background
   }
 };
+
+export const logSovereignEntry = async (walletAddress, alias, signature) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Phase32',
+        event_type: 'identity.sovereign.ingress',
+        entry_timestamp: new Date().toISOString(),
+        network: "Arbitrum One"
+      },
+      telemetry: {
+        wallet_address: walletAddress,
+        alias: alias,
+        signature: signature,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    // Asynchronous mock uplink
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(() => {
+      console.log('[ SOVEREIGN IDENTITY UPLINK ESTABLISHED ]');
+    }).catch(() => {
+      // resolve silently
+    });
+
+  } catch (error) {
+    // Critical uplink error is handled silently in background
+  }
+};

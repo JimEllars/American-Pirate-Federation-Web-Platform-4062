@@ -3,6 +3,7 @@ import { useAddress, useSDK } from '@thirdweb-dev/react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
+import { logSovereignEntry } from '../../lib/api/telemetry';
 
 export function MusterRoll() {
       const { musterRollDraft, updateMusterRoll, addToast } = useAppStore();
@@ -32,11 +33,17 @@ export function MusterRoll() {
     // Removed console.log for production
 
     try {
+      let signature = null;
       if (sdk) {
-        await sdk.wallet.sign("Authorize Sovereign Entry to American Pirate Federation.");
+        signature = await sdk.wallet.sign("Authorize Sovereign Entry to American Pirate Federation.");
       }
+
+      if (signature) {
+          logSovereignEntry(address, sanitizedData.alias, signature);
+      }
+
       updateMusterRoll({ status: 'committed' });
-      addToast('[ IDENTITY CRYPTOGRAPHICALLY VERIFIED ]', 'success');
+      addToast('[ IDENTITY CRYPTOGRAPHICALLY VERIFIED & LOGGED ]', 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
         updateMusterRoll({ status: 'idle' });

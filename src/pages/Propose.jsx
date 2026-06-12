@@ -4,12 +4,15 @@ import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
+import { useAddress, useSDK } from '@thirdweb-dev/react';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
 
 export function Propose() {
-  const { userRole, musterRollDraft, addProposedAmendment, addReputation } = useAppStore();
+  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast } = useAppStore();
   const navigate = useNavigate();
+  const address = useAddress();
+  const sdk = useSDK();
 
   const [formState, setFormState] = useState({
     title: '',
@@ -20,9 +23,9 @@ export function Propose() {
 
   const isAuthorized = ['Navigator', 'Guild Master'].includes(userRole);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!isAuthorized || submitting) return;
+    if (!isAuthorized || submitting || !address) return;
 
     setSubmitting(true);
 
@@ -33,11 +36,22 @@ export function Propose() {
       sponsor: DOMPurify.sanitize(musterRollDraft.alias || 'Unknown Sovereign')
     };
 
-    setTimeout(() => {
+    try {
+        if (sdk) {
+            await sdk.wallet.sign("Authorize APF Protocol Revision: " + sanitizedData.title);
+        }
         addProposedAmendment(sanitizedData);
         addReputation(25, "Protocol Revision Proposed");
+        addToast('[ PROTOCOL REVISION SIGNED & BROADCAST ]', 'success');
         navigate('/policies');
-    }, 1000);
+    } catch (err) {
+        setSubmitting(false);
+        if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+            addToast('[ SIGNATURE REJECTED - PROPOSAL ABORTED ]', 'error');
+        } else {
+            addToast('[ SIGNATURE FAILED - PROPOSAL ABORTED ]', 'error');
+        }
+    }
   };
 
   if (!isAuthorized) {
@@ -137,7 +151,7 @@ export function Propose() {
                           disabled={submitting}
                           className="bg-apf-purple hover:bg-white hover:text-apf-black text-white font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                          {submitting ? 'Encrypting & Broadcasting...' : 'Submit to Queue'}
+                          {submitting ? '[ AWAITING SIGNATURE... ]' : 'Submit to Queue'}
                       </button>
                   </div>
               </form>
