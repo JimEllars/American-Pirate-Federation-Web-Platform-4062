@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
 
 export function Propose() {
-  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast } = useAppStore();
+  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning } = useAppStore();
   const navigate = useNavigate();
   const address = useAddress();
   const sdk = useSDK();
@@ -38,7 +38,12 @@ export function Propose() {
 
     try {
         if (sdk) {
-            await sdk.wallet.sign("Authorize APF Protocol Revision: " + sanitizedData.title);
+            setIsSigning(true);
+            try {
+                await sdk.wallet.sign("Authorize APF Protocol Revision: " + sanitizedData.title);
+            } finally {
+                setIsSigning(false);
+            }
         }
         addProposedAmendment(sanitizedData);
         addReputation(25, "Protocol Revision Proposed");
@@ -148,8 +153,10 @@ export function Propose() {
                       </div>
                       <button
                           type="submit"
-                          disabled={submitting}
-                          className="bg-apf-purple hover:bg-white hover:text-apf-black text-white font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={submitting || isSigning}
+                          className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
+                          }`}
                       >
                           {submitting ? '[ AWAITING SIGNATURE... ]' : 'Submit to Queue'}
                       </button>

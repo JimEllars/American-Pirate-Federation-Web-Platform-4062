@@ -4,6 +4,8 @@ import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
+import { useSDK, useAddress } from '@thirdweb-dev/react';
+import { logRequisition } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
 
 const PROVISIONS = [
@@ -34,7 +36,9 @@ const PROVISIONS = [
 ];
 
 export function Armory() {
-  const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory } = useAppStore();
+  const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
+  const sdk = useSDK();
+  const address = useAddress();
   const [procuring, setProcuring] = useState(null);
   const [showRepLog, setShowRepLog] = useState(false);
 
@@ -50,19 +54,32 @@ export function Armory() {
     return false;
   };
 
-  const handleRequisition = (item) => {
-    // Re-verify clearance before spending
-    if (!isEligible(item.requirement)) {
-        return;
-    }
+  const handleRequisition = async (item) => {
+    if (!isEligible(item.requirement) || isSigning) return;
 
     if (reputationPoints >= item.price) {
       setProcuring(item.id);
-      setTimeout(() => {
+      setIsSigning(true);
+      try {
+        if (sdk) {
+          await sdk.wallet.sign("Authorize APF Requisition Transfer for: " + item.name);
+        }
         spendReputation(item.price);
         addRequisition(item);
+        if (address) {
+          logRequisition(address, item.id, item.price);
+        }
+        addToast('[ REQUISITION TRANSFER AUTHORIZED ]', 'success');
+      } catch (err) {
+        if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+          addToast('[ SIGNATURE REJECTED - REQUISITION DENIED ]', 'error');
+        } else {
+          addToast('[ SIGNATURE FAILED - REQUISITION DENIED ]', 'error');
+        }
+      } finally {
+        setIsSigning(false);
         setProcuring(null);
-      }, 1000);
+      }
     }
   };
 
@@ -166,9 +183,10 @@ export function Armory() {
                            {item.price} PTS
                          </span>
                          <button
-                           disabled={!eligible || procuring === item.id || !canAfford}
+                           disabled={!eligible || procuring === item.id || !canAfford || isSigning}
                            onClick={() => handleRequisition(item)}
                            className={`px-4 py-2 font-vt323 text-xs uppercase tracking-widest transition-all border ${
+                             isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
                              !eligible || !canAfford
                              ? 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
                              : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white'

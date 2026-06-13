@@ -43,7 +43,7 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast } = useAppStore();
+  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning } = useAppStore();
   const address = useAddress();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
   const isMismatched = useNetworkMismatch();
@@ -71,11 +71,14 @@ export function TheTreasury() {
     setTreasuryDeploymentStatus('deploying');
 
     try {
+      setIsSigning(true);
       const mockAddress = await initializeSafeTreasury(address, signer);
       setDeployedVaultAddress(mockAddress);
       setTreasuryDeploymentStatus('success');
       logTreasuryDeployment(mockAddress, address);
+      setIsSigning(false);
     } catch (e) {
+      setIsSigning(false);
       if (e.code === 4001 || (e.message && e.message.toLowerCase().includes('user rejected'))) {
         setTreasuryError('[ ENCRYPTION SIGNATURE REJECTED BY USER ]');
         addToast('[ ENCRYPTION SIGNATURE REJECTED BY USER ]', 'error');
@@ -357,8 +360,13 @@ export function TheTreasury() {
                    )}
                    <button
                      onClick={handleDeployVault}
-                     disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success'}
-                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' : treasuryDeploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' : 'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'}`}
+                     disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success' || isSigning}
+                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${
+                       isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
+                       treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' :
+                       treasuryDeploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' :
+                       'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'
+                     }`}
                    >
                      {isBalanceLoading ? '[ SYNCING ARBITRUM NODE... ]' : treasuryDeploymentStatus === 'deploying' ? 'Deploying...' : treasuryDeploymentStatus === 'success' ? 'Deployed' : 'Initialize Treasury'}
                    </button>
