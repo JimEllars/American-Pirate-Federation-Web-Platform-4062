@@ -25,6 +25,7 @@ export const useAppStore = create(
       deployedVaultAddress: '',
       deploymentStatus: 'idle', // idle, pending, success, failed
       treasuryDeploymentStatus: 'idle',
+      isSigning: false,
 
       addToast: (message, type = 'info') => {
         const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
@@ -205,6 +206,7 @@ export const useAppStore = create(
       setDeployedVaultAddress: (address) => set({ deployedVaultAddress: address }),
       setDeploymentStatus: (status) => set({ deploymentStatus: status }),
       setTreasuryDeploymentStatus: (status) => set({ treasuryDeploymentStatus: status }),
+      setIsSigning: (status) => set({ isSigning: status }),
 
       addRequisition: (item) =>
         set((state) => ({

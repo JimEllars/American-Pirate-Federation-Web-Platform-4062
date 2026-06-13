@@ -6,7 +6,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { logSovereignEntry } from '../../lib/api/telemetry';
 
 export function MusterRoll() {
-      const { musterRollDraft, updateMusterRoll, addToast } = useAppStore();
+      const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
   const address = useAddress();
   const sdk = useSDK();
 
@@ -35,7 +35,12 @@ export function MusterRoll() {
     try {
       let signature = null;
       if (sdk) {
-        signature = await sdk.wallet.sign("Authorize Sovereign Entry to American Pirate Federation.");
+        setIsSigning(true);
+        try {
+          signature = await sdk.wallet.sign("Authorize Sovereign Entry to American Pirate Federation.");
+        } finally {
+          setIsSigning(false);
+        }
       }
 
       if (signature) {
@@ -148,8 +153,9 @@ export function MusterRoll() {
 
           <button
             type="submit"
-            disabled={!address}
+            disabled={!address || isSigning}
             className={`w-full font-cinzel font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl ${
+              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
               address
                 ? 'bg-apf-purple hover:bg-white hover:text-apf-black text-white shadow-[0_0_20px_rgba(148,0,255,0.3)]'
                 : 'bg-gray-800 text-gray-500 cursor-not-allowed'

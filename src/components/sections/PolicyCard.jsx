@@ -3,6 +3,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
+import { useSDK } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
 
 const { FiChevronRight, FiShield, FiUsers, FiClock, FiActivity, FiMessageSquare } = FiIcons;
@@ -12,7 +13,8 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
 
-  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment } = useAppStore();
+  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast } = useAppStore();
+  const sdk = useSDK();
 
   const comments = policyComments[code] || [
     { author: "Navigator Vance", role: "Navigator", text: "Alignment verified. Ready for ratification.", date: "2024-05-01" },
@@ -25,6 +27,26 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
 
   const sanitizedTitle = DOMPurify.sanitize(title);
   const sanitizedSummary = DOMPurify.sanitize(summary);
+
+  const handleAuthorize = async () => {
+    if (!canSignal || isSigning) return;
+    setIsSigning(true);
+    try {
+      if (sdk) {
+        await sdk.wallet.sign("Authorize APF Directive Consensus: " + code);
+      }
+      signalPolicy(code);
+      addToast('[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]', 'success');
+    } catch (err) {
+      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        addToast('[ SIGNATURE REJECTED - CONSENSUS DENIED ]', 'error');
+      } else {
+        addToast('[ SIGNATURE FAILED - CONSENSUS DENIED ]', 'error');
+      }
+    } finally {
+      setIsSigning(false);
+    }
+  };
 
   const handleAddComment = () => {
     if (newComment.trim() && canComment) {
@@ -184,8 +206,10 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
 
         {canSignal && (
           <button
-            onClick={() => signalPolicy(code)}
+            onClick={handleAuthorize}
+            disabled={isSigning}
             className={`relative overflow-hidden px-4 py-2 text-xs font-vt323 uppercase tracking-widest transition-all border ${
+              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
               hasSignaled
                 ? 'bg-apf-purple/20 border-apf-emerald text-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.3)]'
                 : 'border-gray-800 text-gray-500 hover:border-apf-purple/40 hover:text-apf-purple'
