@@ -1,12 +1,16 @@
 import React from 'react';
 import * as FiIcons from 'react-icons/fi';
+import { useSDK, useAddress } from '@thirdweb-dev/react';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
+import { logEventSignal } from '../../lib/api/telemetry';
 
 const { FiMapPin, FiUsers, FiClock } = FiIcons;
 
 export function FleetMuster({ event }) {
-  const { musterRollDraft, registerSignal } = useAppStore();
+  const { musterRollDraft, registerSignal, isSigning, setIsSigning, addToast } = useAppStore();
+  const sdk = useSDK();
+  const address = useAddress();
   const isCommitted = musterRollDraft.status === 'committed';
   const hasRSVPd = musterRollDraft.rsvps?.includes(event.title);
 
@@ -59,15 +63,39 @@ export function FleetMuster({ event }) {
 
           <div className="md:w-1/4 flex items-center justify-end">
             <button
-              onClick={() => isCommitted && !hasRSVPd && registerSignal(event.title)}
+              onClick={async () => {
+                if (!isCommitted || hasRSVPd || isSigning) return;
+
+                try {
+                  setIsSigning(true);
+                  if (!sdk || !address) {
+                    addToast("[ ENCRYPTION FAILED: WALLET DISCONNECTED ]", "error");
+                    return;
+                  }
+
+                  const signature = await sdk.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
+                  registerSignal(event.title);
+                  logEventSignal(address, event.title, signature);
+                  addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");
+                } catch (error) {
+                  if (error.code === 4001 || error.message.includes('user rejected')) {
+                     addToast("[ SIGNAL AUTHORIZATION REJECTED ]", "error");
+                  } else {
+                     addToast("[ SIGNAL AUTHORIZATION FAILED ]", "error");
+                  }
+                } finally {
+                  setIsSigning(false);
+                }
+              }}
+              disabled={isSigning}
               className={`px-6 py-2 border font-mono text-xs uppercase transition-all tracking-widest ${
                 hasRSVPd
                   ? 'bg-apf-purple text-white border-apf-purple cursor-default'
                   : isCommitted
-                    ? 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white'
+                    ? (isSigning ? 'border-gray-500 text-gray-500 cursor-wait bg-black/50' : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white')
                     : 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
               }`}>
-              {hasRSVPd ? 'Signal Registered' : (isCommitted ? 'Register Signal' : 'Clearance Reqd')}
+              {isSigning ? 'Encrypting Signal...' : (hasRSVPd ? 'Signal Registered' : (isCommitted ? 'Register Signal' : 'Clearance Reqd'))}
             </button>
           </div>
       </div>

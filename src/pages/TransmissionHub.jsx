@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
@@ -12,13 +12,35 @@ export function TransmissionHub() {
   const [activeEpisode, setActiveEpisode] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGlitching, setIsGlitching] = useState(false);
+  const audioRef = useRef(null);
+  const glitchTimeoutRef = useRef(null);
+
+
+
+  // Audio Garbage Collection
+  useEffect(() => {
+    return () => {
+      // Cleanup any active audio object
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current = null;
+      }
+      setIsPlaying(false);
+
+      // Clear glitch timeouts
+      if (glitchTimeoutRef.current) {
+        clearTimeout(glitchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const togglePlay = (episode) => {
     if (activeEpisode?.id === episode.id) {
       setIsPlaying(!isPlaying);
     } else {
       setIsGlitching(true);
-      setTimeout(() => {
+      glitchTimeoutRef.current = setTimeout(() => {
         setActiveEpisode(episode);
         setIsPlaying(true);
         setIsGlitching(false);

@@ -101,3 +101,37 @@ export const logRequisition = async (walletAddress, itemID, cost) => {
     // Critical uplink error is handled silently in background
   }
 };
+
+export const logEventSignal = async (walletAddress, eventTitle, signature) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Phase34',
+        event_type: 'event.muster.signal',
+        entry_timestamp: new Date().toISOString(),
+        network: "Arbitrum One"
+      },
+      telemetry: {
+        wallet_address: walletAddress,
+        event_title: eventTitle,
+        signature: signature,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    // Asynchronous mock uplink
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(() => {
+      console.log('[ EVENT SIGNAL TELEMETRY UPLINK ESTABLISHED ]');
+    }).catch(() => {
+      // resolve silently
+    });
+
+  } catch (error) {
+    // Critical uplink error is handled silently in background
+  }
+};
