@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../../hooks/usePirateIntel';
+import { useAXiMHydration } from '../../hooks/useAXiMHydration';
 import { GasWarningCard } from '../web3/GasWarningCard';
 import { VaultDeployed } from '../web3/VaultDeployed';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
@@ -95,26 +96,38 @@ export function TheTreasury() {
   const { data: guides, loading, error } = usePirateIntel('posts?categories=3'); // Mocking 'guides' category
 
   // Mock Ledger Data
+  const { fetchLiveLedger, loading: ledgerLoading } = useAXiMHydration();
   const [ledger, setLedger] = useState([
       { txId: "0x3e4...b92", date: new Date(Date.now() - 4800000).toISOString().split('T')[0], amount: "50,000 USDC", target: "Labor Union Support Node", alignment: "Article XV", status: "Settled" },
       { txId: "0x1a2...c34", date: new Date(Date.now() - 7200000).toISOString().split('T')[0], amount: "25,000 USDC", target: "Education Grants Pool", alignment: "Article XVI", status: "Settled" },
-]);
+  ]);
 
   if (triggerError) {
     throw new Error("Simulated APF System Integrity Failure for Testing");
   }
 
   useEffect(() => {
-    // Simulate fetching ledger data
-    setTimeout(() => {
-       setLedger([
-         { txId: '0x8f...3a2b', date: '2024-05-10', amount: '50,000 APF', target: 'Local Community Garden Seed Fund', alignment: 'Article VI Alignment', status: 'Settled' },
-         { txId: '0x2c...9e1f', date: '2024-05-08', amount: '12,500 APF', target: 'Open-Source Mesh Router Blueprint', alignment: 'Article V Alignment', status: 'Settled' },
-         { txId: '0x4a...7d4c', date: '2024-05-05', amount: '8,000 APF', target: 'Legal Defense Fund (Node Operator 77)', alignment: 'Article IX Alignment', status: 'Pending' },
-         { txId: '0x1b...5c8a', date: '2024-05-01', amount: '25,000 APF', target: 'Decentralized Clinic Supply Run', alignment: 'Article III Alignment', status: 'Settled' },
-       ]);
-    }, 1500);
-  }, []);
+    let isMounted = true;
+
+    const loadLedger = async () => {
+      try {
+        const data = await fetchLiveLedger();
+        if (isMounted) {
+          setLedger(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          addToast('[ TELEMETRY INGRESS FAILED - DISPLAYING CACHED LEDGER ]', 'warning');
+        }
+      }
+    };
+
+    loadLedger();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchLiveLedger, addToast]);
 
   return (
     <>
@@ -319,10 +332,10 @@ export function TheTreasury() {
                         </tr>
                       </thead>
                       <tbody className="text-sm relative min-h-[200px]">
-                        {ledger.length === 0 ? (
+                        {ledgerLoading ? (
                            <tr>
                              <td colSpan="6" className="text-center py-12 text-apf-purple animate-pulse">
-                               SYNCING LEDGER FROM DECENTRALIZED NODES...
+                               [ SYNCING DECENTRALIZED LEDGER... ]
                              </td>
                            </tr>
                         ) : (

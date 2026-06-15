@@ -7,6 +7,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store/useAppStore';
+import { useAXiMHydration } from '../hooks/useAXiMHydration';
 
 const { FiBookOpen } = FiIcons;
 
@@ -99,7 +100,29 @@ const POLICIES = [
 
 export function Policies() {
   const navigate = useNavigate();
-  const { proposedAmendments } = useAppStore();
+  const { proposedAmendments, addToast } = useAppStore();
+  const { fetchActiveProposals } = useAXiMHydration();
+  const [activeDrafts, setActiveDrafts] = React.useState(proposedAmendments || []);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const loadProposals = async () => {
+      try {
+        const proposals = await fetchActiveProposals();
+        if (isMounted) {
+          if (proposals && proposals.length > 0) {
+            setActiveDrafts(proposals);
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          addToast('[ TELEMETRY INGRESS FAILED - DISPLAYING LOCAL DRAFTS ]', 'warning');
+        }
+      }
+    };
+    loadProposals();
+    return () => { isMounted = false; };
+  }, [fetchActiveProposals, addToast]);
 
   return (
     <Layout>
@@ -132,8 +155,8 @@ export function Policies() {
               Unverified members can view upcoming motions before they reach the active voting floor. Upgrade clearance to Signal Consensus.
             </p>
             <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
-                {proposedAmendments && proposedAmendments.length > 0 ? (
-                    proposedAmendments.map((draft, idx) => (
+                {activeDrafts && activeDrafts.length > 0 ? (
+                    activeDrafts.map((draft, idx) => (
                         <div key={idx} className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="text-gray-400 font-vt323 text-xs uppercase tracking-widest border border-gray-800 px-2 py-1 bg-black">{draft.id}</div>

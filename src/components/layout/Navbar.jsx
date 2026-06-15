@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
-import { useAddress, useConnect, useDisconnect, metamaskWallet } from '@thirdweb-dev/react';
+import { useAddress, useConnect, useDisconnect, metamaskWallet, useConnectionStatus } from '@thirdweb-dev/react';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,6 +11,7 @@ export function Navbar() {
   const address = useAddress();
   const connect = useConnect();
   const disconnect = useDisconnect();
+  const connectionStatus = useConnectionStatus();
 
   const handleConnect = async () => {
     try {
@@ -77,7 +78,14 @@ export function Navbar() {
                   </a>
               )}
 
-              {!address ? (
+              {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
+                <button
+                  disabled
+                  className="bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-4 py-2 rounded font-vt323 tracking-widest text-lg uppercase cursor-not-allowed animate-pulse"
+                >
+                  [ INITIALIZING ENCRYPTION... ]
+                </button>
+              ) : !address ? (
                 <button
                   onClick={handleConnect}
                   className="bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
@@ -154,7 +162,14 @@ export function Navbar() {
                   </a>
               )}
 
-              {!address ? (
+              {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
+                <button
+                  disabled
+                  className="block mt-4 w-full text-center bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-4 py-2 rounded font-vt323 tracking-widest text-lg uppercase cursor-not-allowed animate-pulse"
+                >
+                  [ INITIALIZING ENCRYPTION... ]
+                </button>
+              ) : !address ? (
                 <button
                   onClick={() => { handleConnect(); setIsOpen(false); }}
                   className="block mt-4 w-full text-center bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
