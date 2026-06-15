@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAddress, useSDK } from '@thirdweb-dev/react';
+import { useAddress, useSDK, useConnectionStatus } from '@thirdweb-dev/react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
@@ -9,6 +9,7 @@ export function MusterRoll() {
       const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
   const address = useAddress();
   const sdk = useSDK();
+  const connectionStatus = useConnectionStatus();
 
   useEffect(() => {
     if (address && musterRollDraft.walletAddress !== address) {
@@ -77,7 +78,13 @@ export function MusterRoll() {
         <form onSubmit={handleSubmit} className="space-y-8">
 
           <div className="space-y-4 mb-8 relative">
-            {!address && (
+            {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
+              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+                <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase animate-pulse">
+                  [ INITIALIZING ENCRYPTION... ]
+                </p>
+              </div>
+            ) : !address && (
               <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
                 <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase">
                   [ ENCRYPTION KEY REQUIRED. CONNECT WALLET TO AUTHORIZE CONNECTION SEQUENCE. ]
