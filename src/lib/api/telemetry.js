@@ -2,9 +2,39 @@ import { useAppStore } from '../../store/useAppStore';
 
 const QUEUE_KEY = 'apf_telemetry_queue';
 
-const queuePayload = (url, payload) => {
+export const generateChecksum = async (payloadString) => {
+  let checksum = '';
+  if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const encoder = new TextEncoder();
+      const data = encoder.encode(payloadString);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      checksum = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  } else {
+      let hash = 0;
+      for (let i = 0; i < payloadString.length; i++) {
+        const char = payloadString.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      checksum = hash.toString(16);
+  }
+  return checksum;
+};
+
+const queuePayload = async (url, payload) => {
+  const payloadString = JSON.stringify(payload);
+  const checksum = await generateChecksum(payloadString);
+
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-  queue.push({ id: crypto.randomUUID(), url, payload });
+
+  queue.push({
+    id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+    url,
+    payload,
+    stagedAt: Date.now(),
+    integrityHash: checksum
+  });
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
 };

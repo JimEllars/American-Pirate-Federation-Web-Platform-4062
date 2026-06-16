@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
@@ -20,8 +20,39 @@ export function Propose() {
     alignment: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const isLoaded = useRef(false);
 
   const isAuthorized = ['Navigator', 'Guild Master'].includes(userRole);
+
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('apf_proposal_draft');
+    if (savedDraft) {
+      try {
+        const parsedDraft = JSON.parse(savedDraft);
+        setFormState(parsedDraft);
+        addToast('[ SYSTEM RECOVERY: ACTIVE PROPOSAL DRAFT RESTORED ]', 'success');
+      } catch (e) {
+        localStorage.removeItem('apf_proposal_draft');
+      }
+    }
+    isLoaded.current = true;
+  }, [addToast]); // Only run once on mount
+
+  useEffect(() => {
+    if (!isLoaded.current) return;
+
+    // Only save if there's actual content to prevent overwriting with empty on initial render
+    if (formState.title || formState.summary || formState.alignment) {
+        const timeoutId = setTimeout(() => {
+             localStorage.setItem('apf_proposal_draft', JSON.stringify(formState));
+        }, 500); // Debounce saves
+        return () => clearTimeout(timeoutId);
+    } else if (formState.title === '' && formState.summary === '' && formState.alignment === '') {
+         // Clear if everything was deleted manually
+         localStorage.removeItem('apf_proposal_draft');
+    }
+  }, [formState]);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -48,6 +79,7 @@ export function Propose() {
         addProposedAmendment(sanitizedData);
         addReputation(25, "Protocol Revision Proposed");
         addToast('[ PROTOCOL REVISION SIGNED & BROADCAST ]', 'success');
+        localStorage.removeItem('apf_proposal_draft');
         navigate('/policies');
     } catch (err) {
         setSubmitting(false);

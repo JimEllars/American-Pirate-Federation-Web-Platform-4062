@@ -6,6 +6,7 @@ import { useState, useCallback } from 'react';
  * Scaffolds the inbound data hydration bridge from the AXiM Core.
  */
 
+import { generateChecksum } from '../lib/api/telemetry';
 import { useAppStore } from '../store/useAppStore';
 import { useEffect } from 'react';
 
@@ -36,6 +37,25 @@ export const useAXiMHydration = () => {
       let remainingQueue = [];
 
       for (const item of queue) {
+        // 1. Verify Payload Integrity
+        if (item.integrityHash) {
+           const payloadString = JSON.stringify(item.payload);
+           const expectedChecksum = await generateChecksum(payloadString);
+           if (item.integrityHash !== expectedChecksum) {
+               console.error('[ SECURITY WARNING: CORRUPTED OFFLINE PAYLOAD PURGED ]');
+               continue; // Drop the corrupted payload
+           }
+        }
+
+        // 2. Enforce 2-hour TTL
+        if (item.stagedAt) {
+           const age = Date.now() - item.stagedAt;
+           if (age > 7200000) { // 2 hours in ms
+               useAppStore.getState().addToast('[ TRANSACTION EXPIRED: SIGNATURE AGE EXCEEDED 2-HOUR BOUNDARY ]', 'error');
+               continue; // Drop the expired payload
+           }
+        }
+
         try {
           const res = await fetch(item.url, {
             method: 'POST',
