@@ -5,9 +5,70 @@ import { useState, useCallback } from 'react';
  *
  * Scaffolds the inbound data hydration bridge from the AXiM Core.
  */
+
+import { useAppStore } from '../store/useAppStore';
+import { useEffect } from 'react';
+
+const QUEUE_KEY = 'apf_telemetry_queue';
+
 export const useAXiMHydration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const processQueue = async () => {
+      if (!navigator.onLine) return;
+
+      const queueStr = localStorage.getItem(QUEUE_KEY);
+      if (!queueStr) return;
+
+      let queue = [];
+      try {
+        queue = JSON.parse(queueStr);
+      } catch (e) {
+        localStorage.removeItem(QUEUE_KEY);
+        return;
+      }
+
+      if (queue.length === 0) return;
+
+      let allFlushed = true;
+      let remainingQueue = [];
+
+      for (const item of queue) {
+        try {
+          const res = await fetch(item.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item.payload)
+          });
+
+          if (!res.ok) {
+            allFlushed = false;
+            remainingQueue.push(item);
+          }
+        } catch (e) {
+          allFlushed = false;
+          remainingQueue.push(item);
+        }
+      }
+
+      if (allFlushed) {
+        localStorage.removeItem(QUEUE_KEY);
+        useAppStore.getState().addToast('[ SYSTEM STATUS: ALL BUFFERED SIGNALS FLUSHED ]', 'success');
+      } else {
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(remainingQueue));
+      }
+    };
+
+    processQueue();
+
+    window.addEventListener('online', processQueue);
+    return () => {
+      window.removeEventListener('online', processQueue);
+    };
+  }, []);
+
 
   const fetchLiveLedger = useCallback(async () => {
     setLoading(true);
