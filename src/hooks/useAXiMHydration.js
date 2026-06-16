@@ -55,7 +55,7 @@ export const useAXiMHydration = () => {
 
       if (allFlushed) {
         localStorage.removeItem(QUEUE_KEY);
-        useAppStore.getState().addToast('[ SYSTEM STATUS: ALL BUFFERED SIGNALS FLUSHED ]', 'success');
+        useAppStore.getState().addToast('[ SYSTEM STATUS: STAGED TELEMETRY SIGNALS FLUSHED TO CORE ]', 'success');
       } else {
         localStorage.setItem(QUEUE_KEY, JSON.stringify(remainingQueue));
       }

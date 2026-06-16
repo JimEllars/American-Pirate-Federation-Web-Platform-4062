@@ -45,7 +45,7 @@ export function Armory() {
   const isEligible = (req) => {
     if (req === 'Unverified') return true;
     const isCommitted = musterRollDraft.status === 'committed';
-    const hasWallet = !!musterRollDraft.walletAddress;
+    const hasWallet = musterRollDraft.walletAddress?.toLowerCase() === address?.toLowerCase();
 
     if (req === 'Deckhand' && hasWallet && ['Deckhand', 'Navigator', 'Guild Master'].includes(userRole)) return true;
     if (req === 'Navigator' && hasWallet && isCommitted && ['Navigator', 'Guild Master'].includes(userRole)) return true;
