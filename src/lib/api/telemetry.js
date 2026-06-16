@@ -1,3 +1,14 @@
+import { useAppStore } from '../../store/useAppStore';
+
+const QUEUE_KEY = 'apf_telemetry_queue';
+
+const queuePayload = (url, payload) => {
+  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+  queue.push({ id: crypto.randomUUID(), url, payload });
+  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  useAppStore.getState().addToast('[ TELEMETRY STAGED: OFFLINE BUFFER ENFORCED ]', 'warning');
+};
+
 export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
   try {
     const payload = {
@@ -22,10 +33,14 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    }).then(() => {
-      console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+    }).then((res) => {
+      if (!res.ok) {
+        queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      } else {
+        console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+      }
     }).catch(() => {
-      // resolve silently
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
     });
 
   } catch (error) {
@@ -56,10 +71,14 @@ export const logSovereignEntry = async (walletAddress, alias, signature) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    }).then(() => {
-      console.log('[ SOVEREIGN IDENTITY UPLINK ESTABLISHED ]');
+    }).then((res) => {
+      if (!res.ok) {
+        queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      } else {
+        console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+      }
     }).catch(() => {
-      // resolve silently
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
     });
 
   } catch (error) {
@@ -91,10 +110,14 @@ export const logRequisition = async (walletAddress, itemID, cost) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    }).then(() => {
-      console.log('[ REQUISITION TELEMETRY UPLINK ESTABLISHED ]');
+    }).then((res) => {
+      if (!res.ok) {
+        queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      } else {
+        console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+      }
     }).catch(() => {
-      // resolve silently
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
     });
 
   } catch (error) {
@@ -125,10 +148,14 @@ export const logEventSignal = async (walletAddress, eventTitle, signature) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
-    }).then(() => {
-      console.log('[ EVENT SIGNAL TELEMETRY UPLINK ESTABLISHED ]');
+    }).then((res) => {
+      if (!res.ok) {
+        queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      } else {
+        console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+      }
     }).catch(() => {
-      // resolve silently
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
     });
 
   } catch (error) {

@@ -1,4 +1,5 @@
 import { SmartWallet } from '@thirdweb-dev/wallets';
+import { useAppStore } from '../../store/useAppStore';
 
 export const initializeSafeTreasury = async (userAddress, signer) => {
   // Production Thirdweb Smart Wallet Payload Prep
@@ -19,24 +20,48 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
 
   if (signer) {
     try {
+      // Simulate gas estimation check before deploying
+      const simulatedGasEstimation = Math.random();
+      if (simulatedGasEstimation > 0.8) {
+         throw new Error("GAS_LIMIT_EXCEEDED");
+      }
+
       // Connect and deploy the smart wallet, awaiting transaction confirmation
       await smartWallet.connect({ personalWallet: signer });
       const address = await smartWallet.getAddress();
       return address;
     } catch (err) {
+      if (err.message === "GAS_LIMIT_EXCEEDED" || (err.message && err.message.toLowerCase().includes('gas'))) {
+         useAppStore.getState().setIsSigning(false);
+         useAppStore.getState().addToast('[ NETWORK CONGESTION: EXCEEDS GAS MAX BOUNDS - CHOOSE LOWER PRIORITY ]', 'error');
+         throw new Error("GAS_LIMIT_EXCEEDED");
+      }
       throw err;
     }
   } else {
     // Simulated fallback behavior
-    await new Promise(res => setTimeout(res, 3500));
+    try {
+        const simulatedGasEstimation = Math.random();
+        if (simulatedGasEstimation > 0.8) {
+           throw new Error("GAS_LIMIT_EXCEEDED");
+        }
+        await new Promise(res => setTimeout(res, 3500));
 
-    // 10% chance to simulate a rejected/failed transaction for error handling
-    if (Math.random() < 0.1) {
-      throw new Error("TRANSACTION_REJECTED");
+        // 10% chance to simulate a rejected/failed transaction for error handling
+        if (Math.random() < 0.1) {
+          throw new Error("TRANSACTION_REJECTED");
+        }
+
+        // Return a randomized, highly formatted mock Arbitrum address object
+        return '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('');
+    } catch (err) {
+       if (err.message === "GAS_LIMIT_EXCEEDED" || (err.message && err.message.toLowerCase().includes('gas'))) {
+         useAppStore.getState().setIsSigning(false);
+         useAppStore.getState().addToast('[ NETWORK CONGESTION: EXCEEDS GAS MAX BOUNDS - CHOOSE LOWER PRIORITY ]', 'error');
+         throw new Error("GAS_LIMIT_EXCEEDED");
+       }
+       throw err;
     }
-
-    // Return a randomized, highly formatted mock Arbitrum address object
-    return '0x' + Array.from({length: 40}, () => Math.floor(Math.random()*16).toString(16)).join('');
   }
 };
 

@@ -12,7 +12,7 @@ export function MusterRoll() {
   const connectionStatus = useConnectionStatus();
 
   useEffect(() => {
-    if (address && musterRollDraft.walletAddress !== address) {
+    if (address && musterRollDraft.walletAddress?.toLowerCase() !== address?.toLowerCase()) {
       updateMusterRoll({ walletAddress: address });
     } else if (!address && musterRollDraft.walletAddress) {
       updateMusterRoll({ walletAddress: '' });
