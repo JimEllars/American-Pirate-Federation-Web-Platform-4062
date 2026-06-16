@@ -6,7 +6,7 @@ const queuePayload = (url, payload) => {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
   queue.push({ id: crypto.randomUUID(), url, payload });
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  useAppStore.getState().addToast('[ TELEMETRY STAGED: OFFLINE BUFFER ENFORCED ]', 'warning');
+  useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
 };
 
 export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {

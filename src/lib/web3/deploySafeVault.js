@@ -33,7 +33,7 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
     } catch (err) {
       if (err.message === "GAS_LIMIT_EXCEEDED" || (err.message && err.message.toLowerCase().includes('gas'))) {
          useAppStore.getState().setIsSigning(false);
-         useAppStore.getState().addToast('[ NETWORK CONGESTION: EXCEEDS GAS MAX BOUNDS - CHOOSE LOWER PRIORITY ]', 'error');
+         useAppStore.getState().addToast('[ NETWORK CONGESTION: SPIKE DETECTED - RETRYING ENGAGEMENT ]', 'error');
          throw new Error("GAS_LIMIT_EXCEEDED");
       }
       throw err;
@@ -57,7 +57,7 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
     } catch (err) {
        if (err.message === "GAS_LIMIT_EXCEEDED" || (err.message && err.message.toLowerCase().includes('gas'))) {
          useAppStore.getState().setIsSigning(false);
-         useAppStore.getState().addToast('[ NETWORK CONGESTION: EXCEEDS GAS MAX BOUNDS - CHOOSE LOWER PRIORITY ]', 'error');
+         useAppStore.getState().addToast('[ NETWORK CONGESTION: SPIKE DETECTED - RETRYING ENGAGEMENT ]', 'error');
          throw new Error("GAS_LIMIT_EXCEEDED");
        }
        throw err;
