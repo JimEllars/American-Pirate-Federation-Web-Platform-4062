@@ -100,7 +100,7 @@ const POLICIES = [
 
 export function Policies() {
   const navigate = useNavigate();
-  const { proposedAmendments, addToast } = useAppStore();
+  const { proposedAmendments, addToast, setIsCoreSynced } = useAppStore();
   const { fetchActiveProposals } = useAXiMHydration();
   const [activeDrafts, setActiveDrafts] = React.useState(proposedAmendments || []);
 
@@ -109,6 +109,7 @@ export function Policies() {
     const loadProposals = async () => {
       try {
         const proposals = await fetchActiveProposals();
+        setIsCoreSynced(true);
         if (isMounted) {
           if (proposals && proposals.length > 0) {
             setActiveDrafts(proposals);
@@ -132,7 +133,7 @@ export function Policies() {
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
               <SafeIcon icon={FiBookOpen} className="h-10 w-10 text-apf-purple" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-cinzel">
+              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-vt323">
                 Policies
               </h1>
             </div>
@@ -148,7 +149,7 @@ export function Policies() {
           </div>
 
 
-          <div className="mt-16 p-8 bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 text-center relative overflow-hidden">
+          <div className="mt-16 p-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 text-center relative overflow-hidden">
              <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
             <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Proposed Amendments (Drafts)</h3>
             <p className="text-gray-500 font-sans text-sm mb-8 max-w-2xl mx-auto relative z-10">
@@ -157,12 +158,12 @@ export function Policies() {
             <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
                 {activeDrafts && activeDrafts.length > 0 ? (
                     activeDrafts.map((draft, idx) => (
-                        <div key={idx} className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6">
+                        <div key={idx} className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6">
                             <div className="flex justify-between items-start mb-2">
                                 <div className="text-gray-400 font-vt323 text-xs uppercase tracking-widest border border-gray-800 px-2 py-1 bg-black">{draft.id}</div>
                                 <div className="text-gray-600 font-vt323 text-xs">{new Date(draft.date).toLocaleDateString()}</div>
                             </div>
-                            <h4 className="text-white font-bold text-xl mb-2 font-cinzel">{draft.title}</h4>
+                            <h4 className="text-white font-bold text-xl mb-2 font-vt323">{draft.title}</h4>
                             <p className="text-gray-400 font-sans text-sm mb-4 leading-relaxed">{draft.summary}</p>
 
                             <div className="flex flex-wrap gap-4 text-xs font-vt323 border-t border-gray-800/50 pt-4 mt-auto">

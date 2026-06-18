@@ -28,7 +28,7 @@ export function GasWarningCard({ ethBalance, onDismiss }) {
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={handleDismiss} />
 
-      <div className="relative z-10 w-full max-w-lg bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-6 hover:border-apf-purple/40 transition-all duration-500 overflow-hidden">
+      <div className="relative z-10 w-full max-w-lg bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] p-6 transition-all duration-500 overflow-hidden">
         <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
 
         <div className="relative z-10 flex items-start gap-4">

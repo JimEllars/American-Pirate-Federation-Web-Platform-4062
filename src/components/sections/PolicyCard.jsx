@@ -13,7 +13,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
 
-  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast } = useAppStore();
+  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast, isCoreSynced } = useAppStore();
   const sdk = useSDK();
 
   const comments = policyComments[code] || [
@@ -60,8 +60,23 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
     }
   };
 
+
+  if (!isCoreSynced) {
+    return (
+      <div className="bg-[#111111] animate-pulse border border-[#9400FF] shadow-[0_0_15px_rgba(148,0,255,0.5)] p-6 h-64 flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <div className="h-6 bg-gray-800 w-24"></div>
+          <div className="h-4 bg-gray-800 w-16"></div>
+        </div>
+        <div className="h-8 bg-gray-800 w-3/4 mb-4"></div>
+        <div className="h-16 bg-gray-800 w-full mb-6"></div>
+        <div className="mt-auto h-8 bg-gray-800 w-full"></div>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
+    <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity !pointer-events-none">
         <SafeIcon icon={FiShield} className="h-24 w-24 text-apf-purple" />
       </div>
@@ -72,7 +87,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
           animate={{ scale: 1, rotate: -20 }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 mix-blend-screen opacity-10 md:opacity-15"
         >
-          <div className="border-4 border-apf-emerald text-apf-emerald font-cinzel text-4xl font-black p-4 uppercase tracking-[0.3em] whitespace-nowrap">
+          <div className="border-4 border-apf-emerald text-apf-emerald font-vt323 text-4xl font-black p-4 uppercase tracking-[0.3em] whitespace-nowrap">
             Authorized
           </div>
         </motion.div>
@@ -105,7 +120,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
         </div>
       </div>
 
-      <h3 className="text-xl font-bold mb-3 text-white group-hover:text-apf-purpleLight transition-colors relative z-10 font-cinzel" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
+      <h3 className="text-xl font-bold mb-3 text-white group-hover:text-apf-purpleLight transition-colors relative z-10 font-vt323" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
 
       <AnimatePresence mode="wait">
         {!showHistory && !showComments ? (

@@ -63,11 +63,11 @@ export function MusterRoll() {
 
   return (
     <div id="join" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-12 relative">
+      <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-12 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
 
         <div className="mb-12 text-center">
-          <h2 className="text-4xl font-cinzel font-black uppercase tracking-widest mb-4">
+          <h2 className="text-4xl font-vt323 font-black uppercase tracking-widest mb-4">
             Authorize Connection Sequence
           </h2>
           <p className="font-vt323 text-apf-purple text-lg uppercase tracking-[0.3em]">
@@ -161,7 +161,7 @@ export function MusterRoll() {
           <button
             type="submit"
             disabled={!address || isSigning}
-            className={`w-full font-cinzel font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl ${
+            className={`w-full font-vt323 font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl ${
               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
               address
                 ? 'bg-apf-purple hover:bg-white hover:text-apf-black text-white shadow-[0_0_20px_rgba(148,0,255,0.3)]'

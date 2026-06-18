@@ -6,7 +6,7 @@ import { useParallax } from '../../hooks/useParallax';
 import { motion } from 'framer-motion';
 
 export function Layout({ children }) {
-  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus } = useAppStore();
+  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus, telemetryLogs } = useAppStore();
   const scrollOffset = useParallax();
 
   return (
@@ -43,6 +43,20 @@ export function Layout({ children }) {
       <main className="flex-grow pt-16 relative z-10 pointer-events-auto">
         {children}
       </main>
+
+
+      {/* Telemetry Terminal */}
+      <div className="fixed bottom-4 right-4 z-50 w-64 bg-black/80 border border-[#10B981]/50 p-2 pointer-events-none">
+        <div className="text-[#10B981] font-mono text-xs space-y-1">
+          {telemetryLogs.length === 0 ? (
+            <div>[ AXiM CORE: STANDBY FOR INGRESS ]</div>
+          ) : (
+            telemetryLogs.map((log, i) => (
+              <div key={i}>{log}</div>
+            ))
+          )}
+        </div>
+      </div>
 
       <footer className="border-t border-apf-purple/20 bg-apf-black/80 py-8 text-center text-sm font-vt323 text-gray-500 relative z-10 pointer-events-auto">
         <p>SECURE NODE ESTABLISHED. APF © {new Date().getFullYear()}</p>

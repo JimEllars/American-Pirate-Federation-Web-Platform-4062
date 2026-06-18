@@ -43,7 +43,7 @@ export const useAXiMHydration = () => {
            const payloadString = JSON.stringify(item.payload);
            const expectedChecksum = await generateChecksum(payloadString);
            if (item.integrityHash !== expectedChecksum) {
-               console.error('[ SECURITY WARNING: CORRUPTED OFFLINE PAYLOAD PURGED ]');
+               console.error('[ SECURITY EXCEPTION: CORRUPTED OFFLINE PAYLOAD DROP ENFORCED ]');
                continue; // Drop the corrupted payload
            }
         }
@@ -52,7 +52,7 @@ export const useAXiMHydration = () => {
         if (item.stagedAt) {
            const age = Date.now() - item.stagedAt;
            if (age > 7200000) { // 2 hours in ms
-               useAppStore.getState().addToast('[ TRANSACTION EXPIRED: SIGNATURE AGE EXCEEDED 2-HOUR BOUNDARY ]', 'error');
+               useAppStore.getState().addToast('[ TRANSACTION EXPIRED: SIGNATURE AGE EXCEEDED 2-HOUR MAX BOUNDS ]', 'error');
                continue; // Drop the expired payload
            }
         }

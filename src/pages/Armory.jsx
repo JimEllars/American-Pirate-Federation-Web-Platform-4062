@@ -102,7 +102,7 @@ export function Armory() {
             </div>
 
             {/* Clearance Status */}
-            <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
                <div className="text-gray-500 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
                  <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
@@ -206,7 +206,7 @@ export function Armory() {
             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                 <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // PROVISION_TRANSCRIPTS ]
             </h3>
-            <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 overflow-hidden">
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 overflow-hidden">
               {requisitionHistory && requisitionHistory.length > 0 ? (
                   <div className="overflow-x-auto">
                       <table className="w-full text-left font-vt323 text-sm">
