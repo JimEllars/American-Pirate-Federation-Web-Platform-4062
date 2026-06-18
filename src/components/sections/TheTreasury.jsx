@@ -44,7 +44,7 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning } = useAppStore();
+  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning, isCoreSynced, setIsCoreSynced } = useAppStore();
   const address = useAddress();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
   const isMismatched = useNetworkMismatch();
@@ -112,6 +112,7 @@ export function TheTreasury() {
     const loadLedger = async () => {
       try {
         const data = await fetchLiveLedger();
+        setIsCoreSynced(true);
         if (isMounted) {
           setLedger(data);
         }
@@ -196,7 +197,7 @@ export function TheTreasury() {
               </div>
 
               {/* Guild Details */}
-              <div className="lg:w-2/3 min-h-[400px] bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8 relative overflow-hidden">
+              <div className="lg:w-2/3 min-h-[400px] bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 font-vt323 text-apf-purple opacity-30">
                   {activeGuild.meta}
                 </div>
@@ -213,7 +214,7 @@ export function TheTreasury() {
                       <div className="p-3 bg-apf-purple/20 border border-apf-purple">
                         <SafeIcon name={activeGuild.icon} className="h-8 w-8 text-apf-purple" />
                       </div>
-                      <h3 className="text-3xl font-cinzel uppercase m-0">{activeGuild.name}</h3>
+                      <h3 className="text-3xl font-vt323 uppercase m-0">{activeGuild.name}</h3>
                     </div>
 
                     <p className="font-vt323 text-apf-purpleLight text-xl leading-relaxed">
@@ -243,6 +244,25 @@ export function TheTreasury() {
                 </AnimatePresence>
               </div>
             </motion.div>
+          ) : !isCoreSynced ? (
+
+            <motion.div
+              key="ledger-skeleton"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <div className="bg-[#111111] animate-pulse border border-[#9400FF] shadow-[0_0_15px_rgba(148,0,255,0.5)] p-8 h-[500px]">
+                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
+                   <div>
+                     <div className="h-8 bg-gray-800 w-64 mb-2"></div>
+                     <div className="h-4 bg-gray-800 w-96"></div>
+                   </div>
+                   <div className="h-10 bg-gray-800 w-48"></div>
+                 </div>
+                 <div className="w-full h-64 bg-gray-800"></div>
+              </div>
+            </motion.div>
           ) : (
             <motion.div
               key="ledger"
@@ -250,7 +270,7 @@ export function TheTreasury() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-8">
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
                  <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
                    <div>
                      <h3 className="text-2xl font-bold uppercase text-white">Treasury Transparency</h3>

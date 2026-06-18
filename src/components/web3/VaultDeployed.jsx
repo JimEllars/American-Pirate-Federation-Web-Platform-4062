@@ -35,7 +35,7 @@ export function VaultDeployed() {
           <SafeIcon name="Shield" className="h-8 w-8 text-apf-emerald" />
         </div>
 
-        <h2 className="text-2xl font-cinzel font-bold text-white uppercase tracking-widest mb-2">
+        <h2 className="text-2xl font-vt323 font-bold text-white uppercase tracking-widest mb-2">
           Treasury Vault Active
         </h2>
 

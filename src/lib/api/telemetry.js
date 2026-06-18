@@ -83,6 +83,7 @@ export const logSovereignEntry = async (walletAddress, alias, signature) => {
   try {
     const { error } = await supabase.from('muster_roll').insert([{ wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" }]);
     if (error) throw error;
+    useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Sovereign Entry Logged.');
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
   }
@@ -93,6 +94,7 @@ export const logRequisition = async (walletAddress, itemID, cost) => {
   try {
     const { error } = await supabase.from('requisitions').insert([{ wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" }]);
     if (error) throw error;
+    useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Requisition Logged.');
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
   }
@@ -102,6 +104,7 @@ export const logEventSignal = async (walletAddress, eventTitle, signature) => {
   try {
     const { error } = await supabase.from('event_signals').insert([{ wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" }]);
     if (error) throw error;
+    useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Event Signal Logged.');
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
   }

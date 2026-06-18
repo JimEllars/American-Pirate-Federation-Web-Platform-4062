@@ -42,7 +42,7 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
 
         <SafeIcon name="AlertTriangle" className="h-12 w-12 text-apf-purple mb-4 relative z-10 animate-pulse" />
 
-        <h2 className="text-2xl font-cinzel font-bold text-white uppercase tracking-widest mb-2 relative z-10">
+        <h2 className="text-2xl font-vt323 font-bold text-white uppercase tracking-widest mb-2 relative z-10">
           Network Desync
         </h2>
 

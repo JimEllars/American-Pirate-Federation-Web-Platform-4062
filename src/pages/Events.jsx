@@ -108,7 +108,7 @@ export function Events() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                {PAST_EVENTS.map(event => (
-                   <div key={event.id} className="group flex flex-col bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500 p-6 cursor-pointer" onClick={() => setActiveReport(event)}>
+                   <div key={event.id} className="group flex flex-col bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 cursor-pointer" onClick={() => setActiveReport(event)}>
                       <div className="h-48 bg-black/40 overflow-hidden relative mb-4">
                          <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay group-hover:bg-transparent transition-colors z-10" />
                          <img src={event.image} alt="Past Event" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
@@ -153,7 +153,7 @@ export function Events() {
                           </button>
                       </div>
 
-                      <div className="relative z-10 p-6 overflow-y-auto custom-scrollbar flex-grow bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl hover:border-apf-purple/40 transition-all duration-500">
+                      <div className="relative z-10 p-6 overflow-y-auto custom-scrollbar flex-grow bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
                           <div className="font-vt323 text-apf-purple mb-2 uppercase tracking-widest text-sm">
                               {activeReport.date} // {activeReport.location}
                           </div>

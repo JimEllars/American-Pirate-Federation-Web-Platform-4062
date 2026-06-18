@@ -26,6 +26,10 @@ export const useAppStore = create(
       deploymentStatus: 'idle', // idle, pending, success, failed
       treasuryDeploymentStatus: 'idle',
       isSigning: false,
+      isCoreSynced: false,
+      setIsCoreSynced: (status) => set({ isCoreSynced: status }),
+      telemetryLogs: [],
+      addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
       addToast: (message, type = 'info') => {
         const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
