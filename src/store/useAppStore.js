@@ -32,7 +32,7 @@ export const useAppStore = create(
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
       addToast: (message, type = 'info') => {
-        const id = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+        const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
         useAppStore.getState()._scheduleToastRemoval(id);
         return set((state) => ({
           toasts: [...state.toasts, { id, message, type }]
