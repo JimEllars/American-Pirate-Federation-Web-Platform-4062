@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
@@ -35,7 +35,36 @@ const PROVISIONS = [
   }
 ];
 
+import { useAXiMHydration } from '../hooks/useAXiMHydration';
+
 export function Armory() {
+  const [liveInventory, setLiveInventory] = useState(null);
+  const { fetchArmoryInventory, loading } = useAXiMHydration();
+  const [inventoryLoading, setInventoryLoading] = useState(true);
+
+  useEffect(() => {
+    const loadInventory = async () => {
+      setInventoryLoading(true);
+      try {
+        const data = await fetchArmoryInventory();
+        if (data && data.length > 0) {
+          setLiveInventory(data);
+        } else {
+          setLiveInventory(PROVISIONS);
+          if(data && data.length === 0) {
+             addToast('[ DATABASE SYNC WARNING: FALLING BACK TO LOCAL INVENTORY ]', 'warning');
+          }
+        }
+      } catch (err) {
+        setLiveInventory(PROVISIONS);
+        addToast('[ DATABASE CONNECTION FAILED: FALLING BACK TO LOCAL INVENTORY ]', 'error');
+      } finally {
+        setInventoryLoading(false);
+      }
+    };
+    loadInventory();
+  }, [fetchArmoryInventory]);
+
   const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
   const sdk = useSDK();
   const address = useAddress();
@@ -102,7 +131,7 @@ export function Armory() {
             </div>
 
             {/* Clearance Status */}
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
                <div className="text-gray-500 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
                  <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
@@ -142,12 +171,20 @@ export function Armory() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
-             {PROVISIONS.map((item) => {
+             {inventoryLoading && (
+                 <div className="col-span-1 md:col-span-2 lg:col-span-3 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl p-16 flex items-center justify-center min-h-[300px]">
+                     <div className="text-apf-purple font-vt323 text-xl tracking-widest uppercase animate-pulse flex items-center gap-4">
+                         <SafeIcon name="Loader" className="h-6 w-6 animate-spin" />
+                         [ QUARTERMASTER: HARVESTING HARDWARE COMPONENT MATRIX... ]
+                     </div>
+                 </div>
+             )}
+             {!inventoryLoading && (liveInventory || PROVISIONS).map((item) => {
                const eligible = isEligible(item.requirement);
                const canAfford = reputationPoints >= item.price;
 
                return (
-                 <div key={item.id} className="bg-black/60 backdrop-blur-2xl border border-white/5 hover:border-apf-purple/40 shadow-2xl transition-all group relative overflow-hidden flex flex-col">
+                 <div key={item.id} className="bg-black/40 backdrop-blur-md border border-white/10 hover:border-apf-purple/40 shadow-2xl transition-all group relative overflow-hidden flex flex-col">
                     {/* Item Image */}
                     <div className="h-64 relative overflow-hidden bg-gray-900 border-b border-white/5">
                       <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10 !pointer-events-none" />
@@ -157,7 +194,7 @@ export function Armory() {
                         className={`w-full h-full object-cover transition-transform duration-700 ${eligible ? 'group-hover:scale-110' : 'grayscale opacity-50'}`}
                       />
                       {!eligible && (
-                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/60 backdrop-blur-sm !pointer-events-none">
+                        <div className="absolute inset-0 flex items-center justify-center z-20 bg-black/40 backdrop-blur-sm !pointer-events-none">
                            <div className="text-center font-vt323">
                               <SafeIcon name="Lock" className="mx-auto h-8 w-8 text-red-500 mb-2" />
                               <div className="text-red-500 font-bold uppercase tracking-widest text-sm">Restricted Access</div>
@@ -206,7 +243,7 @@ export function Armory() {
             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                 <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // PROVISION_TRANSCRIPTS ]
             </h3>
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 overflow-hidden">
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-6 overflow-hidden">
               {requisitionHistory && requisitionHistory.length > 0 ? (
                   <div className="overflow-x-auto">
                       <table className="w-full text-left font-vt323 text-sm">

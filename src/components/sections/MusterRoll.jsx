@@ -63,7 +63,7 @@ export function MusterRoll() {
 
   return (
     <div id="join" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-12 relative">
+      <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-12 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
 
         <div className="mb-12 text-center">
@@ -79,13 +79,13 @@ export function MusterRoll() {
 
           <div className="space-y-4 mb-8 relative">
             {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
-              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+              <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
                 <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase animate-pulse">
                   [ INITIALIZING ENCRYPTION... ]
                 </p>
               </div>
             ) : !address && (
-              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
+              <div className="absolute inset-0 z-10 bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/10">
                 <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase">
                   [ ENCRYPTION KEY REQUIRED. CONNECT WALLET TO AUTHORIZE CONNECTION SEQUENCE. ]
                 </p>

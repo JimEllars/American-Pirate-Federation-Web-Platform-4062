@@ -22,32 +22,32 @@ export class ErrorBoundary extends React.Component {
           <div className="scanlines !pointer-events-none" />
           <div className="fixed inset-0 neon-grid opacity-20 !pointer-events-none" />
 
-          <div className="relative z-10 max-w-2xl w-full bg-black/60 backdrop-blur-2xl border border-red-500/30 shadow-[0_0_50px_rgba(255,0,0,0.1)] p-8 md:p-12 text-center">
-            <SafeIcon name="AlertTriangle" className="h-24 w-24 text-red-500 mx-auto mb-6 animate-pulse" />
+          <div className="relative z-10 max-w-2xl w-full bg-black backdrop-blur-md border border-apf-emerald shadow-[0_0_50px_rgba(16,185,129,0.1)] p-8 md:p-12 text-center">
+            <SafeIcon name="AlertTriangle" className="h-24 w-24 text-apf-emerald mx-auto mb-6 animate-pulse" />
 
-            <h1 className="text-4xl md:text-5xl font-black uppercase text-red-500 tracking-widest mb-4 glitch-hover">
-              Signal Interrupted
+            <h1 className="text-2xl md:text-3xl font-black uppercase font-mono text-apf-emerald tracking-widest mb-4 glitch-hover">
+              [ SYSTEM EXCEPTION CAPTURED: PROTOCOL SAFE-MODE DEPLOYED ]
             </h1>
 
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-red-500/50 to-transparent mb-8" />
+            <div className="h-px w-full bg-gradient-to-r from-transparent via-apf-emerald/50 to-transparent mb-8" />
 
             <p className="text-gray-400 text-lg md:text-xl uppercase tracking-widest mb-8 leading-relaxed">
               Critical state mutation failure detected.<br/>
               The node encountered an unexpected anomaly during execution.
             </p>
 
-            <div className="bg-red-500/10 border border-red-500/20 p-4 mb-8 text-left overflow-hidden">
-               <span className="text-red-400 font-mono text-sm block mb-2">[ERROR_TRACE]</span>
-               <code className="text-red-300 font-mono text-xs break-all">
+            <div className="bg-apf-emerald/10 border border-apf-emerald/20 p-4 mb-8 text-left overflow-hidden">
+               <span className="text-apf-emerald font-mono text-sm block mb-2">[ERROR_TRACE]</span>
+               <code className="text-gray-300 font-mono text-xs break-all">
                  {this.state.error?.toString() || "Unknown Operational Exception"}
                </code>
             </div>
 
             <button
-              onClick={() => window.location.reload()}
-              className="bg-transparent border border-red-500 text-red-500 hover:bg-red-500 hover:text-black font-bold py-3 px-8 transition-all uppercase tracking-widest text-lg group"
+              onClick={() => { sessionStorage.clear(); window.location.reload(); }}
+              className="bg-transparent border border-apf-emerald text-apf-emerald hover:bg-apf-emerald hover:text-black font-bold py-3 px-8 transition-all uppercase tracking-widest text-lg group"
             >
-              Re-establish Connection
+              Attempt Core Re-Sync
               <SafeIcon name="RefreshCw" className="inline-block ml-2 group-hover:animate-spin" />
             </button>
           </div>

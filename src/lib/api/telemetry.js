@@ -30,7 +30,7 @@ const queuePayload = async (url, payload) => {
   const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
 
   queue.push({
-    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+    id: (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID && window.isSecureContext) ? window.crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
     url,
     payload,
     stagedAt: Date.now(),

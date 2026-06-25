@@ -26,7 +26,7 @@ export function VaultDeployed() {
   };
 
   return (
-    <div className="bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 relative overflow-hidden text-center mt-8">
+    <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 relative overflow-hidden text-center mt-8">
       <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
       <div className="absolute inset-0 bg-apf-emerald/5 mix-blend-overlay !pointer-events-none" />
 
