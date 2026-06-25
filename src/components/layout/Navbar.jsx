@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
@@ -7,11 +7,21 @@ import { useAddress, useConnect, useDisconnect, metamaskWallet, useConnectionSta
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment, addToast } = useAppStore();
+  const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
   const address = useAddress();
   const connect = useConnect();
   const disconnect = useDisconnect();
   const connectionStatus = useConnectionStatus();
+
+  useEffect(() => {
+    // Watchdog to clear state when address disconnects or changes
+    if (!address) {
+      clearMusterRoll();
+      setIsSigning(false);
+      setDeploymentStatus('idle');
+      setTreasuryDeploymentStatus('idle');
+    }
+  }, [address, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus]);
 
   const handleConnect = async () => {
     try {
