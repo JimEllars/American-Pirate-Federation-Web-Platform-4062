@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
+import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useSDK, useAddress } from '@thirdweb-dev/react';
 import { logRequisition } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
@@ -41,6 +42,32 @@ export function Armory() {
   const address = useAddress();
   const [procuring, setProcuring] = useState(null);
   const [showRepLog, setShowRepLog] = useState(false);
+  const { fetchArmoryInventory, loading: hydrationLoading } = useAXiMHydration();
+  const [liveInventory, setLiveInventory] = useState([]);
+  const [inventoryLoading, setInventoryLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadInventory = async () => {
+      setInventoryLoading(true);
+      try {
+        const data = await fetchArmoryInventory();
+        if (isMounted) {
+          if (data && data.length > 0) {
+            setLiveInventory(data);
+          } else {
+            setLiveInventory(PROVISIONS);
+          }
+        }
+      } catch (error) {
+        if (isMounted) setLiveInventory(PROVISIONS);
+      } finally {
+        if (isMounted) setInventoryLoading(false);
+      }
+    };
+    loadInventory();
+    return () => { isMounted = false; };
+  }, [fetchArmoryInventory]);
 
   const isEligible = (req) => {
     if (req === 'Unverified') return true;
@@ -142,7 +169,15 @@ export function Armory() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
-             {PROVISIONS.map((item) => {
+             {inventoryLoading ? (
+                 <div className="col-span-full py-12 flex justify-center items-center">
+                    <div className="bg-black/40 backdrop-blur-md border border-[#10B981]/10 p-6 rounded-lg shadow-2xl">
+                        <div className="text-[#10B981] font-vt323 text-lg animate-pulse">
+                            [ QUARTERMASTER: RE-INDEXING AVAILABLE HARDWARE MATRIX... ]
+                        </div>
+                    </div>
+                 </div>
+             ) : liveInventory.map((item) => {
                const eligible = isEligible(item.requirement);
                const canAfford = reputationPoints >= item.price;
 

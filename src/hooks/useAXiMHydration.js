@@ -146,10 +146,26 @@ export const useAXiMHydration = () => {
     }
   }, []);
 
+  const fetchArmoryInventory = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase.from('armory_inventory').select('*');
+      if (error) throw error;
+      return data;
+    } catch (err) {
+      setError(err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     fetchLiveLedger,
     fetchActiveProposals,
     fetchPolicyConsensus,
+    fetchArmoryInventory,
     loading,
     error,
   };

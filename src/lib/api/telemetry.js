@@ -81,31 +81,40 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
 
 export const logSovereignEntry = async (walletAddress, alias, signature) => {
   try {
-    const { error } = await supabase.from('muster_roll').insert([{ wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" }]);
+    const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
+    const { error } = await supabase.from('muster_roll').insert([payload]);
     if (error) throw error;
     useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Sovereign Entry Logged.');
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
+    const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
+    queuePayload('supabase/muster_roll', payload);
   }
 };
 
 
 export const logRequisition = async (walletAddress, itemID, cost) => {
   try {
-    const { error } = await supabase.from('requisitions').insert([{ wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" }]);
+    const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
+    const { error } = await supabase.from('requisitions').insert([payload]);
     if (error) throw error;
     useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Requisition Logged.');
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
+    const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
+    queuePayload('supabase/requisitions', payload);
   }
 };
 
 export const logEventSignal = async (walletAddress, eventTitle, signature) => {
   try {
-    const { error } = await supabase.from('event_signals').insert([{ wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" }]);
+    const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
+    const { error } = await supabase.from('event_signals').insert([payload]);
     if (error) throw error;
     useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Event Signal Logged.');
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
+    const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
+    queuePayload('supabase/event_signals', payload);
   }
 };
