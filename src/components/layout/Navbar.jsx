@@ -9,6 +9,22 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { musterRollDraft, guildAlignment, addToast } = useAppStore();
   const address = useAddress();
+  const { clearMusterRoll, setIsSigning } = useAppStore();
+
+  React.useEffect(() => {
+    // Cross-Identity State Invalidation
+    if (address && musterRollDraft.walletAddress && address.toLowerCase() !== musterRollDraft.walletAddress.toLowerCase()) {
+      clearMusterRoll();
+      setIsSigning(false);
+      addToast('[ IDENTITY VARIANCE DETECTED: PURGING STALE SESSION CONTEXT ]', 'warning');
+      window.location.reload(); // Force complete hydration refresh
+    } else if (!address && musterRollDraft.walletAddress) {
+      clearMusterRoll();
+      setIsSigning(false);
+      addToast('[ SIGNAL DROPPED: PURGING STALE SESSION CONTEXT ]', 'warning');
+      // window.location.reload();
+    }
+  }, [address, musterRollDraft.walletAddress, clearMusterRoll, setIsSigning, addToast]);
   const connect = useConnect();
   const disconnect = useDisconnect();
   const connectionStatus = useConnectionStatus();
@@ -95,7 +111,7 @@ export function Navbar() {
               ) : (
                 <button
                   onClick={disconnect}
-                  className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
+                  className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
@@ -179,7 +195,7 @@ export function Navbar() {
               ) : (
                 <button
                   onClick={() => { disconnect(); setIsOpen(false); }}
-                  className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
+                  className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all duration-300"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">

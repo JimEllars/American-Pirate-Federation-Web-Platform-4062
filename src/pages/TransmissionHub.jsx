@@ -7,8 +7,79 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../hooks/usePirateIntel';
 import DOMPurify from 'isomorphic-dompurify';
 
+import { useAXiMHydration } from '../hooks/useAXiMHydration';
+
+import { useAddress, useSDK } from '@thirdweb-dev/react';
+import { useAppStore } from '../store/useAppStore';
+import { generateChecksum } from '../lib/api/telemetry';
+
 export function TransmissionHub() {
-  const { data: episodes, loading, error } = usePirateIntel('posts?_embed&per_page=5');
+  const address = useAddress();
+  const sdk = useSDK();
+  const { isSigning, setIsSigning, addToast } = useAppStore();
+  const [broadcastText, setBroadcastText] = useState('');
+
+  const handleBroadcast = async (e) => {
+    e.preventDefault();
+    if (!address || !sdk || !broadcastText.trim()) return;
+
+    setIsSigning(true);
+    try {
+      const signature = await sdk.wallet.sign(broadcastText);
+      const payload = {
+        meta: { source: "COMMS_BROADCAST_UPSTREAM", timestamp: new Date().toISOString() },
+        telemetry: { wallet_address: address, message: broadcastText, signature: signature }
+      };
+
+      const payloadString = JSON.stringify(payload);
+      const checksum = await generateChecksum(payloadString);
+
+      const queue = JSON.parse(localStorage.getItem('apf_telemetry_queue') || '[]');
+      queue.push({
+        id: (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID && window.isSecureContext) ? window.crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+        url: 'https://mock.supabase.co/functions/v1/telemetry-ingress',
+        payload: payload,
+        stagedAt: Date.now(),
+        integrityHash: checksum
+      });
+      localStorage.setItem('apf_telemetry_queue', JSON.stringify(queue));
+      addToast('[ SECURE BROADCAST QUEUED FOR UPLINK ]', 'success');
+      setBroadcastText('');
+    } catch(err) {
+      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        addToast('[ SIGNATURE REJECTED - BROADCAST ABORTED ]', 'error');
+      } else {
+        addToast('[ ENCRYPTION FAILURE - BROADCAST ABORTED ]', 'error');
+      }
+    } finally {
+      setIsSigning(false);
+    }
+  };
+
+  const { fetchSecureTransmissions } = useAXiMHydration();
+  const [episodes, setEpisodes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadTransmissions = async () => {
+      try {
+        const data = await fetchSecureTransmissions();
+        if (isMounted) {
+          setEpisodes(data);
+          setLoading(false);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err);
+          setLoading(false);
+        }
+      }
+    };
+    loadTransmissions();
+    return () => { isMounted = false; };
+  }, [fetchSecureTransmissions]);
   const [activeEpisode, setActiveEpisode] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGlitching, setIsGlitching] = useState(false);
@@ -93,7 +164,7 @@ export function TransmissionHub() {
 
             {/* Audio Player Panel */}
             <div className="lg:col-span-1">
-               <div className={`sticky top-24 bg-black/60 backdrop-blur-2xl border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-white/5 shadow-2xl hover:border-apf-purple/40'} p-6 transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
+               <div className={`sticky top-24 bg-black/40 backdrop-blur-md border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-white/5 shadow-2xl hover:border-apf-purple/40'} p-6 transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
                  <div className="mb-6 border-b border-gray-800 pb-4 relative min-h-[80px]">
                     <span className="font-vt323 text-xs uppercase text-apf-purple tracking-widest block mb-2">Current Frequency</span>
                     <AnimatePresence mode="wait">
@@ -106,7 +177,7 @@ export function TransmissionHub() {
                         className="text-xl font-bold text-white line-clamp-2"
                       >
                          {activeEpisode ? (
-                            <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activeEpisode.title.rendered) }} />
+                            <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activeEpisode.title?.rendered || activeEpisode.title || '') }} />
                          ) : "TUNING..."}
                       </motion.h3>
                     </AnimatePresence>
@@ -182,6 +253,39 @@ export function TransmissionHub() {
 
             {/* Episode List */}
             <div className="lg:col-span-2 space-y-6">
+               {address && (
+                 <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl p-6 mb-8 hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+                    <h3 className="font-vt323 text-xl text-apf-purple uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <SafeIcon name="Radio" className="h-5 w-5" /> [ COMMS_BROADCAST_UPSTREAM ]
+                    </h3>
+                    <form onSubmit={handleBroadcast} className="space-y-4">
+                       <textarea
+                         value={broadcastText}
+                         onChange={(e) => setBroadcastText(e.target.value)}
+                         disabled={isSigning}
+                         placeholder="Enter encrypted dispatch sequence..."
+                         className="w-full bg-black/50 border border-gray-800 p-4 text-gray-300 focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors resize-none h-32 custom-scrollbar"
+                       />
+                       <div className="flex justify-between items-center">
+                         <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest">
+                           {broadcastText.length} bytes / requires signature
+                         </span>
+                         <button
+                           type="submit"
+                           disabled={isSigning || !broadcastText.trim()}
+                           className={`px-6 py-2 font-vt323 text-xs uppercase tracking-widest transition-all border ${
+                             isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500 border-gray-800' :
+                             !broadcastText.trim() ? 'border-gray-800 text-gray-600 bg-black/50 cursor-not-allowed' :
+                             'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white'
+                           }`}
+                         >
+                           {isSigning ? '[ ENCRYPTING... ]' : 'Transmit Secure Alert'}
+                         </button>
+                       </div>
+                    </form>
+                 </div>
+               )}
+
                <h2 className="font-vt323 text-2xl text-white uppercase tracking-widest border-b border-white/10 pb-2">Assembly Records</h2>
 
                {loading ? (
@@ -196,10 +300,25 @@ export function TransmissionHub() {
                ) : (
                   episodes.map((episode) => {
                     const meta = getMetadata(episode);
+
+                    // Defense against un-decryptable fragments
+                    let renderedTitle = '';
+                    let renderedContent = '';
+                    let renderedExcerpt = '';
+                    let isCorrupted = false;
+
+                    try {
+                      renderedTitle = DOMPurify.sanitize(episode.title?.rendered || episode.title || '');
+                      renderedContent = DOMPurify.sanitize(episode.content?.rendered || episode.content || '');
+                      renderedExcerpt = DOMPurify.sanitize(episode.excerpt?.rendered || episode.excerpt || '');
+                      if (!renderedTitle && !renderedExcerpt && !renderedContent) isCorrupted = true;
+                    } catch(e) {
+                      isCorrupted = true;
+                    }
                     return (
                     <div
                       key={episode.id}
-                      className={`p-6 border transition-all duration-500 cursor-pointer shadow-2xl backdrop-blur-2xl ${activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'}`}
+                      className={`p-6 border transition-all duration-500 cursor-pointer shadow-2xl backdrop-blur-md ${activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/40 border-white/10 hover:border-apf-purple/40'}`}
                       onClick={() => togglePlay(episode)}
                     >
                        <div className="flex justify-between items-start mb-2">
@@ -208,10 +327,16 @@ export function TransmissionHub() {
                             <SafeIcon name="Volume2" className="text-apf-purple h-4 w-4 animate-pulse" />
                          )}
                        </div>
-                       <h3
-                         className="text-xl font-bold text-white mb-3"
-                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(episode.title.rendered) }}
-                       />
+                       {isCorrupted ? (
+                         <div className="text-gray-500 font-vt323 text-sm mb-3">
+                           [ CORRUPTED PACKET: BROADCAST SIGNATURE INTEGRITY COMPROMITTED ]
+                         </div>
+                       ) : (
+                         <h3
+                           className="text-xl font-bold text-white mb-3"
+                           dangerouslySetInnerHTML={{ __html: renderedTitle }}
+                         />
+                       )}
 
                        {/* Full Transcript Area */}
                        {activeEpisode?.id === episode.id ? (
@@ -221,13 +346,13 @@ export function TransmissionHub() {
                            </h4>
                            <div
                              className="prose prose-invert max-w-none text-gray-300 font-sans text-sm bg-black/50 p-4 border border-gray-800/50 max-h-96 overflow-y-auto custom-scrollbar"
-                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(episode.content.rendered) }}
+                             dangerouslySetInnerHTML={{ __html: renderedContent }}
                            />
                          </div>
                        ) : (
                          <div
                           className="prose prose-invert prose-sm text-gray-400 line-clamp-2 font-sans mb-4"
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(episode.excerpt.rendered) }}
+                          dangerouslySetInnerHTML={{ __html: renderedExcerpt }}
                          />
                        )}
 

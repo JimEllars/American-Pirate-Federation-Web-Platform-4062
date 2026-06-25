@@ -6,7 +6,40 @@ import { useParallax } from '../../hooks/useParallax';
 import { motion } from 'framer-motion';
 
 export function Layout({ children }) {
-  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus, telemetryLogs } = useAppStore();
+  const [isOnline, setIsOnline] = React.useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [queueCount, setQueueCount] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    const updateQueueCount = () => {
+      try {
+        const queueStr = localStorage.getItem('apf_telemetry_queue');
+        if (queueStr) {
+          const queue = JSON.parse(queueStr);
+          setQueueCount(queue.length);
+        } else {
+          setQueueCount(0);
+        }
+      } catch(e) {
+        setQueueCount(0);
+      }
+    };
+
+    updateQueueCount();
+    // Poll to keep queue count accurate across tabs/events
+    const interval = setInterval(updateQueueCount, 2000);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      clearInterval(interval);
+    };
+  }, []);
+  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus, telemetryLogs, networkBackoffDelay } = useAppStore();
   const scrollOffset = useParallax();
 
   return (
@@ -45,9 +78,17 @@ export function Layout({ children }) {
       </main>
 
 
-      {/* Telemetry Terminal */}
+            {/* Telemetry Terminal */}
       <div className="fixed bottom-4 right-4 z-50 w-64 bg-black/80 border border-[#10B981]/50 p-2 pointer-events-none">
-        <div className="text-[#10B981] font-mono text-xs space-y-1">
+        <div className="text-[#10B981] font-vt323 text-sm space-y-1 tracking-widest">
+          <div className="border-b border-[#10B981]/30 pb-1 mb-2">
+            <div>
+              {networkBackoffDelay > 0
+                ? `[ NET_BACKOFF_CIRCUIT: ACTIVE // RETRY_DELAY: ${networkBackoffDelay}MS ]`
+                : (isOnline ? '[ AXiM INGRESS: ALL SYSTEMS NOMINAL // LEDGER LIVE ]' : '[ NETWORK DETACHED: LOCAL STAGING ACTIVE ]')}
+            </div>
+            <div className="text-[10px]">BUFFER QUEUE: {queueCount} STAGED</div>
+          </div>
           {telemetryLogs.length === 0 ? (
             <div>[ AXiM CORE: STANDBY FOR INGRESS ]</div>
           ) : (

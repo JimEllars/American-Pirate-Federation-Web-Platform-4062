@@ -186,7 +186,7 @@ export function TheTreasury() {
                       className={`w-full text-left p-4 flex items-center gap-4 border transition-all ${
                         activeGuild.id === guild.id
                         ? 'border-apf-purple bg-apf-purple/10 text-white'
-                        : 'border-white/5 bg-black/60 text-gray-500 hover:border-white/20'
+                        : 'border-white/5 bg-black/40 text-gray-500 hover:border-white/20'
                       }`}
                     >
                       <SafeIcon name={guild.icon} className={activeGuild.id === guild.id ? 'text-apf-purple' : ''} />
@@ -197,7 +197,7 @@ export function TheTreasury() {
               </div>
 
               {/* Guild Details */}
-              <div className="lg:w-2/3 min-h-[400px] bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
+              <div className="lg:w-2/3 min-h-[400px] bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-8 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 font-vt323 text-apf-purple opacity-30">
                   {activeGuild.meta}
                 </div>
@@ -228,7 +228,7 @@ export function TheTreasury() {
                       {!loading && !error && guides && guides.length > 0 && (
                         <ul className="space-y-3">
                           {guides.map((guide) => (
-                            <li key={guide.id} className="border border-white/10 p-3 bg-black/60 hover:border-apf-purple transition-all cursor-pointer">
+                            <li key={guide.id} className="border border-white/10 p-3 bg-black/40 hover:border-apf-purple transition-all cursor-pointer">
                                <a href={guide.link} target="_blank" rel="noreferrer" className="block text-apf-purple hover:text-white font-vt323 text-lg uppercase">
                                   &gt; {DOMPurify.sanitize(guide.title?.rendered || "CLASSIFIED_DOCUMENT")}
                                </a>
@@ -270,7 +270,7 @@ export function TheTreasury() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-8">
                  <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
                    <div>
                      <h3 className="text-2xl font-bold uppercase text-white">Treasury Transparency</h3>

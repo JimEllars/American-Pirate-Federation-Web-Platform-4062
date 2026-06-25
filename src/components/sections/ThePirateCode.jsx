@@ -44,7 +44,7 @@ export function ThePirateCode() {
             <motion.div
               key={article.id}
               whileHover={{ scale: 1.02 }}
-              className="group relative bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 border-l-4 border-l-apf-purple cursor-crosshair"
+              className="group relative bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-8 border-l-4 border-l-apf-purple cursor-crosshair"
             >
               <div className="absolute inset-0 bg-apf-purple/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               <span className="font-vt323 text-apf-purple text-2xl mb-2 block">ARTICLE {article.id}</span>

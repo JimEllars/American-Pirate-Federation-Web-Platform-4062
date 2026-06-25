@@ -8,7 +8,19 @@ import DOMPurify from 'isomorphic-dompurify';
 
 const { FiChevronRight, FiShield, FiUsers, FiClock, FiActivity, FiMessageSquare } = FiIcons;
 
+import { useAXiMHydration } from '../../hooks/useAXiMHydration';
+
 export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision }) {
+  const { fetchPolicyReceipts } = useAXiMHydration();
+  const [receipts, setReceipts] = React.useState([]);
+
+  React.useEffect(() => {
+    const loadReceipts = async () => {
+      const data = await fetchPolicyReceipts(code);
+      if (data) setReceipts(data);
+    };
+    loadReceipts();
+  }, [code, fetchPolicyReceipts]);
   const [showHistory, setShowHistory] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -76,7 +88,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   }
 
   return (
-    <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
+    <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity !pointer-events-none">
         <SafeIcon icon={FiShield} className="h-24 w-24 text-apf-purple" />
       </div>
@@ -213,6 +225,26 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
           </motion.div>
         )}
       </AnimatePresence>
+
+
+        {/* Receipts Section */}
+        <div className="mt-8 border-t border-gray-800 pt-6">
+           <details className="group">
+              <summary className="font-vt323 text-apf-purple text-sm tracking-widest uppercase cursor-pointer list-none flex items-center justify-between hover:text-white transition-colors">
+                 [ CONSENSUS_TELEMETRY_RECEIPTS ]
+                 <SafeIcon icon={FiChevronRight} className="h-4 w-4 group-open:rotate-90 transition-transform" />
+              </summary>
+              <div className="mt-4 space-y-2 pl-4 border-l border-gray-800">
+                 {receipts && receipts.length > 0 ? receipts.map((r, i) => (
+                    <div key={i} className="font-vt323 text-gray-500 text-xs tracking-wider break-all">
+                       {r.hash || r.tx_hash || '0xUNKNOWN'} -{'>'} SIGNED_REVISION_VOTE // STATUS: {r.status || 'IMMUTABLE'}
+                    </div>
+                 )) : (
+                    <div className="font-vt323 text-gray-600 text-xs tracking-wider">[ NO RECEIPTS SYNCHRONIZED ]</div>
+                 )}
+              </div>
+           </details>
+        </div>
 
       <div className="flex items-center justify-between mt-auto pt-2 relative z-10 border-t border-gray-800/50">
         <button className="flex items-center gap-2 text-xs font-vt323 text-apf-purple hover:text-white transition-colors uppercase tracking-widest">

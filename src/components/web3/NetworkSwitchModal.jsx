@@ -37,7 +37,7 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
 
       {/* Modal */}
-      <div className="relative z-10 w-full max-w-md bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 flex flex-col items-center text-center">
+      <div className="relative z-10 w-full max-w-md bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl p-8 hover:border-apf-purple/40 transition-all duration-500 flex flex-col items-center text-center">
         <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
 
         <SafeIcon name="AlertTriangle" className="h-12 w-12 text-apf-purple mb-4 relative z-10 animate-pulse" />

@@ -28,11 +28,13 @@ export const useAppStore = create(
       isSigning: false,
       isCoreSynced: false,
       setIsCoreSynced: (status) => set({ isCoreSynced: status }),
+      networkBackoffDelay: 0,
+      setNetworkBackoffDelay: (delay) => set({ networkBackoffDelay: delay }),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
       addToast: (message, type = 'info') => {
-        const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+        const id = (typeof window !== 'undefined' && window.crypto && window.crypto.randomUUID && window.isSecureContext) ? window.crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
         useAppStore.getState()._scheduleToastRemoval(id);
         return set((state) => ({
           toasts: [...state.toasts, { id, message, type }]
