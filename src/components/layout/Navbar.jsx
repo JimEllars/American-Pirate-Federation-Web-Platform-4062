@@ -13,15 +13,20 @@ export function Navbar() {
   const disconnect = useDisconnect();
   const connectionStatus = useConnectionStatus();
 
+
+  const [prevAddress, setPrevAddress] = useState(address);
+
   useEffect(() => {
     // Watchdog to clear state when address disconnects or changes
-    if (!address) {
+    if (!address || (prevAddress && address !== prevAddress)) {
       clearMusterRoll();
       setIsSigning(false);
       setDeploymentStatus('idle');
       setTreasuryDeploymentStatus('idle');
     }
-  }, [address, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus]);
+    setPrevAddress(address);
+  }, [address, prevAddress, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus]);
+
 
   const handleConnect = async () => {
     try {
