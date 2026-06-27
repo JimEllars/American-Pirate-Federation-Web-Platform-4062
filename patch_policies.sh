@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/pages/Policies.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
@@ -213,3 +214,4 @@ export function Policies() {
     </Layout>
   );
 }
+INNER_EOF

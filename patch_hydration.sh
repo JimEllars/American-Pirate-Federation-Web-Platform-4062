@@ -1,3 +1,4 @@
+cat << 'INNER_EOF' > src/hooks/useAXiMHydration.js
 import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/api/supabaseClient';
 import { generateChecksum } from '../lib/api/telemetry';
@@ -203,3 +204,4 @@ export const useAXiMHydration = () => {
 };
 
 export default useAXiMHydration;
+INNER_EOF
