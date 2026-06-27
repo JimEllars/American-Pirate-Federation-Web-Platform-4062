@@ -6,6 +6,7 @@ import { FleetMuster } from '../components/sections/FleetMuster';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAXiMHydration } from '../hooks/useAXiMHydration';
 
 const { FiTarget, FiArchive, FiX } = FiIcons;
 
@@ -75,8 +76,31 @@ The fleet remains resilient.
     }
 ];
 
+
 export function Events() {
   const [activeReport, setActiveReport] = useState(null);
+  const [eventsData, setEventsData] = useState([]);
+  const { fetchActiveEvents, loading } = useAXiMHydration();
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const loadEvents = async () => {
+      const data = await fetchActiveEvents();
+      if (isMounted) {
+        if (data && data.length > 0) {
+          setEventsData(data);
+        } else {
+          setEventsData(EVENTS); // Fallback to mock array
+        }
+      }
+    };
+    loadEvents();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchActiveEvents]);
+
 
   return (
     <Layout>
@@ -94,12 +118,18 @@ export function Events() {
               Physical and digital convergence points for the federation. Presence is participation.
             </p>
           </div>
-
           <div className="border-t border-gray-800">
-            {EVENTS.map((event, idx) => (
-              <FleetMuster key={idx} event={event} />
-            ))}
+            {loading ? (
+                <div className="py-12 flex items-center justify-center text-apf-emerald font-vt323 animate-pulse bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl">
+                    [ NAV-COMMS: SYNCING FLEET MUSTER COORDINATES... ]
+                </div>
+            ) : (
+                eventsData.map((event, idx) => (
+                  <FleetMuster key={idx} event={event} />
+                ))
+            )}
           </div>
+
 
           <div className="mt-24 border-t border-gray-800 pt-16">
             <h2 className="text-3xl font-black uppercase tracking-tighter mb-8 text-white flex items-center gap-3">
