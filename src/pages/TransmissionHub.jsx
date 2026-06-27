@@ -233,50 +233,63 @@ export function TransmissionHub() {
                ) : (
                   episodes.map((episode) => {
                     const meta = getMetadata(episode);
-                    return (
-                    <div
-                      key={episode.id}
-                      className={`p-6 border transition-all duration-500 cursor-pointer shadow-2xl backdrop-blur-2xl ${activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.isSecure ? 'border-apf-emerald/50' : ''}`}
-                      onClick={() => togglePlay(episode)}
-                    >
-                       <div className="flex justify-between items-start mb-2">
-                         <span className={`font-vt323 text-sm ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'}`}>
-                           {episode.isSecure ? 'SECURE_TRANSMISSION' : `EP_${episode.id}`} // {new Date(episode.date).toLocaleDateString()}
-                         </span>
-                         {activeEpisode?.id === episode.id && isPlaying && (
-                            <SafeIcon name="Volume2" className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'} h-4 w-4 animate-pulse`} />
-                         )}
-                       </div>
-                       <h3
-                         className="text-xl font-bold text-white mb-3"
-                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(episode.title.rendered) }}
-                       />
-
-                       {/* Full Transcript Area */}
-                       {activeEpisode?.id === episode.id ? (
-                         <div className="mt-4 border-t border-apf-purple/30 pt-4">
-                           <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
-                             <SafeIcon name="FileText" className="h-4 w-4" /> Bridge Transcript
-                           </h4>
-                           <div
-                             className="prose prose-invert max-w-none text-gray-300 font-sans text-sm bg-black/50 p-4 border border-gray-800/50 max-h-96 overflow-y-auto custom-scrollbar"
-                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(episode.content.rendered) }}
+                    try {
+                        const title = episode?.title?.rendered ?? "UNTITLED";
+                        const excerpt = episode?.excerpt?.rendered ?? "NO CONTENT";
+                        const content = episode?.content?.rendered ?? "NO CONTENT";
+                        return (
+                        <div
+                          key={episode.id}
+                          className={`p-6 border transition-all duration-500 cursor-pointer shadow-2xl backdrop-blur-2xl ${activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.isSecure ? 'border-apf-emerald/50' : ''}`}
+                          onClick={() => togglePlay(episode)}
+                        >
+                           <div className="flex justify-between items-start mb-2">
+                             <span className={`font-vt323 text-sm ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'}`}>
+                               {episode.isSecure ? 'SECURE_TRANSMISSION' : `EP_${episode.id}`} // {new Date(episode.date).toLocaleDateString()}
+                             </span>
+                             {activeEpisode?.id === episode.id && isPlaying && (
+                                <SafeIcon name="Volume2" className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'} h-4 w-4 animate-pulse`} />
+                             )}
+                           </div>
+                           <h3
+                             className="text-xl font-bold text-white mb-3"
+                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(title) }}
                            />
-                         </div>
-                       ) : (
-                         <div
-                          className="prose prose-invert prose-sm text-gray-400 line-clamp-2 font-sans mb-4"
-                          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(episode.excerpt.rendered) }}
-                         />
-                       )}
 
-                      <div className="flex gap-4 font-vt323 text-xs text-gray-500 border-t border-gray-800/50 pt-4 mt-4">
-                         <span>Op: {meta.author}</span>
-                         <span>Len: {meta.duration}</span>
-                         <span className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'} ml-auto`}>{meta.correlation}</span>
-                      </div>
-                    </div>
-                  )})
+                           {/* Full Transcript Area */}
+                           {activeEpisode?.id === episode.id ? (
+                             <div className="mt-4 border-t border-apf-purple/30 pt-4">
+                               <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
+                                 <SafeIcon name="FileText" className="h-4 w-4" /> Bridge Transcript
+                               </h4>
+                               <div
+                                 className="prose prose-invert max-w-none text-gray-300 font-sans text-sm bg-black/50 p-4 border border-gray-800/50 max-h-96 overflow-y-auto custom-scrollbar"
+                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
+                               />
+                             </div>
+                           ) : (
+                             <div
+                              className="prose prose-invert prose-sm text-gray-400 line-clamp-2 font-sans mb-4"
+                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(excerpt) }}
+                             />
+                           )}
+
+                          <div className="flex gap-4 font-vt323 text-xs text-gray-500 border-t border-gray-800/50 pt-4 mt-4">
+                             <span>Op: {meta.author}</span>
+                             <span>Len: {meta.duration}</span>
+                             <span className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'} ml-auto`}>{meta.correlation}</span>
+                          </div>
+                        </div>
+                      );
+                    } catch (e) {
+                      return (
+                        <div key={episode.id} className="text-gray-500 font-vt323 border border-red-900 bg-red-900/10 p-4">
+                          [ CORRUPTED PACKET: BROADCAST SIGNATURE INTEGRITY COMPROMISED ]
+                        </div>
+                      );
+                    }
+                  })
+
                )}
             </div>
 

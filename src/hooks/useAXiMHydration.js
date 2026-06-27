@@ -1,7 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '../lib/api/supabaseClient';
-import { generateChecksum } from '../lib/api/telemetry';
-import { useAppStore } from '../store/useAppStore';
 
 /**
  * useAXiMHydration
@@ -9,102 +7,9 @@ import { useAppStore } from '../store/useAppStore';
  * Scaffolds the inbound data hydration bridge from the AXiM Core.
  */
 
-const QUEUE_KEY = 'apf_telemetry_queue';
-
-// Singleton Orchestrator for the Queue
-let isQueueProcessing = false;
-let isListenerAttached = false;
-
-const processQueue = async () => {
-  if (isQueueProcessing || typeof navigator === 'undefined' || !navigator.onLine) return;
-  isQueueProcessing = true;
-
-  try {
-    const queueStr = localStorage.getItem(QUEUE_KEY);
-    if (!queueStr) return;
-
-    let queue = [];
-    try {
-      queue = JSON.parse(queueStr);
-    } catch (e) {
-      localStorage.removeItem(QUEUE_KEY);
-      return;
-    }
-
-    if (queue.length === 0) return;
-
-    let allFlushed = true;
-    let remainingQueue = [];
-
-    for (const item of queue) {
-      // 1. Verify Payload Integrity
-      if (item.integrityHash) {
-         const payloadString = JSON.stringify(item.payload);
-         const expectedChecksum = await generateChecksum(payloadString);
-         if (item.integrityHash !== expectedChecksum) {
-             console.error('[ SECURITY EXCEPTION: CORRUPTED OFFLINE PAYLOAD DROP ENFORCED ]');
-             continue; // Drop the corrupted payload
-         }
-      }
-
-      // 2. Enforce 2-hour TTL
-      if (item.stagedAt) {
-         const age = Date.now() - item.stagedAt;
-         if (age > 7200000) { // 2 hours in ms
-             useAppStore.getState().addToast('[ TRANSACTION EXPIRED: SIGNATURE AGE EXCEEDED 2-HOUR MAX BOUNDS ]', 'error');
-             continue; // Drop the expired payload
-         }
-      }
-
-      try {
-        const res = await fetch(item.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify(item.payload)
-        });
-
-        if (!res.ok) {
-          allFlushed = false;
-          remainingQueue.push(item);
-        }
-      } catch (e) {
-        allFlushed = false;
-        remainingQueue.push(item);
-      }
-    }
-
-    if (allFlushed) {
-      localStorage.removeItem(QUEUE_KEY);
-      if (queue.length > 0) {
-        useAppStore.getState().addToast('[ SYSTEM STATUS: STAGED TELEMETRY SIGNALS FLUSHED TO CORE ]', 'success');
-      }
-    } else {
-      localStorage.setItem(QUEUE_KEY, JSON.stringify(remainingQueue));
-    }
-  } finally {
-    isQueueProcessing = false;
-  }
-};
-
 export const useAXiMHydration = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (!isListenerAttached) {
-      processQueue();
-      if (typeof window !== 'undefined') {
-        window.addEventListener('online', processQueue);
-      }
-      isListenerAttached = true;
-    }
-
-    // We don't remove listener here since it's global
-  }, []);
 
   const fetchLiveLedger = useCallback(async () => {
     setLoading(true);
@@ -120,6 +25,22 @@ export const useAXiMHydration = () => {
         alignment: item.alignment,
         status: item.status
       }));
+    } catch (err) {
+      setError(err);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+
+  const fetchActiveEvents = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { data, error } = await supabase.from('events').select('*');
+      if (error) throw error;
+      return data;
     } catch (err) {
       setError(err);
       return [];
@@ -192,6 +113,7 @@ export const useAXiMHydration = () => {
   }, []);
 
   return {
+    fetchActiveEvents,
     fetchLiveLedger,
     fetchActiveProposals,
     fetchPolicyConsensus,

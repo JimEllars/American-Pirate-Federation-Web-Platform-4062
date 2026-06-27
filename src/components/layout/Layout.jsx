@@ -3,6 +3,7 @@ import { Navbar } from './Navbar';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
+import { generateChecksum } from '../../lib/api/telemetry';
 import { motion } from 'framer-motion';
 
 export function Layout({ children }) {
@@ -10,10 +11,101 @@ export function Layout({ children }) {
   const scrollOffset = useParallax();
   const [queueDepth, setQueueDepth] = useState(0);
 
+
   useEffect(() => {
+    let isQueueProcessing = false;
+    const QUEUE_KEY = 'apf_telemetry_queue';
+
+    const processQueue = async () => {
+      if (isQueueProcessing || typeof navigator === 'undefined' || !navigator.onLine) return;
+      isQueueProcessing = true;
+
+      try {
+        const queueStr = localStorage.getItem(QUEUE_KEY);
+        if (!queueStr) return;
+
+        let queue = [];
+        try {
+          queue = JSON.parse(queueStr);
+        } catch (e) {
+          localStorage.removeItem(QUEUE_KEY);
+          return;
+        }
+
+        if (queue.length === 0) return;
+
+        let allFlushed = true;
+        let remainingQueue = [];
+
+        for (const item of queue) {
+          // 1. Verify Payload Integrity
+          if (item.integrityHash) {
+             const payloadString = JSON.stringify(item.payload);
+             const expectedChecksum = await generateChecksum(payloadString);
+             if (item.integrityHash !== expectedChecksum) {
+                 console.error('[ SECURITY EXCEPTION: CORRUPTED OFFLINE PAYLOAD DROP ENFORCED ]');
+                 continue; // Drop the corrupted payload
+             }
+          }
+
+          // 2. Enforce 2-hour TTL
+          if (item.stagedAt) {
+             const age = Date.now() - item.stagedAt;
+             if (age > 7200000) { // 2 hours in ms
+                 useAppStore.getState().addToast('[ TRANSACTION EXPIRED: SIGNATURE AGE EXCEEDED 2-HOUR MAX BOUNDS ]', 'error');
+                 continue; // Drop the expired payload
+             }
+          }
+
+          try {
+            const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'MISSING_KEY';
+            if (anonKey === 'MISSING_KEY') {
+                useAppStore.getState().addTelemetryLog('[ UPLINK FAILED: MISSING CREDENTIALS ]');
+                allFlushed = false;
+                remainingQueue.push(item);
+                continue;
+            }
+            const res = await fetch(item.url, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'apikey': anonKey,
+                'Authorization': `Bearer ${anonKey}`
+              },
+              body: JSON.stringify(item.payload)
+            });
+
+            if (!res.ok) {
+              allFlushed = false;
+              remainingQueue.push(item);
+            }
+          } catch (e) {
+            allFlushed = false;
+            remainingQueue.push(item);
+          }
+        }
+
+        if (allFlushed) {
+          localStorage.removeItem(QUEUE_KEY);
+          if (queue.length > 0) {
+            useAppStore.getState().addToast('[ SYSTEM STATUS: STAGED TELEMETRY SIGNALS FLUSHED TO CORE ]', 'success');
+          }
+        } else {
+          localStorage.setItem(QUEUE_KEY, JSON.stringify(remainingQueue));
+        }
+      } finally {
+        isQueueProcessing = false;
+      }
+    };
+
+    processQueue();
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', processQueue);
+    }
+
     const updateQueueDepth = () => {
       try {
-        const queueStr = localStorage.getItem('apf_telemetry_queue');
+        const queueStr = localStorage.getItem(QUEUE_KEY);
         if (queueStr) {
           const queue = JSON.parse(queueStr);
           setQueueDepth(queue.length);
@@ -28,8 +120,14 @@ export function Layout({ children }) {
     updateQueueDepth();
     const intervalId = setInterval(updateQueueDepth, 2000); // Check every 2 seconds
 
-    return () => clearInterval(intervalId);
+    return () => {
+        clearInterval(intervalId);
+        if (typeof window !== 'undefined') {
+          window.removeEventListener('online', processQueue);
+        }
+    };
   }, []);
+
 
   return (
     <div className="min-h-screen relative apf-root-container flex flex-col bg-apf-black">
