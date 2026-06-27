@@ -88,7 +88,7 @@ export const logSovereignEntry = async (walletAddress, alias, signature) => {
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
     const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
-    queuePayload('supabase/muster_roll', payload);
+    queuePayload(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/muster_roll`, payload);
   }
 };
 
@@ -102,7 +102,7 @@ export const logRequisition = async (walletAddress, itemID, cost) => {
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
     const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
-    queuePayload('supabase/requisitions', payload);
+    queuePayload(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/requisitions`, payload);
   }
 };
 
@@ -115,6 +115,6 @@ export const logEventSignal = async (walletAddress, eventTitle, signature) => {
   } catch (error) {
     console.error('[ AXIM CORE UPLINK FAILED ]', error);
     const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
-    queuePayload('supabase/event_signals', payload);
+    queuePayload(`${import.meta.env.VITE_SUPABASE_URL}/rest/v1/event_signals`, payload);
   }
 };

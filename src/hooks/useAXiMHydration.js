@@ -140,6 +140,7 @@ export const useAXiMHydration = () => {
       }, {});
     } catch (err) {
       setError(err);
+
       return {};
     } finally {
       setLoading(false);
@@ -161,11 +162,19 @@ export const useAXiMHydration = () => {
     }
   }, []);
 
+
+
+  const fetchSecureTransmissions = useCallback(async () => {
+    // Dormant query placeholder for Transmission Hub
+    return [];
+  }, []);
+
   return {
     fetchLiveLedger,
     fetchActiveProposals,
     fetchPolicyConsensus,
     fetchArmoryInventory,
+    fetchSecureTransmissions,
     loading,
     error,
   };
