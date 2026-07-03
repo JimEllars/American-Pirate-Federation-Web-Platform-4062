@@ -4,6 +4,7 @@ import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSovereignEntry } from '../../lib/api/telemetry';
+import { logSignatureRejection } from '../../lib/api/telemetry';
 
 export function MusterRoll() {
       const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
@@ -52,6 +53,7 @@ export function MusterRoll() {
       addToast('[ IDENTITY CRYPTOGRAPHICALLY VERIFIED & LOGGED ]', 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        logSignatureRejection('/dashboard');
         updateMusterRoll({ status: 'idle' });
         addToast('[ SIGNATURE REJECTED - CLEARANCE DENIED ]', 'error');
       } else {

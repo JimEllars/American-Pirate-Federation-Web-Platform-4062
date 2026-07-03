@@ -4,6 +4,7 @@ import { useSDK, useAddress } from '@thirdweb-dev/react';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 import { logEventSignal } from '../../lib/api/telemetry';
+import { logSignatureRejection } from '../../lib/api/telemetry';
 
 const { FiMapPin, FiUsers, FiClock } = FiIcons;
 
@@ -79,6 +80,7 @@ export function FleetMuster({ event }) {
                   addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");
                 } catch (error) {
                   if (error.code === 4001 || error.message.includes('user rejected')) {
+                     logSignatureRejection('/dashboard');
                      addToast("[ SIGNAL AUTHORIZATION REJECTED ]", "error");
                   } else {
                      addToast("[ SIGNAL AUTHORIZATION FAILED ]", "error");

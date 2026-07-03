@@ -8,7 +8,7 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ThirdwebProvider
       activeChain="arbitrum"
-      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID}
+      clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || ''}
       supportedWallets={[
         embeddedWallet({
           auth: {

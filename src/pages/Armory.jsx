@@ -8,6 +8,7 @@ import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useSDK, useAddress } from '@thirdweb-dev/react';
 import { logRequisition } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
+import { logSignatureRejection } from '../lib/api/telemetry';
 
 const PROVISIONS = [
   {
@@ -99,6 +100,7 @@ export function Armory() {
         addToast('[ REQUISITION TRANSFER AUTHORIZED ]', 'success');
       } catch (err) {
         if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+          logSignatureRejection('/armory');
           addToast('[ SIGNATURE REJECTED - REQUISITION DENIED ]', 'error');
         } else {
           addToast('[ SIGNATURE FAILED - REQUISITION DENIED ]', 'error');
