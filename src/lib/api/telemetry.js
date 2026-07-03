@@ -131,3 +131,32 @@ export const logNetworkTransition = async (targetChainId, successStatus) => {
     console.error('[ TELEMETRY FAILED ]', error);
   }
 };
+
+export const logSignatureRejection = async (contextPath) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Phase46',
+        event_type: 'signature.rejected',
+        timestamp: new Date().toISOString()
+      },
+      telemetry: {
+        context_path: contextPath,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+    });
+
+    useAppStore.getState().addTelemetryLog('[ NET_OPS: OPERATOR DENIED CRYPTOGRAPHIC SIGNATURE ]');
+  } catch (error) {
+    // Intentionally empty
+  }
+};

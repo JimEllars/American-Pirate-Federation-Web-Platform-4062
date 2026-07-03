@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import { useSDK } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
+import { logSignatureRejection } from '../../lib/api/telemetry';
 
 const { FiChevronRight, FiShield, FiUsers, FiClock, FiActivity, FiMessageSquare } = FiIcons;
 
@@ -39,6 +40,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
       addToast('[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]', 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        logSignatureRejection('/policies');
         addToast('[ SIGNATURE REJECTED - CONSENSUS DENIED ]', 'error');
       } else {
         addToast('[ SIGNATURE FAILED - CONSENSUS DENIED ]', 'error');

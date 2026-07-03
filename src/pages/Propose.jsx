@@ -7,6 +7,7 @@ import { useAppStore } from '../store/useAppStore';
 import { useAddress, useSDK } from '@thirdweb-dev/react';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
+import { logSignatureRejection } from '../lib/api/telemetry';
 
 export function Propose() {
   const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning } = useAppStore();
@@ -84,6 +85,7 @@ export function Propose() {
     } catch (err) {
         setSubmitting(false);
         if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+            logSignatureRejection('/propose');
             addToast('[ SIGNATURE REJECTED - PROPOSAL ABORTED ]', 'error');
         } else {
             addToast('[ SIGNATURE FAILED - PROPOSAL ABORTED ]', 'error');
