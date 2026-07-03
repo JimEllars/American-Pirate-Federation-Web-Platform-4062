@@ -9,7 +9,7 @@ export function NewsFeed() {
 
   if (loading) {
     return (
-      <div className="py-12 flex justify-center text-apf-purple font-mono">
+      <div className="py-12 flex justify-center text-apf-purple font-vt323 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
         <SafeIcon name="Loader" className="animate-spin mr-2" />
         ESTABLISHING SECURE CONNECTION...
       </div>
@@ -19,8 +19,8 @@ export function NewsFeed() {
   // AXiM Stability Protocol: Graceful degradation on intel failure
   if (error || !posts) {
     return (
-      <div className="py-12 flex justify-center">
-        <div className="border border-red-500/50 bg-red-500/10 p-6 rounded text-red-400 font-mono flex items-center gap-3">
+      <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
+        <div className="border border-red-500/50 bg-red-500/10 p-6 text-red-400 font-vt323 flex items-center gap-3">
           <SafeIcon name="AlertTriangle" className="h-6 w-6" />
           <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH INTEL DECK</span>
         </div>
@@ -57,7 +57,7 @@ export function NewsFeed() {
                 </div>
               )}
               <div className="p-6">
-                <p className="text-apf-purple text-xs font-mono mb-2">
+                <p className="text-apf-purple text-xs font-vt323 tracking-widest mb-2">
                   {new Date(post.date).toLocaleDateString()}
                 </p>
                 <h3 
@@ -68,7 +68,7 @@ export function NewsFeed() {
                   className="prose prose-invert prose-sm text-gray-400 line-clamp-3 font-mono"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                 />
-                <button className="mt-4 text-sm font-mono text-apf-purpleLight hover:text-white flex items-center gap-2">
+                <button className="mt-4 text-sm font-vt323 uppercase tracking-widest text-apf-purpleLight hover:text-white flex items-center gap-2">
                   Read Decrypt <SafeIcon name="ArrowRight" />
                 </button>
               </div>

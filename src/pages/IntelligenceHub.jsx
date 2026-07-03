@@ -6,9 +6,45 @@ import { motion } from 'framer-motion';
 import SafeIcon from '../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 import { usePirateIntel } from '../hooks/usePirateIntel';
+import { useAXiMHydration } from '../hooks/useAXiMHydration';
+import { useState, useEffect } from 'react';
 
 export function IntelligenceHub() {
-  const { data: posts, loading, error } = usePirateIntel('posts?_embed&per_page=12');
+    const { data: wpPosts, loading: wpLoading, error: wpError } = usePirateIntel('posts?_embed&per_page=12');
+  const { fetchIntelligenceFeeds } = useAXiMHydration();
+
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const mergeFeeds = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const aximFeeds = await fetchIntelligenceFeeds();
+        if (isMounted) {
+          // Pre-stage merging logic (safely fallback to wpPosts for now)
+          const merged = [...(aximFeeds || []), ...(wpPosts || [])];
+          setPosts(merged);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err);
+          setPosts(wpPosts || []); // Fallback
+        }
+      } finally {
+        if (isMounted) setLoading(wpLoading);
+      }
+    };
+
+    if (!wpLoading) {
+        mergeFeeds();
+    }
+
+    return () => { isMounted = false; };
+  }, [wpPosts, wpLoading, fetchIntelligenceFeeds]);
 
   const nodes = [
       'US-EAST-1', 'US-WEST-2', 'EU-CENTRAL-1', 'AP-SOUTH-1', 'SA-EAST-1'

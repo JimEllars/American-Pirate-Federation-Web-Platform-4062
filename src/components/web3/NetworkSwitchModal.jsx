@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
+import { logNetworkTransition } from '../../lib/api/telemetry';
 
 export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss }) {
   useEffect(() => {
@@ -16,16 +17,22 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
 
   const handleDismiss = () => {
     document.body.style.overflow = 'unset';
+    try {
+      logNetworkTransition(42161, false);
+    } catch (e) { console.error(e); }
     if (onDismiss) {
       onDismiss();
     }
   };
 
-  const handleSwitch = () => {
-    // Note: If switch network is asynchronous and doesn't immediately dismiss the modal,
-    // we should wait for it to succeed. However, this is just a dummy so let's allow the normal flow.
+  const handleSwitch = async () => {
     if (onSwitchNetwork) {
-      onSwitchNetwork();
+      try {
+        await onSwitchNetwork();
+        logNetworkTransition(42161, true);
+      } catch (error) {
+        logNetworkTransition(42161, false);
+      }
     }
   };
 
