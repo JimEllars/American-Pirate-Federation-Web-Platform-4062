@@ -16,7 +16,7 @@ export function Ticker() {
   const duplicatedUpdates = [...updates, ...updates, ...updates];
 
   return (
-    <div className="w-full bg-apf-purple/10 border-y border-apf-purple/30 overflow-hidden py-2 flex items-center">
+    <div className="w-full bg-black/40 backdrop-blur-md border-y border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden py-2 flex items-center">
       <div className="w-full relative flex whitespace-nowrap">
         <motion.div
           animate={{ x: [0, -1000] }}
@@ -25,7 +25,7 @@ export function Ticker() {
             ease: "linear",
             duration: 20
           }}
-          className="flex gap-8 items-center text-apf-purpleLight font-mono text-sm uppercase tracking-wider"
+          className="flex gap-8 items-center text-apf-purpleLight font-vt323 text-lg uppercase tracking-wider"
         >
           {duplicatedUpdates.map((text, i) => (
             <div key={i} className="flex items-center gap-4">

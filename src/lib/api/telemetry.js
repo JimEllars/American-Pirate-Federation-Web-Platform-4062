@@ -118,3 +118,16 @@ export const logEventSignal = async (walletAddress, eventTitle, signature) => {
     queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/event_signals`, payload);
   }
 };
+
+export const logNetworkTransition = async (targetChainId, successStatus) => {
+  try {
+    const statusStr = successStatus ? 'SUCCESS' : 'OPERATOR REJECTED NETWORK SWITCH';
+    const msg = successStatus
+      ? `[ NET_OPS: ${targetChainId === 42161 ? 'ARBITRUM_ONE' : targetChainId} TRANSITION SUCCESS ]`
+      : `[ NET_OPS: ${statusStr} ]`;
+
+    useAppStore.getState().addTelemetryLog(msg);
+  } catch (error) {
+    console.error('[ TELEMETRY FAILED ]', error);
+  }
+};

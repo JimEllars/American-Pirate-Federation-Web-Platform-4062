@@ -28,7 +28,7 @@ const ARTICLES = [
 
 export function ThePirateCode() {
   return (
-    <section className="py-24 bg-apf-black relative overflow-hidden">
+    <section className="py-24 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-16 text-center">
           <h2 className="text-4xl md:text-6xl font-black uppercase mb-4 tracking-tighter">
