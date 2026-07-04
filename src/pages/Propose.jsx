@@ -5,6 +5,7 @@ import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAddress, useSDK } from '@thirdweb-dev/react';
+import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection } from '../lib/api/telemetry';
@@ -94,6 +95,27 @@ export function Propose() {
   };
 
   if (!isAuthorized) {
+  if (!address) {
+    return (
+      <Layout>
+        <SEO
+          title="Secure Channel | The Federation"
+          description="Web3 Connection Required."
+        />
+        <PageTransition>
+          <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+            <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+              <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+                [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
+              </div>
+              <Web3ConnectButton />
+            </div>
+          </div>
+        </PageTransition>
+      </Layout>
+    );
+  }
+
       return (
           <Layout>
               <PageTransition>
