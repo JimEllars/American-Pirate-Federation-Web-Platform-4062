@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
     "@tailwindcss/typography": "^0.5.10",
+    "@thirdweb-dev/chains": "^0.1.120",
     "@thirdweb-dev/react": "^4.9.4",
     "@thirdweb-dev/sdk": "^4.0.99",
     "buffer": "^6.0.3",
