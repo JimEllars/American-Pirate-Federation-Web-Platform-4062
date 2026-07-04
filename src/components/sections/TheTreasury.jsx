@@ -10,6 +10,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { useBalance, useNetworkMismatch, useSwitchChain, useAddress, useSigner } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
+import { useAPFContract } from '../../hooks/useAPFContract';
 import { logTreasuryDeployment } from '../../lib/api/telemetry';
 
 const GUILDS = [
@@ -44,6 +45,7 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
+  const { treasuryBalance, isLoadingBalance } = useAPFContract();
   const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning, isCoreSynced, setIsCoreSynced } = useAppStore();
   const address = useAddress();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
@@ -149,6 +151,12 @@ export function TheTreasury() {
                  title="Double click to test Error Boundary"
               >Federation Assets</h2>
               <p className="font-vt323 text-apf-purple mt-2 tracking-widest">[ DECENTRALIZED_RESOURCE_ALLOCATION ]</p>
+              <div className="mt-4 inline-block border border-apf-emerald bg-apf-emerald/10 px-4 py-2">
+                <span className="font-vt323 text-sm text-gray-400 uppercase tracking-widest block">Vault Balance:</span>
+                <span className="font-mono text-2xl text-apf-emerald font-bold">
+                  {isLoadingBalance ? 'SYNCING...' : `${treasuryBalance?.displayValue || '0.00'} ETH`}
+                </span>
+              </div>
            </div>
 
            <div className="flex gap-4 mt-6 md:mt-0 font-vt323 text-sm uppercase">
