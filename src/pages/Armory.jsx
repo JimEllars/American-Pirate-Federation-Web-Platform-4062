@@ -5,7 +5,8 @@ import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
-import { useSDK, useAddress } from '@thirdweb-dev/react';
+import { useSDK, useAddress, useConnectionStatus, useNetworkMismatch, useSwitchChain } from '@thirdweb-dev/react';
+import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
 import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { logRequisition } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
@@ -42,6 +43,9 @@ export function Armory() {
   const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
   const sdk = useSDK();
   const address = useAddress();
+  const connectionStatus = useConnectionStatus();
+  const isMismatched = useNetworkMismatch();
+  const switchChain = useSwitchChain();
   const [procuring, setProcuring] = useState(null);
   const [showRepLog, setShowRepLog] = useState(false);
   const { fetchArmoryInventory, loading: hydrationLoading } = useAXiMHydration();
@@ -112,7 +116,34 @@ export function Armory() {
       }
     }
   };
-  if (!address) {
+
+  if (connectionStatus === 'connected' && isMismatched) {
+    return (
+      <Layout>
+        <SEO
+          title="Secure Channel | The Federation"
+          description="Arbitrum Network Required."
+        />
+        <PageTransition>
+          <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+            <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+              <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+                [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
+              </div>
+              <button
+                onClick={() => switchChain(42161)}
+                className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md"
+              >
+                Switch to Arbitrum One
+              </button>
+            </div>
+          </div>
+        </PageTransition>
+      </Layout>
+    );
+  }
+
+  if (connectionStatus !== 'connected' || !address) {
     return (
       <Layout>
         <SEO
