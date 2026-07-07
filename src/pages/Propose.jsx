@@ -108,17 +108,19 @@ export function Propose() {
           description="Arbitrum Network Required."
         />
         <PageTransition>
-          <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-            <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
-              <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
-                [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
+            <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+                <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+                  [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
+                </div>
+                <button
+                  onClick={() => switchChain(42161)}
+                  className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md"
+                >
+                  Switch to Arbitrum One
+                </button>
               </div>
-              <button
-                onClick={() => switchChain(42161)}
-                className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md"
-              >
-                Switch to Arbitrum One
-              </button>
             </div>
           </div>
         </PageTransition>
@@ -134,12 +136,14 @@ export function Propose() {
           description="Web3 Connection Required."
         />
         <PageTransition>
-          <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-            <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
-              <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
-                [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
+            <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+                <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+                  [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
+                </div>
+                <Web3ConnectButton />
               </div>
-              <Web3ConnectButton />
             </div>
           </div>
         </PageTransition>

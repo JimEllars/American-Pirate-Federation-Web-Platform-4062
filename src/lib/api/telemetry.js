@@ -160,3 +160,33 @@ export const logSignatureRejection = async (contextPath) => {
     // Intentionally empty
   }
 };
+
+export const logRPCException = async (endpoint, errorCode) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Phase49',
+        event_type: 'rpc.exception',
+        timestamp: new Date().toISOString()
+      },
+      telemetry: {
+        endpoint: endpoint,
+        error_code: errorCode,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+    });
+
+    useAppStore.getState().addTelemetryLog('[ NET_OPS: RPC NODE RATE_LIMITED OR UNREACHABLE ]');
+  } catch (error) {
+    // Intentionally empty
+  }
+};
