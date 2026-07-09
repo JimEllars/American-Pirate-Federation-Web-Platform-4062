@@ -190,3 +190,12 @@ export const logRPCException = async (endpoint, errorCode) => {
     // Intentionally empty
   }
 };
+
+export const logTransactionDispatched = async (txHash, context) => {
+  try {
+    const shortHash = txHash ? txHash.substring(0, 10) : '0x00000000';
+    useAppStore.getState().addTelemetryLog(`[ NET_OPS: TX DISPATCHED // HASH: ${shortHash}... ]`);
+  } catch (error) {
+    console.error('[ TELEMETRY FAILED ]', error);
+  }
+};

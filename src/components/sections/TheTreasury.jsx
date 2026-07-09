@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -154,13 +155,16 @@ export function TheTreasury() {
               <div className="mt-4 inline-block border border-apf-emerald bg-apf-emerald/10 px-4 py-2">
                 <span className="font-vt323 text-sm text-gray-400 uppercase tracking-widest block">Vault Balance:</span>
                 <span className="font-mono text-2xl text-apf-emerald font-bold">
-                  {isLoadingBalance ? (
-                      '[ SYNCING RPC... ]'
-                  ) : treasuryBalance?.displayValue ? (
-                      `${treasuryBalance.displayValue} ETH`
-                  ) : (
-                      '0.00 ETH'
-                  )}
+                  {(() => {
+                    if (isLoadingBalance) return '[ SYNCING RPC... ]';
+                    if (treasuryBalance === undefined || treasuryBalance === null) return '0.00 ETH';
+                    try {
+                      const formatted = ethers.utils.formatEther(treasuryBalance);
+                      return isNaN(Number(formatted)) ? '0.00 ETH' : `${formatted} ETH`;
+                    } catch (e) {
+                      return '0.00 ETH';
+                    }
+                  })()}
                 </span>
               </div>
            </div>
