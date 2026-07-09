@@ -28,8 +28,7 @@ export function Propose() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [isMining, setIsMining] = useState(false);
-  const { submitHash: mutateAsync, isLoading } = useSubmitFederationHash();
-  console.log("[ WRITE_HOOK_STAGED ]", { isLoading, mutateAsync });
+  const { submitHash: mutateAsync } = useSubmitFederationHash();
   const isLoaded = useRef(false);
 
   const isAuthorized = ['Navigator', 'Guild Master'].includes(userRole);
