@@ -9,7 +9,8 @@ import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
 import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection } from '../lib/api/telemetry';
+import { logSignatureRejection, logTransactionDispatched } from '../lib/api/telemetry';
+import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 
 export function Propose() {
   const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning } = useAppStore();
@@ -26,6 +27,9 @@ export function Propose() {
     alignment: ''
   });
   const [submitting, setSubmitting] = useState(false);
+  const [isMining, setIsMining] = useState(false);
+  const { submitHash: mutateAsync, isLoading } = useSubmitFederationHash();
+  console.log("[ WRITE_HOOK_STAGED ]", { isLoading, mutateAsync });
   const isLoaded = useRef(false);
 
   const isAuthorized = ['Navigator', 'Guild Master'].includes(userRole);
@@ -84,6 +88,7 @@ export function Propose() {
         }
         addProposedAmendment(sanitizedData);
         addReputation(25, "Protocol Revision Proposed");
+        logTransactionDispatched('0xMOCKHASHFORNOW' + Date.now(), 'Propose Protocol Revision');
         addToast('[ PROTOCOL REVISION SIGNED & BROADCAST ]', 'success');
         localStorage.removeItem('apf_proposal_draft');
         navigate('/policies');
@@ -95,6 +100,8 @@ export function Propose() {
         } else {
             addToast('[ SIGNATURE FAILED - PROPOSAL ABORTED ]', 'error');
         }
+    } finally {
+        setIsMining(false);
     }
   };
 
@@ -187,7 +194,14 @@ export function Propose() {
           </div>
 
           <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative flex-grow">
-              <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
+                            <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
+              {isMining && (
+                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
+                      <div className="font-vt323 text-apf-emerald text-xl uppercase tracking-widest animate-pulse border border-apf-emerald/30 bg-apf-emerald/10 px-8 py-4 text-center">
+                          [ ENCRYPTING PAYLOAD & AWAITING BLOCKCHAIN CONFIRMATION... ]
+                      </div>
+                  </div>
+              )}
 
               <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
                   <div className="space-y-2">
@@ -197,6 +211,7 @@ export function Propose() {
                       <input
                           id="title"
                           type="text"
+                          disabled={isMining}
                           required
                           value={formState.title}
                           onChange={(e) => setFormState({...formState, title: e.target.value})}
@@ -211,6 +226,7 @@ export function Propose() {
                       </label>
                       <textarea
                           id="summary"
+                          disabled={isMining}
                           required
                           rows={4}
                           value={formState.summary}
@@ -230,6 +246,7 @@ export function Propose() {
                       <input
                           id="alignment"
                           type="text"
+                          disabled={isMining}
                           required
                           value={formState.alignment}
                           onChange={(e) => setFormState({...formState, alignment: e.target.value})}
@@ -244,7 +261,7 @@ export function Propose() {
                       </div>
                       <button
                           type="submit"
-                          disabled={submitting || isSigning}
+                          disabled={submitting || isSigning || isMining}
                           className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
                           }`}
