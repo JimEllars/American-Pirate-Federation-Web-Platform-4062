@@ -86,9 +86,12 @@ export function Propose() {
                 setIsSigning(false);
             }
         }
+        setIsMining(true);
+        const tx = await mutateAsync({ args: [JSON.stringify(sanitizedData)] });
+
         addProposedAmendment(sanitizedData);
         addReputation(25, "Protocol Revision Proposed");
-        logTransactionDispatched('0xMOCKHASHFORNOW' + Date.now(), 'Propose Protocol Revision');
+        logTransactionDispatched(tx.receipt.transactionHash, 'Propose Protocol Revision');
         addToast('[ PROTOCOL REVISION SIGNED & BROADCAST ]', 'success');
         localStorage.removeItem('apf_proposal_draft');
         navigate('/policies');

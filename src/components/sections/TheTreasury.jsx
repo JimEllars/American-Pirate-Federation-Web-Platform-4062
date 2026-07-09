@@ -160,7 +160,7 @@ export function TheTreasury() {
                     if (treasuryBalance === undefined || treasuryBalance === null) return '0.00 ETH';
                     try {
                       const formatted = ethers.utils.formatEther(treasuryBalance);
-                      return isNaN(Number(formatted)) ? '0.00 ETH' : `${formatted} ETH`;
+                      return `${formatted} ETH`;
                     } catch (e) {
                       return '0.00 ETH';
                     }

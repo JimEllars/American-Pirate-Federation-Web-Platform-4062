@@ -13,7 +13,18 @@ import { Propose } from './pages/Propose';
 import { ToastContainer } from './components/ui/ToastContainer';
 
 function App() {
+  if (!import.meta.env.VITE_THIRDWEB_CLIENT_ID) {
+    return (
+      <div className="bg-[#0A0A0A] min-h-screen flex items-center justify-center p-8">
+        <div className="text-red-500 font-vt323 text-2xl uppercase tracking-widest animate-pulse border border-red-500/30 bg-red-500/10 p-8 text-center max-w-4xl shadow-2xl">
+          [ SYSTEM HALT: CRITICAL ENVIRONMENT VARIABLES (THIRDWEB_CLIENT_ID) MISSING FROM HOST INFRASTRUCTURE ]
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <ErrorBoundary>
       <HelmetProvider>
         <BrowserRouter>
