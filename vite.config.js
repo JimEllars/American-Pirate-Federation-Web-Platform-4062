@@ -10,7 +10,7 @@ export default defineConfig({
     createHtmlPlugin({
       inject: {
         data: {
-          VITE_CF_ANALYTICS_TOKEN: process.env.VITE_CF_ANALYTICS_TOKEN || ''
+          VITE_CF_ANALYTICS_TOKEN: process.env.VITE_CF_ANALYTICS_TOKEN || process.env.CF_PAGES_BRANCH ? '' : ''
         }
       }
     }),
