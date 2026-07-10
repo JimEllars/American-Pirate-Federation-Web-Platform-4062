@@ -7,6 +7,13 @@ import { nodePolyfills } from 'vite-plugin-node-polyfills';
 export default defineConfig({
   plugins: [
     react(),
+    createHtmlPlugin({
+      inject: {
+        data: {
+          VITE_CF_ANALYTICS_TOKEN: process.env.VITE_CF_ANALYTICS_TOKEN || ''
+        }
+      }
+    }),
     nodePolyfills({
       include: ['buffer', 'process', 'util', 'stream', 'http', 'https', 'zlib'],
       globals: {
