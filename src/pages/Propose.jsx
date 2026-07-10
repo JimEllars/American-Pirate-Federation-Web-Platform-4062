@@ -28,8 +28,7 @@ export function Propose() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [isMining, setIsMining] = useState(false);
-  const { submitHash: mutateAsync, isLoading } = useSubmitFederationHash();
-  console.log("[ WRITE_HOOK_STAGED ]", { isLoading, mutateAsync });
+  const { submitHash: mutateAsync } = useSubmitFederationHash();
   const isLoaded = useRef(false);
 
   const isAuthorized = ['Navigator', 'Guild Master'].includes(userRole);
@@ -86,9 +85,12 @@ export function Propose() {
                 setIsSigning(false);
             }
         }
+        setIsMining(true);
+        const tx = await mutateAsync({ args: [JSON.stringify(sanitizedData)] });
+
         addProposedAmendment(sanitizedData);
         addReputation(25, "Protocol Revision Proposed");
-        logTransactionDispatched('0xMOCKHASHFORNOW' + Date.now(), 'Propose Protocol Revision');
+        logTransactionDispatched(tx.receipt.transactionHash, 'Propose Protocol Revision');
         addToast('[ PROTOCOL REVISION SIGNED & BROADCAST ]', 'success');
         localStorage.removeItem('apf_proposal_draft');
         navigate('/policies');
