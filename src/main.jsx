@@ -6,6 +6,15 @@ import App from './App.jsx';
 import './index.css';
 
 const root = createRoot(document.getElementById('root'));
+const cfAnalyticsToken = import.meta.env.VITE_CF_ANALYTICS_TOKEN;
+
+if (cfAnalyticsToken) {
+  const analyticsScript = document.createElement('script');
+  analyticsScript.defer = true;
+  analyticsScript.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+  analyticsScript.setAttribute('data-cf-beacon', JSON.stringify({ token: cfAnalyticsToken }));
+  document.head.appendChild(analyticsScript);
+}
 
 function AppWrapper() {
   let hasClientId = false;
