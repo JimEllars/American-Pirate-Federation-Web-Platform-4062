@@ -13,3 +13,16 @@ export function useSubmitFederationHash() {
     error
   };
 }
+
+export function useSubmitMusterSignature() {
+  const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
+  const { contract } = useContract(contractAddress);
+
+  const { mutateAsync: submitSignature, isLoading, error } = useContractWrite(contract, "submitMusterSignature");
+
+  return {
+    submitSignature,
+    isLoading,
+    error
+  };
+}
