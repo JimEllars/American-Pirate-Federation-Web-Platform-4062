@@ -5,9 +5,15 @@ import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
 import { generateChecksum } from '../../lib/api/telemetry';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 export function Layout({ children }) {
-  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus, telemetryLogs } = useAppStore();
+  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus, telemetryLogs, setIsSigning } = useAppStore();
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsSigning(false);
+  }, [location.pathname, setIsSigning]);
   const scrollOffset = useParallax();
   const [queueDepth, setQueueDepth] = useState(0);
 
