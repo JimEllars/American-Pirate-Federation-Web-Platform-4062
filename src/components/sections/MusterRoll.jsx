@@ -3,7 +3,7 @@ import { useAddress, useSDK, useConnectionStatus } from '@thirdweb-dev/react';
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSovereignEntry } from '../../lib/api/telemetry';
+import { logSovereignEntry, logTransactionDispatched } from '../../lib/api/telemetry';
 import { logSignatureRejection } from '../../lib/api/telemetry';
 import { useSubmitMusterSignature } from '../../hooks/useAPFWrite';
 
@@ -48,12 +48,18 @@ export function MusterRoll() {
         }
       }
 
+      let txHash = null;
       if (signature) {
           logSovereignEntry(address, sanitizedData.alias, signature);
+          const tx = await mutateAsync({ args: [signature] });
+          if (tx && tx.receipt) {
+              txHash = tx.receipt.transactionHash;
+              logTransactionDispatched(txHash, "Muster Signature");
+          }
       }
 
       updateMusterRoll({ status: 'committed' });
-      addToast('[ IDENTITY CRYPTOGRAPHICALLY VERIFIED & LOGGED ]', 'success');
+      addToast('[ MUSTER_SIGNATURE_SUCCESSFUL ]', 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
         logSignatureRejection('/dashboard');

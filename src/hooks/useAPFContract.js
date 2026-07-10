@@ -15,9 +15,11 @@ export function useAPFContract() {
   }, [isError, error]);
 
 
+  const defensiveBalance = (treasuryBalance === null || treasuryBalance === undefined || Number.isNaN(Number(treasuryBalance))) ? "0.00" : treasuryBalance;
+
   return {
     contract,
-    treasuryBalance,
+    treasuryBalance: defensiveBalance,
     isLoadingBalance
   };
 }
