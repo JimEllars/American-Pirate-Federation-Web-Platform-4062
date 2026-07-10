@@ -9,7 +9,9 @@ import { Events } from './pages/Events';
 import { IntelligenceHub } from './pages/IntelligenceHub';
 import { TransmissionHub } from './pages/TransmissionHub';
 import { Armory } from './pages/Armory';
-import { Propose } from './pages/Propose';
+import { Propose } from "./pages/Propose";
+import { NotFound } from "./pages/NotFound";
+import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 
 function App() {
@@ -17,6 +19,7 @@ function App() {
     <ErrorBoundary>
       <HelmetProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <AnimatePresence mode="wait">
             <Routes>
               <Route path="/" element={<Home />} />
@@ -26,6 +29,7 @@ function App() {
               <Route path="/podcast" element={<TransmissionHub />} />
               <Route path="/shop" element={<Armory />} />
               <Route path="/propose" element={<Propose />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
           <ToastContainer />

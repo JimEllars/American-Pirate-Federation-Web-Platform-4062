@@ -5,10 +5,13 @@ import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSovereignEntry } from '../../lib/api/telemetry';
 import { logSignatureRejection } from '../../lib/api/telemetry';
+import { useSubmitMusterSignature } from '../../hooks/useAPFWrite';
 
 export function MusterRoll() {
       const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
   const address = useAddress();
+  const { mutateAsync, isLoading } = useSubmitMusterSignature();
+  console.log("[ MUSTER_HOOK_STAGED ]", { isLoading });
   const sdk = useSDK();
   const connectionStatus = useConnectionStatus();
 
