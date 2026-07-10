@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
+import { logOperatorConnected } from '../../lib/api/telemetry';
 import { useAddress, useConnect, useDisconnect, metamaskWallet, useConnectionStatus } from '@thirdweb-dev/react';
 
 export function Navbar() {
@@ -15,6 +16,14 @@ export function Navbar() {
 
 
   const [prevAddress, setPrevAddress] = useState(address);
+
+  useEffect(() => {
+    if (address && !prevAddress) {
+      logOperatorConnected(address);
+    }
+  }, [address, prevAddress]);
+
+
 
   useEffect(() => {
     // Watchdog to clear state when address disconnects or changes

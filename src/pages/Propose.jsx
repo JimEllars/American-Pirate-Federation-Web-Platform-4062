@@ -9,7 +9,8 @@ import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
 import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection, logTransactionDispatched } from '../lib/api/telemetry';
+import { logSignatureRejection, logTransactionDispatched, logGasException } from '../lib/api/telemetry';
+
 import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 
 export function Propose() {
@@ -96,7 +97,10 @@ export function Propose() {
         navigate('/policies');
     } catch (err) {
         setSubmitting(false);
-        if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        if (err.message && (err.message.toLowerCase().includes('insufficient funds') || err.message.toLowerCase().includes('gas required exceeds allowance') || err.message.toLowerCase().includes('intrinsic gas too low'))) {
+            logGasException(address);
+            addToast('[ SYSTEM ALERT: INSUFFICIENT ARBITRUM GAS FOR DISPATCH ]', 'error');
+        } else if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
             logSignatureRejection('/propose');
             addToast('[ SIGNATURE REJECTED - PROPOSAL ABORTED ]', 'error');
         } else {
