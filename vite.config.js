@@ -30,7 +30,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          thirdweb: ['@thirdweb-dev/react', '@thirdweb-dev/sdk', 'ethers']
+          vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'zustand'],
+          web3: ['@thirdweb-dev/react', 'ethers']
         }
       }
     }
