@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
+import { logOperatorConnected } from '../../lib/api/telemetry';
 import { useAddress, useConnect, useDisconnect, metamaskWallet, useConnectionStatus } from '@thirdweb-dev/react';
 
 export function Navbar() {
@@ -23,6 +24,8 @@ export function Navbar() {
       setIsSigning(false);
       setDeploymentStatus('idle');
       setTreasuryDeploymentStatus('idle');
+    } else if (address && !prevAddress) {
+      logOperatorConnected(address);
     }
     setPrevAddress(address);
   }, [address, prevAddress, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus]);

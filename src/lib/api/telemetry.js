@@ -199,3 +199,41 @@ export const logTransactionDispatched = async (txHash, context) => {
     console.error('[ TELEMETRY FAILED ]', error);
   }
 };
+
+export const logGasException = async (walletAddress) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Phase55',
+        event_type: 'gas.exception',
+        timestamp: new Date().toISOString()
+      },
+      telemetry: {
+        wallet_address: walletAddress,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+    });
+
+    useAppStore.getState().addTelemetryLog('[ NET_OPS: INSUFFICIENT GAS DETECTED ]');
+  } catch (error) {
+    // Intentionally empty
+  }
+};
+
+export const logOperatorConnected = async (walletAddress) => {
+  try {
+    const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` : '0x...';
+    useAppStore.getState().addTelemetryLog(`[ NET_OPS: SECURE CONNECTION ESTABLISHED // ${shortAddress} ]`);
+  } catch (error) {
+    console.error('[ TELEMETRY FAILED ]', error);
+  }
+};
