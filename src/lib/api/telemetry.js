@@ -1,6 +1,53 @@
 import { useAppStore } from '../../store/useAppStore';
 import { supabase } from './supabaseClient';
 
+
+// Throttle Queue
+const insertQueue = [];
+let isQueueProcessing = false;
+
+const processInsertQueue = async () => {
+  if (isQueueProcessing || insertQueue.length === 0) return;
+  isQueueProcessing = true;
+
+  const batch = [...insertQueue];
+  insertQueue.length = 0; // Clear the queue
+
+  try {
+    // Group by table
+    const grouped = batch.reduce((acc, item) => {
+      if (!acc[item.table]) acc[item.table] = [];
+      acc[item.table].push(item.payload);
+      return acc;
+    }, {});
+
+    for (const [table, payloads] of Object.entries(grouped)) {
+      const { error } = await supabase.from(table).insert(payloads);
+      if (error) throw error;
+    }
+  } catch (error) {
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
+    // Put them back in queue or local storage if needed, but for now just log it
+    // Actually, following the original logic, we would use queuePayload for each on failure
+    for (const item of batch) {
+      queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/${item.table}`, item.payload);
+    }
+  } finally {
+    isQueueProcessing = false;
+  }
+};
+
+if (typeof window !== 'undefined') {
+  setInterval(processInsertQueue, 3000);
+}
+
+const queueInsert = (table, payload, successMessage) => {
+  insertQueue.push({ table, payload });
+  if (successMessage) {
+    useAppStore.getState().addTelemetryLog(successMessage);
+  }
+};
+
 const QUEUE_KEY = 'apf_telemetry_queue';
 
 export const generateChecksum = async (payloadString) => {
@@ -68,7 +115,7 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
       if (!res.ok) {
         queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
       } else {
-        console.log('[ TELEMETRY UPLINK ESTABLISHED ]');
+        console.info('[ TELEMETRY UPLINK ESTABLISHED ]');
       }
     }).catch(() => {
       queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
@@ -82,13 +129,9 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
 export const logSovereignEntry = async (walletAddress, alias, signature) => {
   try {
     const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
-    const { error } = await supabase.from('muster_roll').insert([payload]);
-    if (error) throw error;
-    useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Sovereign Entry Logged.');
+    queueInsert('muster_roll', payload, '[ UPLINK SUCCESS ] Sovereign Entry Queued.');
   } catch (error) {
     console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-    const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
-    queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/muster_roll`, payload);
   }
 };
 
@@ -96,26 +139,18 @@ export const logSovereignEntry = async (walletAddress, alias, signature) => {
 export const logRequisition = async (walletAddress, itemID, cost) => {
   try {
     const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
-    const { error } = await supabase.from('requisitions').insert([payload]);
-    if (error) throw error;
-    useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Requisition Logged.');
+    queueInsert('requisitions', payload, '[ UPLINK SUCCESS ] Requisition Queued.');
   } catch (error) {
     console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-    const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
-    queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/requisitions`, payload);
   }
 };
 
 export const logEventSignal = async (walletAddress, eventTitle, signature) => {
   try {
     const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
-    const { error } = await supabase.from('event_signals').insert([payload]);
-    if (error) throw error;
-    useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Event Signal Logged.');
+    queueInsert('event_signals', payload, '[ UPLINK SUCCESS ] Event Signal Queued.');
   } catch (error) {
     console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-    const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
-    queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/event_signals`, payload);
   }
 };
 
