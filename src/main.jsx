@@ -19,7 +19,11 @@ if (cfAnalyticsToken) {
 function AppWrapper() {
   let hasRequiredEnv = false;
   try {
-    if (import.meta.env.VITE_THIRDWEB_CLIENT_ID && import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    if (
+      import.meta.env.VITE_THIRDWEB_CLIENT_ID &&
+      import.meta.env.VITE_SUPABASE_URL &&
+      import.meta.env.VITE_SUPABASE_ANON_KEY
+    ) {
       hasRequiredEnv = true;
     }
   } catch (e) {
