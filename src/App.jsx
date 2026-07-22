@@ -13,8 +13,22 @@ import { Propose } from "./pages/Propose";
 import { NotFound } from "./pages/NotFound";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
+import { logUnhandledRejection } from './lib/api/telemetry';
+
 
 function App() {
+  React.useEffect(() => {
+    const handleRejection = (event) => {
+      logUnhandledRejection(event.reason);
+      event.preventDefault();
+    };
+
+    window.addEventListener('unhandledrejection', handleRejection);
+    return () => {
+      window.removeEventListener('unhandledrejection', handleRejection);
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
       <HelmetProvider>
