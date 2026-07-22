@@ -12,11 +12,29 @@ export class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
+    const isChunkLoadError =
+      error.name === 'ChunkLoadError' ||
+      (error.message && /Failed to fetch dynamically imported module/i.test(error.message));
+
+    if (isChunkLoadError) {
+      window.location.reload(true);
+      return;
+    }
+
     console.error('APF System Integrity Failure:', error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
+      const isChunkLoadError =
+        this.state.error?.name === 'ChunkLoadError' ||
+        (this.state.error?.message && /Failed to fetch dynamically imported module/i.test(this.state.error.message));
+
+      if (isChunkLoadError) {
+        // Render nothing or a minimal fallback while reloading
+        return null;
+      }
+
       return (
         <div className="min-h-screen bg-apf-black flex flex-col items-center justify-center p-4 relative overflow-hidden font-vt323 selection:bg-apf-purple selection:text-white">
           <div className="scanlines !pointer-events-none" />
