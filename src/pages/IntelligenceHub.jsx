@@ -8,6 +8,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { usePirateIntel } from '../hooks/usePirateIntel';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useState, useEffect } from 'react';
+import { useAnalyzeFederationData } from '../hooks/usePirateAI';
 
 export function IntelligenceHub() {
     const { data: wpPosts, loading: wpLoading, error: wpError } = usePirateIntel('posts?_embed&per_page=12');
@@ -16,6 +17,9 @@ export function IntelligenceHub() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Passively bind AI Conduit
+  const { isAnalyzing } = useAnalyzeFederationData(posts);
 
   useEffect(() => {
     let isMounted = true;

@@ -218,7 +218,7 @@ export const useAppStore = create(
         }))
     }),
     {
-      name: 'apf-muster-storage', // Save to local storage for resilience
+      name: 'apf-terminal-storage', // Save to local storage for resilience
       partialize: (state) => ({
         musterRollDraft: {
             alias: state.musterRollDraft.alias,
@@ -235,10 +235,8 @@ export const useAppStore = create(
         reputationHistory: state.reputationHistory,
         requisitionHistory: state.requisitionHistory,
         treasuryAddress: state.treasuryAddress,
-        deployedVaultAddress: state.deployedVaultAddress,
-        deploymentStatus: state.deploymentStatus,
-        treasuryDeploymentStatus: state.treasuryDeploymentStatus
-      }), // Save only specific parts, ignoring volatile UI state like comms/skills draft
+        deployedVaultAddress: state.deployedVaultAddress
+      }), // Specifically omit highly volatile or security-sensitive flags (like isSigning or active RPC loading states)
     }
   )
 );
