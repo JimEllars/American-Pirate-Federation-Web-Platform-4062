@@ -86,7 +86,7 @@ export const logSovereignEntry = async (walletAddress, alias, signature) => {
     if (error) throw error;
     useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Sovereign Entry Logged.');
   } catch (error) {
-    console.error('[ AXIM CORE UPLINK FAILED ]', error);
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
     const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
     queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/muster_roll`, payload);
   }
@@ -100,7 +100,7 @@ export const logRequisition = async (walletAddress, itemID, cost) => {
     if (error) throw error;
     useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Requisition Logged.');
   } catch (error) {
-    console.error('[ AXIM CORE UPLINK FAILED ]', error);
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
     const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
     queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/requisitions`, payload);
   }
@@ -113,7 +113,7 @@ export const logEventSignal = async (walletAddress, eventTitle, signature) => {
     if (error) throw error;
     useAppStore.getState().addTelemetryLog('[ UPLINK SUCCESS ] Event Signal Logged.');
   } catch (error) {
-    console.error('[ AXIM CORE UPLINK FAILED ]', error);
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
     const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
     queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/event_signals`, payload);
   }
@@ -128,7 +128,7 @@ export const logNetworkTransition = async (targetChainId, successStatus) => {
 
     useAppStore.getState().addTelemetryLog(msg);
   } catch (error) {
-    console.error('[ TELEMETRY FAILED ]', error);
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
   }
 };
 
@@ -196,7 +196,7 @@ export const logTransactionDispatched = async (txHash, context) => {
     const shortHash = txHash ? txHash.substring(0, 10) : '0x00000000';
     useAppStore.getState().addTelemetryLog(`[ NET_OPS: TX DISPATCHED // HASH: ${shortHash}... ]`);
   } catch (error) {
-    console.error('[ TELEMETRY FAILED ]', error);
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
   }
 };
 
@@ -234,6 +234,6 @@ export const logOperatorConnected = async (walletAddress) => {
     const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` : '0x...';
     useAppStore.getState().addTelemetryLog(`[ NET_OPS: SECURE CONNECTION ESTABLISHED // ${shortAddress} ]`);
   } catch (error) {
-    console.error('[ TELEMETRY FAILED ]', error);
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
   }
 };

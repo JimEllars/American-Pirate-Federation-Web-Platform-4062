@@ -23,3 +23,12 @@ export function useAPFContract() {
     isLoadingBalance
   };
 }
+
+export function useIsVaultAdmin() {
+  // Dormant hook scaffolded for Phase 57.
+  // Will eventually use `useContractRead` to verify access control bytes.
+  return {
+    isAdmin: false,
+    isLoading: false
+  };
+}
