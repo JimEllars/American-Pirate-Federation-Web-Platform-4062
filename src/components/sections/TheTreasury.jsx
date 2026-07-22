@@ -11,7 +11,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { useBalance, useNetworkMismatch, useSwitchChain, useAddress, useSigner } from '@thirdweb-dev/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
-import { useAPFContract } from '../../hooks/useAPFContract';
+import { useAPFContract, useIsVaultAdmin } from '../../hooks/useAPFContract';
 import { logTreasuryDeployment } from '../../lib/api/telemetry';
 
 const GUILDS = [
@@ -47,6 +47,7 @@ const GUILDS = [
 
 export function TheTreasury() {
   const { treasuryBalance, isLoadingBalance } = useAPFContract();
+  const { isAdmin, isLoading: isCheckingAdmin } = useIsVaultAdmin();
   const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning, isCoreSynced, setIsCoreSynced } = useAppStore();
   const address = useAddress();
   const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
@@ -411,7 +412,7 @@ export function TheTreasury() {
                    )}
                    <button
                      onClick={handleDeployVault}
-                     disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success' || isSigning}
+                     disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success' || isSigning || !isAdmin || isCheckingAdmin}
                      className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${
                        isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
                        treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' :
@@ -423,8 +424,13 @@ export function TheTreasury() {
                    </button>
                  </div>
                  <VaultDeployed />
-                 <div className="mt-6 text-center font-vt323 text-gray-500 text-sm">
-                   [ FULFILLING_ARTICLE_II: RADICAL_TRANSPARENCY ]
+                 <div className="mt-6 text-center font-vt323 text-sm">
+                   {isAdmin ? (
+                     <span className="text-apf-emerald">[ ADMIN PROTOCOL VERIFIED ]</span>
+                   ) : (
+                     <span className="text-red-500">[ ADMIN PROTOCOL REQUIRED: SYSTEM LOCKED ]</span>
+                   )}
+                   <div className="text-gray-500 mt-2">[ FULFILLING_ARTICLE_II: RADICAL_TRANSPARENCY ]</div>
                  </div>
               </div>
             </motion.div>

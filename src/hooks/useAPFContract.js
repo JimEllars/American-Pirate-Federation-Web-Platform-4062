@@ -1,12 +1,24 @@
 import { logRPCException } from '../lib/api/telemetry';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useContract, useContractRead } from '@thirdweb-dev/react';
 
 export function useAPFContract() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
   const { contract } = useContract(contractAddress);
 
-  const { data: treasuryBalance, isLoading: isLoadingBalance, isError, error } = useContractRead(contract, "getBalance");
+const { data: rawBalance, isLoading, isError, error } = useContractRead(contract, "getBalance");
+  const [hasTimedOut, setHasTimedOut] = useState(false);
+
+  useEffect(() => {
+    let timeout;
+    if (isLoading && !hasTimedOut) {
+      timeout = setTimeout(() => {
+        setHasTimedOut(true);
+        logRPCException("Arbitrum One", "RPC Timeout Exceeded Threshold");
+      }, 5000);
+    }
+    return () => clearTimeout(timeout);
+  }, [isLoading, hasTimedOut]);
 
   useEffect(() => {
     if (isError) {
@@ -14,13 +26,14 @@ export function useAPFContract() {
     }
   }, [isError, error]);
 
-
-  const defensiveBalance = (treasuryBalance === null || treasuryBalance === undefined || Number.isNaN(Number(treasuryBalance))) ? "0.00" : treasuryBalance;
+  const resolvedBalance = hasTimedOut ? "0.00" : rawBalance;
+  const defensiveBalance = (resolvedBalance === null || resolvedBalance === undefined || Number.isNaN(Number(resolvedBalance))) ? "0.00" : resolvedBalance;
+  const effectiveLoading = isLoading && !hasTimedOut;
 
   return {
     contract,
     treasuryBalance: defensiveBalance,
-    isLoadingBalance
+    isLoadingBalance: effectiveLoading
   };
 }
 
