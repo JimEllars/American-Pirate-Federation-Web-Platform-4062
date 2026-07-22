@@ -2,8 +2,8 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 export function SEO({ title, description, type = 'website', articleData }) {
-  const siteTitle = "American Pirate Federation";
-  const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+  const siteTitle = "American Pirate Federation | Hub";
+  const fullTitle = title ? `${title} | American Pirate Federation` : siteTitle;
   const metaDesc = description || "The American Pirate Federation is a sovereign people's movement. Join the fleet to reclaim data sovereignty and economic reform.";
 
   return (
@@ -14,11 +14,11 @@ export function SEO({ title, description, type = 'website', articleData }) {
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={metaDesc} />
-      <meta property="og:image" content="https://piratefederation.org/apf-social-card.jpg" />
+      <meta property="og:image" content="/og-image.jpg" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={metaDesc} />
-      <meta name="twitter:image" content="https://piratefederation.org/apf-social-card.jpg" />
+      <meta name="twitter:image" content="/og-image.jpg" />
       
 
 
