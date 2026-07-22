@@ -141,7 +141,7 @@ export function Events() {
                    <div key={event.id} className="group flex flex-col bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 cursor-pointer" onClick={() => setActiveReport(event)}>
                       <div className="h-48 bg-black/40 overflow-hidden relative mb-4">
                          <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay group-hover:bg-transparent transition-colors z-10" />
-                         <img src={event.image} alt="Past Event" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" />
+                         <img src={event.image} alt="Past Event" className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105" loading="lazy" />
                       </div>
                       <div className="font-vt323 text-sm text-apf-purple mb-1 uppercase tracking-widest">{event.date} // {event.location}</div>
                       <h3 className="text-xl font-bold text-white group-hover:text-apf-purpleLight transition-colors cursor-pointer" onClick={() => setActiveReport(event)}>

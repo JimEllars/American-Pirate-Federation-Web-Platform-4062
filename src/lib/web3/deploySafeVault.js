@@ -9,7 +9,7 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
     gasless: false // Strict constraint: User covers the <$5 deployment
   };
 
-  console.log('[Deployer] Safe Config Prepped:', safeConfig);
+  // console.log('[Deployer] Safe Config Prepped:', safeConfig);
 
   const smartWallet = new SmartWallet({
     chain: safeConfig.chain,
@@ -67,6 +67,6 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
 
 export const deploySafeVault = async (address, owners, threshold) => {
   // Stub for deploying a Safe Multisig Vault
-  console.log("Deploying Safe Vault for:", address, owners, threshold);
+  // console.log("Deploying Safe Vault for:", address, owners, threshold);
   return Promise.resolve(null);
 };

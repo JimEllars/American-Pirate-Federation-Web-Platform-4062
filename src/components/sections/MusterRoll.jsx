@@ -11,7 +11,7 @@ export function MusterRoll() {
       const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
   const address = useAddress();
   const { mutateAsync, isLoading } = useSubmitMusterSignature();
-  console.log("[ MUSTER_HOOK_STAGED ]", { isLoading });
+  console.info("[ MUSTER_HOOK_STAGED ]", { isLoading });
   const sdk = useSDK();
   const connectionStatus = useConnectionStatus();
 
@@ -35,7 +35,7 @@ export function MusterRoll() {
       skills: DOMPurify.sanitize(musterRollDraft.skills),
       walletAddress: DOMPurify.sanitize(musterRollDraft.walletAddress)
     };
-    // Removed console.log for production
+    // Removed console.info for production
 
     try {
       let signature = null;
