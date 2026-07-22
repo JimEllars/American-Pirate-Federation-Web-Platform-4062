@@ -237,3 +237,31 @@ export const logOperatorConnected = async (walletAddress) => {
     console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
   }
 };
+
+export const logUnhandledRejection = async (reason) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Global-Listener',
+        event_type: 'unhandled.rejection',
+        timestamp: new Date().toISOString()
+      },
+      telemetry: {
+        reason: reason?.toString() || 'Unknown Promise Rejection',
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+    });
+
+  } catch (error) {
+    // Fail silently in production mode
+  }
+};
