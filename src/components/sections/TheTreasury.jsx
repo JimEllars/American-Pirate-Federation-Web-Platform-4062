@@ -297,7 +297,8 @@ export function TheTreasury() {
                    </div>
                    <button
                      onClick={() => setIsAuditing(!isAuditing)}
-                     className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-vt323 text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors"
+                     className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-vt323 text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
+                     aria-label={isAuditing ? "Close Audit View" : "Verify Audit via IPFS"}
                    >
                      <SafeIcon name="Download" className="h-4 w-4" /> {isAuditing ? 'Close Audit View' : 'Verify Audit (IPFS)'}
                    </button>
@@ -413,7 +414,8 @@ export function TheTreasury() {
                    <button
                      onClick={handleDeployVault}
                      disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success' || isSigning || !isAdmin || isCheckingAdmin}
-                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all ${
+                     aria-label="Initialize Treasury Vault"
+                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
                        isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
                        treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' :
                        treasuryDeploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' :

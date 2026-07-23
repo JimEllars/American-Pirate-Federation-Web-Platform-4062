@@ -129,7 +129,8 @@ export function Propose() {
                 </div>
                 <button
                   onClick={() => switchChain(42161)}
-                  className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md"
+                  className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
+                  aria-label="Switch to Arbitrum One"
                 >
                   Switch to Arbitrum One
                 </button>
@@ -173,7 +174,8 @@ export function Propose() {
                       <p className="text-gray-400 font-vt323 text-lg border border-red-500/30 bg-red-500/10 p-6 inline-block">
                           Access Denied. Only Navigators and Guild Masters may submit formal protocol revisions to the Federation.
                       </p>
-                      <button onClick={() => navigate('/policies')} className="mt-8 block mx-auto text-apf-purple hover:text-white font-vt323 uppercase tracking-widest underline underline-offset-4">
+                      <button onClick={() => navigate('/policies')} className="mt-8 block mx-auto text-apf-purple hover:text-white font-vt323 uppercase tracking-widest underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
+                          aria-label="Return to Policies">
                           Return to Policies
                       </button>
                   </div>
@@ -268,7 +270,8 @@ export function Propose() {
                       <button
                           type="submit"
                           disabled={submitting || isSigning || isMining}
-                          className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                          aria-label="Submit to Queue"
+                          className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
                               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
                           }`}
                       >

@@ -14,6 +14,7 @@ import { NotFound } from "./pages/NotFound";
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 import { logUnhandledRejection } from './lib/api/telemetry';
+import { supabase } from './lib/api/supabaseClient';
 
 
 function App() {
@@ -26,6 +27,21 @@ function App() {
     window.addEventListener('unhandledrejection', handleRejection);
     return () => {
       window.removeEventListener('unhandledrejection', handleRejection);
+    };
+  }, []);
+
+  React.useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
+          // Silently handle session refresh without UI interruption
+          console.info(`[ SYSTEM ALERT: SUPABASE SESSION EVENT DETECTED: ${event} ]`);
+        }
+      }
+    );
+
+    return () => {
+      authListener?.subscription?.unsubscribe();
     };
   }, []);
 
