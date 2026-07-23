@@ -28,6 +28,8 @@ export const useAppStore = create(
       isSigning: false,
       isCoreSynced: false,
       setIsCoreSynced: (status) => set({ isCoreSynced: status }),
+      aiContextPayload: null,
+      setAiContextPayload: (payload) => set({ aiContextPayload: payload }),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
