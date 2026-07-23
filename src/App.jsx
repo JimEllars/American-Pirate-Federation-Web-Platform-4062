@@ -26,7 +26,7 @@ function App() {
 
     window.addEventListener('unhandledrejection', handleRejection);
     return () => {
-      window.removeEventListener('unhandledrejection', handleRejection);
+      window.removeEventListener('unhandledrejection', handleRejection); // Explicit cleanup retained
     };
   }, []);
 
@@ -41,7 +41,9 @@ function App() {
     );
 
     return () => {
-      authListener?.subscription?.unsubscribe();
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
     };
   }, []);
 

@@ -37,8 +37,15 @@ const processInsertQueue = async () => {
   }
 };
 
+let telemetryInterval = null;
 if (typeof window !== 'undefined') {
-  setInterval(processInsertQueue, 3000);
+  telemetryInterval = setInterval(processInsertQueue, 3000);
+}
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (telemetryInterval) clearInterval(telemetryInterval);
+  });
 }
 
 const queueInsert = (table, payload, successMessage) => {
