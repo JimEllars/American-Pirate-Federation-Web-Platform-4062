@@ -307,3 +307,20 @@ export const logUnhandledRejection = async (reason) => {
     // Fail silently in production mode
   }
 };
+
+export const logCheckoutException = async (reason) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Checkout',
+        event_type: 'checkout.exception',
+        timestamp: new Date().toISOString()
+      },
+      reason: reason
+    };
+    useAppStore.getState().addTelemetryLog('[ NET_OPS: CHECKOUT SEQUENCE TERMINATED OR DECLINED ]');
+    // We intentionally don't store financial data in the queue
+  } catch (error) {
+    // Intentionally empty
+  }
+};

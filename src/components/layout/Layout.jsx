@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navbar } from './Navbar';
+import { ContributeButton } from '../web3/ContributeButton';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
@@ -165,6 +166,9 @@ export function Layout({ children }) {
       />
 
       <Navbar />
+      <div className="fixed bottom-4 left-4 z-50">
+        <ContributeButton />
+      </div>
 
       <main className="flex-grow pt-16 relative z-10 pointer-events-auto">
         {children}
@@ -189,6 +193,36 @@ export function Layout({ children }) {
 
 
       <footer className="border-t border-apf-purple/20 bg-apf-black/80 py-8 text-center text-sm font-vt323 text-gray-500 relative z-10 pointer-events-auto">
+        <div className="max-w-md mx-auto mb-8">
+          <h3 className="text-apf-purple uppercase tracking-widest mb-4">JOIN THE INTELLIGENCE FEED</h3>
+          <form onSubmit={async (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            if (!email) return;
+            try {
+              const res = await fetch("https://api.emailit.com/v1/subscribers", {
+                method: "POST",
+                mode: "cors",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${import.meta.env.VITE_EMAILIT_API_KEY || ""}`
+                },
+                body: JSON.stringify({ email })
+              });
+              if (res.ok) {
+                useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION CONFIRMED ]", "success");
+                e.target.reset();
+              } else {
+                throw new Error("Subscription failed");
+              }
+            } catch (error) {
+              useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION REJECTED ]", "error");
+            }
+          }} className="flex gap-2">
+            <input type="email" name="email" placeholder="ENTER COMM-LINK ADDRESS..." className="flex-1 bg-black/50 border border-apf-purple/30 px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-apf-purple" />
+            <button type="submit" className="bg-apf-purple hover:bg-apf-purpleLight text-white px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors">INITIALIZE</button>
+          </form>
+        </div>
         <p>SECURE NODE ESTABLISHED. APF © {new Date().getFullYear()}</p>
       </footer>
     </div>

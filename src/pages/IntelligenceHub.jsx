@@ -63,9 +63,18 @@ export function IntelligenceHub() {
           <div className="mb-8">
             <div className="flex items-center gap-4 mb-6">
               <SafeIcon name="Activity" className="h-10 w-10 text-apf-emerald" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
-                Consolidated Intelligence Core
-              </h1>
+              <div className="flex-1">
+                <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
+                Consolidated Intelligence Core</h1>
+
+              </div>
+              <button
+                onClick={() => console.info("[ AI_TRIGGER_STAGED ]")}
+                className="px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors"
+              >
+                [ INITIALIZE AI ANALYSIS ]
+              </button>
+
             </div>
             <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-emerald pl-6">
               Real-time synchronization status, fleet telemetry, and decrypted intelligence logs from the American Pirate Federation network.
