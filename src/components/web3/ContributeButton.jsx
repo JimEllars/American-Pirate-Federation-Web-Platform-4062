@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PayEmbed } from 'thirdweb/react';
 import { logCheckoutException } from '../../lib/api/telemetry';
 import SafeIcon from '../../common/SafeIcon';
+import { client } from '../../lib/web3/client';
 
 export function ContributeButton() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,7 +46,7 @@ export function ContributeButton() {
             </button>
             <div className="p-1">
                <PayEmbed
-                 client={import.meta.env.VITE_THIRDWEB_CLIENT_ID || ''}
+                 client={client}
                  theme="dark"
                  onTransactionError={handleTransactionError}
                  onPaymentError={handleTransactionError}

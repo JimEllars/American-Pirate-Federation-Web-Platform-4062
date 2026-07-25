@@ -4,15 +4,19 @@ import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 import { logOperatorConnected } from '../../lib/api/telemetry';
-import { useAddress, useConnect, useDisconnect, metamaskWallet, useConnectionStatus } from '@thirdweb-dev/react';
+import { useActiveAccount, useConnect, useDisconnect, useActiveWalletConnectionStatus, useActiveWallet } from "thirdweb/react";
+import { createWallet } from "thirdweb/wallets";
+import { client } from "../../lib/web3/client";
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
-  const address = useAddress();
-  const connect = useConnect();
-  const disconnect = useDisconnect();
-  const connectionStatus = useConnectionStatus();
+  const account = useActiveAccount();
+  const wallet = useActiveWallet();
+  const address = account?.address;
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
+  const connectionStatus = useActiveWalletConnectionStatus();
 
 
   const [prevAddress, setPrevAddress] = useState(address);
@@ -33,7 +37,11 @@ export function Navbar() {
 
   const handleConnect = async () => {
     try {
-      await connect(metamaskWallet());
+      const metamask = createWallet("io.metamask");
+      await connect(async () => {
+        await metamask.connect({ client });
+        return metamask;
+      });
     } catch (e) {
       addToast('[ WALLET EXTENSION NOT DETECTED ]', 'error');
     }
@@ -112,7 +120,7 @@ export function Navbar() {
                 </button>
               ) : (
                 <button
-                  onClick={disconnect}
+                  onClick={() => disconnect(wallet)}
                   className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>

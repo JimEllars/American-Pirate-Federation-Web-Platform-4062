@@ -1,44 +1,67 @@
-import { useContract, useContractWrite } from '@thirdweb-dev/react';
+import { getContract } from "thirdweb";
+import { useSendTransaction } from "thirdweb/react";
+import { client } from "../lib/web3/client";
+import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
+import { prepareContractCall } from "thirdweb";
 
-export function useSubmitFederationHash() {
+function useAPFContractBase() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
-  const { contract } = useContract(contractAddress);
+  const chain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
 
-  // This is a scaffolded dormant hook. It shouldn't be connected to UI buttons yet.
-  const { mutateAsync: submitHash, isLoading, error } = useContractWrite(contract, "submitHash");
-
-  return {
-    submitHash,
-    isLoading,
-    error
-  };
+  return contractAddress ? getContract({
+    client,
+    chain,
+    address: contractAddress,
+  }) : null;
 }
 
+export function useSubmitFederationHash() {
+  const contract = useAPFContractBase();
+  const { mutateAsync: sendTransaction, isPending: isLoading, error } = useSendTransaction();
+
+  const submitHash = async (args) => {
+    if (!contract) throw new Error("Contract not initialized");
+    const transaction = prepareContractCall({
+      contract,
+      method: "function submitHash(string memory hash)",
+      params: args
+    });
+    return sendTransaction(transaction);
+  };
+
+  return { submitHash, isLoading, error };
+}
 
 export function useSubmitMusterSignature() {
-  const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
-  const { contract } = useContract(contractAddress);
+  const contract = useAPFContractBase();
+  const { mutateAsync: sendTransaction, isPending: isLoading, error } = useSendTransaction();
 
-  // This is a scaffolded dormant hook. It shouldn't be connected to UI buttons yet.
-  const { mutateAsync: submitMusterSignature, isLoading, error } = useContractWrite(contract, "submitMusterSignature");
-
-  return {
-    mutateAsync: submitMusterSignature,
-    isLoading,
-    error
+  const submitMusterSignature = async (args) => {
+    if (!contract) throw new Error("Contract not initialized");
+    const transaction = prepareContractCall({
+      contract,
+      method: "function submitMusterSignature(bytes memory signature)",
+      params: args
+    });
+    return sendTransaction(transaction);
   };
+
+  return { mutateAsync: submitMusterSignature, isLoading, error };
 }
 
 export function useConfigureTreasury() {
-  const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
-  const { contract } = useContract(contractAddress);
+  const contract = useAPFContractBase();
+  const { mutateAsync: sendTransaction, isPending: isLoading, error } = useSendTransaction();
 
-  // This is a scaffolded dormant hook. It shouldn't be connected to UI buttons yet.
-  const { mutateAsync: configureTreasury, isLoading, error } = useContractWrite(contract, "configureTreasury");
-
-  return {
-    mutateAsync: configureTreasury,
-    isLoading,
-    error
+  const configureTreasury = async (args) => {
+    if (!contract) throw new Error("Contract not initialized");
+    const transaction = prepareContractCall({
+      contract,
+      method: "function configureTreasury(uint256 configId)",
+      params: args
+    });
+    return sendTransaction(transaction);
   };
+
+  return { mutateAsync: configureTreasury, isLoading, error };
 }

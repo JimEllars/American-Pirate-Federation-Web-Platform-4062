@@ -8,7 +8,8 @@ import { GasWarningCard } from '../web3/GasWarningCard';
 import { VaultDeployed } from '../web3/VaultDeployed';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
-import { useBalance, useNetworkMismatch, useSwitchChain, useAddress, useSigner } from '@thirdweb-dev/react';
+import { useActiveAccount, useActiveWalletChain, useWalletBalance } from "thirdweb/react";
+import { client } from "../../lib/web3/client";
 import DOMPurify from 'isomorphic-dompurify';
 import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
 import { useAPFContract, useIsVaultAdmin } from '../../hooks/useAPFContract';
@@ -49,11 +50,13 @@ export function TheTreasury() {
   const { treasuryBalance, isLoadingBalance } = useAPFContract();
   const { isAdmin, isLoading: isCheckingAdmin } = useIsVaultAdmin();
   const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning, isCoreSynced, setIsCoreSynced } = useAppStore();
-  const address = useAddress();
-  const { data: balanceData, isLoading: isBalanceLoading } = useBalance();
-  const isMismatched = useNetworkMismatch();
-  const switchChain = useSwitchChain();
-  const signer = useSigner();
+  const account = useActiveAccount();
+  const address = account?.address;
+  const { data: balanceData, isLoading: isBalanceLoading } = useWalletBalance({ client, chain: useActiveWalletChain(), address: useActiveAccount()?.address });
+  const chain = useActiveWalletChain();
+  const isMismatched = chain?.id !== 42161;
+  const switchChain = () => {};
+  const signer = useActiveAccount();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
   const [showNetworkModal, setShowNetworkModal] = useState(false);
   const [showGasWarning, setShowGasWarning] = useState(false);

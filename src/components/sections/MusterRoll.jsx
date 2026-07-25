@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useAddress, useSDK, useConnectionStatus } from '@thirdweb-dev/react';
+import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 import { useAppStore } from '../../store/useAppStore';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
@@ -9,11 +9,11 @@ import { useSubmitMusterSignature } from '../../hooks/useAPFWrite';
 
 export function MusterRoll() {
       const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
-  const address = useAddress();
+  const address = account?.address;
   const { mutateAsync, isLoading } = useSubmitMusterSignature();
   console.info("[ MUSTER_HOOK_STAGED ]", { isLoading });
-  const sdk = useSDK();
-  const connectionStatus = useConnectionStatus();
+  const account = useActiveAccount();
+  const connectionStatus = useActiveWalletConnectionStatus();
 
   useEffect(() => {
     if (address && musterRollDraft.walletAddress?.toLowerCase() !== address?.toLowerCase()) {
@@ -39,10 +39,10 @@ export function MusterRoll() {
 
     try {
       let signature = null;
-      if (sdk) {
+      if (account) {
         setIsSigning(true);
         try {
-          signature = await sdk.wallet.sign("Authorize Sovereign Entry to American Pirate Federation.");
+          signature = await account.signMessage("Authorize Sovereign Entry to American Pirate Federation.");
         } finally {
           setIsSigning(false);
         }

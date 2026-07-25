@@ -1,6 +1,6 @@
 import React from 'react';
 import * as FiIcons from 'react-icons/fi';
-import { useSDK, useAddress } from '@thirdweb-dev/react';
+import { useActiveAccount } from "thirdweb/react";
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 import { logEventSignal } from '../../lib/api/telemetry';
@@ -10,8 +10,8 @@ const { FiMapPin, FiUsers, FiClock } = FiIcons;
 
 export function FleetMuster({ event }) {
   const { musterRollDraft, registerSignal, isSigning, setIsSigning, addToast } = useAppStore();
-  const sdk = useSDK();
-  const address = useAddress();
+  const account = useActiveAccount();
+  const address = account?.address;
   const isCommitted = musterRollDraft.status === 'committed';
   const hasRSVPd = musterRollDraft.rsvps?.includes(event.title);
 
@@ -69,12 +69,12 @@ export function FleetMuster({ event }) {
 
                 try {
                   setIsSigning(true);
-                  if (!sdk || !address) {
+                  if (!account || !address) {
                     addToast("[ ENCRYPTION FAILED: WALLET DISCONNECTED ]", "error");
                     return;
                   }
 
-                  const signature = await sdk.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
+                  const signature = await account.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
                   registerSignal(event.title);
                   logEventSignal(address, event.title, signature);
                   addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");

@@ -5,7 +5,7 @@ import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
-import { useSDK, useAddress, useConnectionStatus, useNetworkMismatch, useSwitchChain } from '@thirdweb-dev/react';
+import { useActiveAccount, useActiveWalletConnectionStatus, useActiveWalletChain } from "thirdweb/react";
 import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
 import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { logRequisition } from '../lib/api/telemetry';
@@ -41,11 +41,12 @@ const PROVISIONS = [
 
 export function Armory() {
   const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
-  const sdk = useSDK();
-  const address = useAddress();
-  const connectionStatus = useConnectionStatus();
-  const isMismatched = useNetworkMismatch();
-  const switchChain = useSwitchChain();
+  const account = useActiveAccount();
+  const address = account?.address;
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const chain = useActiveWalletChain();
+  const isMismatched = chain?.id !== 42161;
+  const switchChain = () => {};
   const [procuring, setProcuring] = useState(null);
   const [showRepLog, setShowRepLog] = useState(false);
   const { fetchArmoryInventory, loading: hydrationLoading } = useAXiMHydration();
@@ -94,8 +95,8 @@ export function Armory() {
       setProcuring(item.id);
       setIsSigning(true);
       try {
-        if (sdk) {
-          await sdk.wallet.sign("Authorize APF Requisition Transfer for: " + item.name);
+        if (account) {
+          await account.signMessage("Authorize APF Requisition Transfer for: " + item.name);
         }
         spendReputation(item.price);
         addRequisition(item);
