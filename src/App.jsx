@@ -3,14 +3,23 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Home } from './pages/Home';
-import { Policies } from './pages/Policies';
-import { Events } from './pages/Events';
-import { IntelligenceHub } from './pages/IntelligenceHub';
-import { TransmissionHub } from './pages/TransmissionHub';
-import { Armory } from './pages/Armory';
-import { Propose } from "./pages/Propose";
+
+
+
+
+
+
+
 import { NotFound } from "./pages/NotFound";
+import { LoadingFallback } from "./components/ui/LoadingFallback";
+
+const LazyHome = React.lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const LazyPolicies = React.lazy(() => import('./pages/Policies').then(m => ({ default: m.Policies })));
+const LazyEvents = React.lazy(() => import('./pages/Events').then(m => ({ default: m.Events })));
+const LazyIntelligenceHub = React.lazy(() => import('./pages/IntelligenceHub').then(m => ({ default: m.IntelligenceHub })));
+const LazyTransmissionHub = React.lazy(() => import('./pages/TransmissionHub').then(m => ({ default: m.TransmissionHub })));
+const LazyArmory = React.lazy(() => import('./pages/Armory').then(m => ({ default: m.Armory })));
+const LazyPropose = React.lazy(() => import('./pages/Propose').then(m => ({ default: m.Propose })));
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 import { logUnhandledRejection } from './lib/api/telemetry';
@@ -52,18 +61,20 @@ function App() {
       <HelmetProvider>
         <BrowserRouter>
           <ScrollToTop />
+          <React.Suspense fallback={<LoadingFallback />}>
           <AnimatePresence mode="wait">
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/intelligence" element={<IntelligenceHub />} />
-              <Route path="/policies" element={<Policies />} />
-              <Route path="/events" element={<Events />} />
-              <Route path="/podcast" element={<TransmissionHub />} />
-              <Route path="/shop" element={<Armory />} />
-              <Route path="/propose" element={<Propose />} />
+              <Route path="/" element={<LazyHome />} />
+              <Route path="/intelligence" element={<LazyIntelligenceHub />} />
+              <Route path="/policies" element={<LazyPolicies />} />
+              <Route path="/events" element={<LazyEvents />} />
+              <Route path="/podcast" element={<LazyTransmissionHub />} />
+              <Route path="/shop" element={<LazyArmory />} />
+              <Route path="/propose" element={<LazyPropose />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
+          </React.Suspense>
           <ToastContainer />
         </BrowserRouter>
       </HelmetProvider>

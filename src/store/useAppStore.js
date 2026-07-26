@@ -28,6 +28,8 @@ export const useAppStore = create(
       isSigning: false,
       isCoreSynced: false,
       setIsCoreSynced: (status) => set({ isCoreSynced: status }),
+      lastSyncTime: null,
+      setLastSyncTime: (time) => set({ lastSyncTime: time }),
       aiContextPayload: null,
       setAiContextPayload: (payload) => set({ aiContextPayload: payload }),
       telemetryLogs: [],
@@ -237,6 +239,7 @@ export const useAppStore = create(
         reputationHistory: state.reputationHistory,
         requisitionHistory: state.requisitionHistory,
         treasuryAddress: state.treasuryAddress,
+        lastSyncTime: state.lastSyncTime,
         deployedVaultAddress: state.deployedVaultAddress
       }), // Specifically omit highly volatile or security-sensitive flags (like isSigning or active RPC loading states)
     }

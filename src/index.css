@@ -52,3 +52,7 @@
     100% { transform: translate(0); }
   }
 }
+/* Suppress default Thirdweb SDK toasts in favor of APF custom toasts */
+.thirdweb-toast {
+  display: none !important;
+}
