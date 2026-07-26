@@ -19,7 +19,6 @@ export function IntelligenceHub() {
   const [error, setError] = useState(null);
 
   // Passively bind AI Conduit
-  // Passively bind AI Conduit
   const { isAnalyzing: isGlobalAnalyzing } = useAnalyzeFederationData(posts);
   const [localAnalyzing, setLocalAnalyzing] = useState(false);
 
