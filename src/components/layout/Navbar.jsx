@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
@@ -17,6 +17,7 @@ export function Navbar() {
   const { connect } = useConnect();
   const { disconnect } = useDisconnect();
   const connectionStatus = useActiveWalletConnectionStatus();
+  const location = useLocation();
 
 
   const [prevAddress, setPrevAddress] = useState(address);
@@ -34,6 +35,10 @@ export function Navbar() {
     setPrevAddress(address);
   }, [address, prevAddress, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus]);
 
+  useEffect(() => {
+    // Mobile navigation auto-close on route change
+    setIsOpen(false);
+  }, [location.pathname]);
 
   const handleConnect = async () => {
     try {
