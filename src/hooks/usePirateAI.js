@@ -17,6 +17,24 @@ export const formatFeedForAI = (rawDataArray) => {
     }).join('\n');
 };
 
+
+export const checkAIHealth = async () => {
+    try {
+        const aiEndpoint = import.meta.env.VITE_AI_ENDPOINT;
+        if (!aiEndpoint) return;
+
+        const response = await fetch(aiEndpoint, {
+            method: 'OPTIONS', // lightweight ping
+        });
+
+        if (response.ok) {
+            console.info('[ AI_ENDPOINT_VERIFIED ]');
+        }
+    } catch (error) {
+        // Passive fail, do not block UI
+    }
+};
+
 export const useAnalyzeFederationData = (contextPayload) => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState(null);
