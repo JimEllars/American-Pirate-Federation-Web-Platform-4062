@@ -1,12 +1,26 @@
 import { logRPCException } from '../lib/api/telemetry';
 import { useEffect, useState } from 'react';
-import { useContract, useContractRead } from '@thirdweb-dev/react';
+import { getContract } from "thirdweb";
+import { useReadContract } from "thirdweb/react";
+import { client } from "../lib/web3/client";
+import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
 
 export function useAPFContract() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
-  const { contract } = useContract(contractAddress);
+  const chain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
 
-const { data: rawBalance, isLoading, isError, error } = useContractRead(contract, "getBalance");
+  const contract = contractAddress ? getContract({
+    client,
+    chain,
+    address: contractAddress,
+  }) : null;
+
+  const { data: rawBalance, isLoading, isError, error } = useReadContract({
+    contract,
+    method: "function getBalance() view returns (uint256)",
+    params: []
+  });
+
   const [hasTimedOut, setHasTimedOut] = useState(false);
 
   useEffect(() => {
@@ -39,7 +53,7 @@ const { data: rawBalance, isLoading, isError, error } = useContractRead(contract
 
 export function useIsVaultAdmin() {
   // Dormant hook scaffolded for Phase 57.
-  // Will eventually use `useContractRead` to verify access control bytes.
+  // Will eventually use `useReadContract` to verify access control bytes.
   return {
     isAdmin: false,
     isLoading: false

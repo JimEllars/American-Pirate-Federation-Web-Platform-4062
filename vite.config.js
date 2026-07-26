@@ -31,7 +31,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'zustand'],
-          web3: ['@thirdweb-dev/react', 'ethers']
+          web3: ['thirdweb', 'thirdweb/react', 'ethers']
         }
       }
     }

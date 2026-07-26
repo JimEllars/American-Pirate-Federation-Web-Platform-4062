@@ -4,7 +4,7 @@ import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
-import { useAddress, useSDK, useConnectionStatus, useNetworkMismatch, useSwitchChain } from '@thirdweb-dev/react';
+import { useActiveAccount, useActiveWalletConnectionStatus, useActiveWalletChain } from "thirdweb/react";
 import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
 import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { useNavigate } from 'react-router-dom';
@@ -15,11 +15,12 @@ import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 export function Propose() {
   const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning } = useAppStore();
   const navigate = useNavigate();
-  const address = useAddress();
-  const connectionStatus = useConnectionStatus();
-  const isMismatched = useNetworkMismatch();
-  const switchChain = useSwitchChain();
-  const sdk = useSDK();
+  const address = account?.address;
+  const account = useActiveAccount();
+  const connectionStatus = useActiveWalletConnectionStatus();
+  const chain = useActiveWalletChain();
+  const isMismatched = chain?.id !== 42161;
+  const switchChain = () => {};
 
   const [formState, setFormState] = useState({
     title: '',
@@ -77,10 +78,10 @@ export function Propose() {
     };
 
     try {
-        if (sdk) {
+        if (account) {
             setIsSigning(true);
             try {
-                await sdk.wallet.sign("Authorize APF Protocol Revision: " + sanitizedData.title);
+                await account.signMessage("Authorize APF Protocol Revision: " + sanitizedData.title);
             } finally {
                 setIsSigning(false);
             }

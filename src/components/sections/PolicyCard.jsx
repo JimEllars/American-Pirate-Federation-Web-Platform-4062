@@ -3,7 +3,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
-import { useSDK } from '@thirdweb-dev/react';
+import { useActiveAccount } from 'thirdweb/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection } from '../../lib/api/telemetry';
 
@@ -15,7 +15,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   const [newComment, setNewComment] = useState('');
 
   const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast, isCoreSynced } = useAppStore();
-  const sdk = useSDK();
+  const account = useActiveAccount();
 
   const comments = policyComments[code] || [
     { author: "Navigator Vance", role: "Navigator", text: "Alignment verified. Ready for ratification.", date: "2024-05-01" },
@@ -33,8 +33,8 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
     if (!canSignal || isSigning) return;
     setIsSigning(true);
     try {
-      if (sdk) {
-        await sdk.wallet.sign("Authorize APF Directive Consensus: " + code);
+      if (account) {
+        await account.signMessage({ message: "Authorize APF Directive Consensus: " + code });
       }
       signalPolicy(code);
       addToast('[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]', 'success');

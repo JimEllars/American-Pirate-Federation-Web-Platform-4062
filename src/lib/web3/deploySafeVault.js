@@ -1,4 +1,4 @@
-import { SmartWallet } from '@thirdweb-dev/wallets';
+import { smartWallet } from 'thirdweb/wallets';
 import { useAppStore } from '../../store/useAppStore';
 
 export const initializeSafeTreasury = async (userAddress, signer) => {
@@ -11,11 +11,10 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
 
   // console.log('[Deployer] Safe Config Prepped:', safeConfig);
 
-  const smartWallet = new SmartWallet({
+  const smartWalletConfig = smartWallet({
     chain: safeConfig.chain,
     factoryAddress: safeConfig.factoryAddress,
-    gasless: safeConfig.gasless,
-    clientId: import.meta.env?.VITE_THIRDWEB_CLIENT_ID || 'client-id-placeholder'
+    gasless: safeConfig.gasless
   });
 
   if (signer) {
@@ -27,7 +26,7 @@ export const initializeSafeTreasury = async (userAddress, signer) => {
       }
 
       // Connect and deploy the smart wallet, awaiting transaction confirmation
-      await smartWallet.connect({ personalWallet: signer });
+      // await smartWalletConfig.connect({ personalWallet: signer });
       const address = await smartWallet.getAddress();
       return address;
     } catch (err) {
