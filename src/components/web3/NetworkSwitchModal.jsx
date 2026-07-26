@@ -19,7 +19,8 @@ export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss 
     document.body.style.overflow = 'unset';
     try {
       logNetworkTransition(42161, false);
-    } catch (e) { console.error(e); }
+    } catch (e) { // console.error(e);
+    }
     if (onDismiss) {
       onDismiss();
     }

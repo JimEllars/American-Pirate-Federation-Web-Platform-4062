@@ -53,7 +53,7 @@ export const useAnalyzeFederationData = (contextPayload) => {
             };
 
         } catch (error) {
-            console.error('[ AI_TRANSMISSION_FAILED ]', error);
+            // console.error('[ AI_TRANSMISSION_FAILED ]', error);
             setIsAnalyzing(false);
             return {
                 isAnalyzing: false,
