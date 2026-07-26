@@ -21,7 +21,7 @@ export class ErrorBoundary extends React.Component {
       return;
     }
 
-    console.error('APF System Integrity Failure:', error, errorInfo);
+    // console.error('APF System Integrity Failure:', error, errorInfo);
   }
 
   render() {

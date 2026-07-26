@@ -9,6 +9,7 @@ import { usePirateIntel } from '../hooks/usePirateIntel';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useState, useEffect } from 'react';
 import { useAnalyzeFederationData } from '../hooks/usePirateAI';
+import { logUnhandledRejection } from '../lib/api/telemetry';
 
 export function IntelligenceHub() {
     const { data: wpPosts, loading: wpLoading, error: wpError } = usePirateIntel('posts?_embed&per_page=12');
@@ -19,8 +20,9 @@ export function IntelligenceHub() {
   const [error, setError] = useState(null);
 
   // Passively bind AI Conduit
-  const { isAnalyzing: isGlobalAnalyzing } = useAnalyzeFederationData(posts);
+  const { isAnalyzing: isGlobalAnalyzing, analyzeData } = useAnalyzeFederationData(posts);
   const [localAnalyzing, setLocalAnalyzing] = useState(false);
+  const [aiAnalysisSuccess, setAiAnalysisSuccess] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -67,21 +69,36 @@ export function IntelligenceHub() {
               <div className="flex-1">
                 <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
                 Consolidated Intelligence Core</h1>
-
               </div>
               <button
-                onClick={() => {
+                onClick={async () => {
                   console.info("[ AI_TRIGGER_STAGED ]");
                   if (!localAnalyzing) {
                       setLocalAnalyzing(true);
-                      setTimeout(() => {
+                      setAiAnalysisSuccess(false);
+                      try {
+                          const aiContextPayload = {
+                              posts,
+                              nodes,
+                              readiness: 94
+                          };
+                          const result = await analyzeData(aiContextPayload);
+                          if (result.aiResponse) {
+                              setAiAnalysisSuccess(true);
+                              setTimeout(() => setAiAnalysisSuccess(false), 3000);
+                          }
+                      } catch (err) {
+                          // console.error("[ AI_TRANSMISSION_FAILED ]", err);
+                          logUnhandledRejection(`[ AI_TRANSMISSION_FAILED ] ${err.message}`);
+                      } finally {
                           setLocalAnalyzing(false);
-                      }, 4000);
+                      }
                   }
                 }}
                 className={`px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
+                disabled={localAnalyzing}
               >
-                {localAnalyzing ? '[ ANALYZING SECTOR DATA... ]' : '[ INITIALIZE AI ANALYSIS ]'}
+                {localAnalyzing ? '[ TRANSMITTING SECURE CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
               </button>
 
             </div>
@@ -113,77 +130,25 @@ export function IntelligenceHub() {
                               <div className="w-full bg-gray-900 h-2">
                                   <div className="bg-apf-emerald h-2" style={{ width: '42%' }}></div>
                               </div>
-                              <div className="flex items-center justify-between mt-2">
-                                  <span className="font-vt323 text-white uppercase text-sm">Surgeon's Dispensary (Healthcare)</span>
+                              <div className="flex items-center justify-between mt-4">
+                                  <span className="font-vt323 text-white uppercase text-sm">Surgeon's Dispensary (Support)</span>
                                   <span className="font-vt323 text-apf-purple font-bold">28%</span>
                               </div>
                               <div className="w-full bg-gray-900 h-2">
                                   <div className="bg-apf-purple h-2" style={{ width: '28%' }}></div>
                               </div>
-                               <div className="flex items-center justify-between mt-2">
-                                  <span className="font-vt323 text-white uppercase text-sm">Quartermaster's (Logistics)</span>
-                                  <span className="font-vt323 text-apf-emerald font-bold">19%</span>
+                              <div className="flex items-center justify-between mt-4">
+                                  <span className="font-vt323 text-white uppercase text-sm">Navigator's Guild (Ops)</span>
+                                  <span className="font-vt323 text-apf-emerald font-bold">30%</span>
                               </div>
                               <div className="w-full bg-gray-900 h-2">
-                                  <div className="bg-apf-emerald h-2" style={{ width: '19%' }}></div>
-                              </div>
-                               <div className="flex items-center justify-between mt-2">
-                                  <span className="font-vt323 text-white uppercase text-sm">Navigator's Guild (Agitprop)</span>
-                                  <span className="font-vt323 text-apf-purple font-bold">11%</span>
-                              </div>
-                              <div className="w-full bg-gray-900 h-2">
-                                  <div className="bg-apf-purple h-2" style={{ width: '11%' }}></div>
-                              </div>
-                              <div className="flex items-center justify-between mt-6 pt-4 border-t border-gray-800">
-                                  <span className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm flex items-center gap-2">
-                                      <SafeIcon name="Heart" className="h-4 w-4" /> Social Stability
-                                  </span>
-                              </div>
-                              <div className="flex items-center justify-between mt-2">
-                                  <span className="font-vt323 text-white uppercase text-xs">Labor Union Density Tracking</span>
-                                  <span className="font-vt323 text-apf-emerald font-bold">82%</span>
-                              </div>
-                              <div className="w-full bg-gray-900 h-1 mb-2">
-                                  <div className="bg-apf-emerald h-1" style={{ width: '82%' }}></div>
-                              </div>
-                              <div className="flex items-center justify-between mt-1">
-                                  <span className="font-vt323 text-white uppercase text-xs">Resource Security Index</span>
-                                  <span className="font-vt323 text-apf-purple font-bold">91%</span>
-                              </div>
-                              <div className="w-full bg-gray-900 h-1 mb-2">
-                                  <div className="bg-apf-purple h-1" style={{ width: '91%' }}></div>
+                                  <div className="bg-apf-emerald h-2" style={{ width: '30%' }}></div>
                               </div>
                           </div>
                       </div>
                   </div>
 
-                   {/* Consensus Velocity */}
-                   <div className="lg:col-span-1 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
-                       <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
-                       <div className="relative z-10 flex flex-col h-full">
-                          <h3 className="font-vt323 text-xl text-apf-purpleLight uppercase tracking-widest mb-6 flex items-center gap-2">
-                              <SafeIcon name="TrendingUp" className="h-5 w-5" /> Consensus Velocity
-                          </h3>
-                          <div className="flex-grow flex items-end justify-between gap-2 h-32 pt-4">
-                               {/* Simulated Bar Chart */}
-                               {[40, 65, 30, 80, 55, 90, 75].map((height, i) => (
-                                   <motion.div
-                                      key={i}
-                                      initial={{ height: 0 }}
-                                      animate={{ height: `${height}%` }}
-                                      transition={{ duration: 1, delay: i * 0.1 }}
-                                      className="w-full bg-apf-purple/80 hover:bg-apf-emerald transition-colors"
-                                      title={`Policy Authorizations: ${height}`}
-                                   />
-                               ))}
-                          </div>
-                          <div className="mt-4 text-center font-vt323 text-gray-500 text-xs uppercase tracking-widest border-t border-gray-800 pt-2">
-                              Policy Authorizations / 7 Days
-                          </div>
-                       </div>
-                   </div>
-
-                    {/* Readiness Score */}
+                  {/* Readiness Score */}
                     <div className="lg:col-span-1 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
                         <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                         <div className="relative z-10">
@@ -287,6 +252,7 @@ export function IntelligenceHub() {
                             <img
                               src={featuredMedia}
                               alt=""
+                              loading="lazy"
                               className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
                             />
                           </div>

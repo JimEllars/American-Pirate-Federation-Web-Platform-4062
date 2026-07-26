@@ -31,7 +31,7 @@ export function TransmissionHub() {
           setSecureTransmissions(data);
         }
       } catch (err) {
-        console.error('[ TRANSMISSION FETCH ERROR ]', err);
+        // console.error('[ TRANSMISSION FETCH ERROR ]', err);
       } finally {
         if (isMounted) {
           setTransmissionsLoading(false);

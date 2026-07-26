@@ -50,7 +50,7 @@ export function Layout({ children }) {
              const payloadString = JSON.stringify(item.payload);
              const expectedChecksum = await generateChecksum(payloadString);
              if (item.integrityHash !== expectedChecksum) {
-                 console.error('[ SECURITY EXCEPTION: CORRUPTED OFFLINE PAYLOAD DROP ENFORCED ]');
+                 // console.error('[ SECURITY EXCEPTION: CORRUPTED OFFLINE PAYLOAD DROP ENFORCED ]');
                  continue; // Drop the corrupted payload
              }
           }

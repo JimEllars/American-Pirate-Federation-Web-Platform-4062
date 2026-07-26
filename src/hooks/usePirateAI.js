@@ -2,11 +2,6 @@ import { useState, useEffect } from 'react';
 import { aiConfig } from '../lib/api/aiConfig';
 
 /**
- * useAnalyzeFederationData
- * Dormant AI hook scaffolded for future launch phases.
- * Does not interact with the UI. Isolated for build safety.
- */
-/**
  * formatFeedForAI
  * Dormant AI utility to scrub raw JSON/HTML feeds into dense text context.
  * Useful for optimizing LLM token limits before submission.
@@ -30,16 +25,41 @@ export const useAnalyzeFederationData = (contextPayload) => {
         // AI endpoint config stored safely for the future
         const config = aiConfig;
 
-        // Mocked promise returning dormant state
-        return new Promise((resolve) => {
-            setTimeout(() => {
+        try {
+            const aiEndpoint = import.meta.env.VITE_AI_ENDPOINT;
+            if (!aiEndpoint) {
+                console.warn('[ AI_ENDPOINT NOT CONFIGURED ]');
                 setIsAnalyzing(false);
-                resolve({
-                    isAnalyzing: false,
-                    aiResponse: null
-                });
-            }, 500);
-        });
+                return { isAnalyzing: false, aiResponse: null };
+            }
+
+            const response = await fetch(aiEndpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ aiContextPayload: payload })
+            });
+
+            if (!response.ok) {
+                throw new Error(`AI Gateway Error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setIsAnalyzing(false);
+            return {
+                isAnalyzing: false,
+                aiResponse: data
+            };
+
+        } catch (error) {
+            // console.error('[ AI_TRANSMISSION_FAILED ]', error);
+            setIsAnalyzing(false);
+            return {
+                isAnalyzing: false,
+                aiResponse: null
+            };
+        }
     };
 
     useEffect(() => {
