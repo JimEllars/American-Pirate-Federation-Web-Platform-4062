@@ -4,7 +4,7 @@ import { ContributeButton } from '../web3/ContributeButton';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
-import { generateChecksum } from '../../lib/api/telemetry';
+import { generateChecksum, logCommLinkSubscription } from '../../lib/api/telemetry';
 import { motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
 
@@ -199,6 +199,20 @@ export function Layout({ children }) {
             e.preventDefault();
             const email = e.target.email.value;
             if (!email) return;
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+              useAppStore.getState().addToast("[ INTELLIGENCE FEED: INVALID EMAIL FORMAT ]", "error");
+              return;
+            }
+
+            const now = Date.now();
+            const lastSub = parseInt(localStorage.getItem('apf_last_sub') || '0', 10);
+            if (now - lastSub < 5000) {
+              useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION LOCKOUT ACTIVE ]", "warning");
+              return;
+            }
+
             try {
               const res = await fetch("https://api.emailit.com/v1/subscribers", {
                 method: "POST",
@@ -210,6 +224,8 @@ export function Layout({ children }) {
                 body: JSON.stringify({ email })
               });
               if (res.ok) {
+                localStorage.setItem('apf_last_sub', now.toString());
+                logCommLinkSubscription(email);
                 useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION CONFIRMED ]", "success");
                 e.target.reset();
               } else {

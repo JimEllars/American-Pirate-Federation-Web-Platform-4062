@@ -324,3 +324,18 @@ export const logCheckoutException = async (reason) => {
     // Intentionally empty
   }
 };
+export const logCommLinkSubscription = async (email) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Comm-Link',
+        event_type: 'subscription.initiated',
+        timestamp: new Date().toISOString()
+      },
+      email: email
+    };
+    useAppStore.getState().addTelemetryLog('[ NET_OPS: COMM LINK SUBSCRIPTION STAGED ]');
+  } catch (error) {
+    // Intentionally empty
+  }
+};
