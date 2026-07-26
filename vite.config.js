@@ -24,7 +24,7 @@ export default defineConfig({
     historyApiFallback: true,
   },
   esbuild: {
-    pure: ['console.log'],
+    drop: ['console'],
   },
   build: {
     outDir: 'dist',
