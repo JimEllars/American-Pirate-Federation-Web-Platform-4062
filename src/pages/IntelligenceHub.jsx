@@ -88,7 +88,7 @@ export function IntelligenceHub() {
                               setTimeout(() => setAiAnalysisSuccess(false), 3000);
                           }
                       } catch (err) {
-                          console.error("[ AI_TRANSMISSION_FAILED ]", err);
+                          // console.error("[ AI_TRANSMISSION_FAILED ]", err);
                           logUnhandledRejection(`[ AI_TRANSMISSION_FAILED ] ${err.message}`);
                       } finally {
                           setLocalAnalyzing(false);
