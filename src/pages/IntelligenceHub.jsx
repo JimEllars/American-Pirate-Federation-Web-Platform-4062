@@ -19,7 +19,8 @@ export function IntelligenceHub() {
   const [error, setError] = useState(null);
 
   // Passively bind AI Conduit
-  const { isAnalyzing } = useAnalyzeFederationData(posts);
+  const { isAnalyzing: isGlobalAnalyzing } = useAnalyzeFederationData(posts);
+  const [localAnalyzing, setLocalAnalyzing] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -69,10 +70,18 @@ export function IntelligenceHub() {
 
               </div>
               <button
-                onClick={() => console.info("[ AI_TRIGGER_STAGED ]")}
-                className="px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors"
+                onClick={() => {
+                  console.info("[ AI_TRIGGER_STAGED ]");
+                  if (!localAnalyzing) {
+                      setLocalAnalyzing(true);
+                      setTimeout(() => {
+                          setLocalAnalyzing(false);
+                      }, 4000);
+                  }
+                }}
+                className={`px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
               >
-                [ INITIALIZE AI ANALYSIS ]
+                {localAnalyzing ? '[ ANALYZING SECTOR DATA... ]' : '[ INITIALIZE AI ANALYSIS ]'}
               </button>
 
             </div>
