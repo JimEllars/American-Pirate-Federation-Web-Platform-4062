@@ -19,6 +19,7 @@ export const formatFeedForAI = (rawDataArray) => {
 
 export const useAnalyzeFederationData = (contextPayload) => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [lastSyncTime, setLastSyncTime] = useState(null);
 
     const analyzeData = async (payload) => {
         setIsAnalyzing(true);
@@ -47,6 +48,7 @@ export const useAnalyzeFederationData = (contextPayload) => {
 
             const data = await response.json();
             setIsAnalyzing(false);
+            setLastSyncTime(new Date().toISOString());
             return {
                 isAnalyzing: false,
                 aiResponse: data
@@ -73,6 +75,7 @@ export const useAnalyzeFederationData = (contextPayload) => {
 
     return {
         isAnalyzing,
-        analyzeData
+        analyzeData,
+        lastSyncTime
     };
 };

@@ -20,7 +20,7 @@ export function IntelligenceHub() {
   const [error, setError] = useState(null);
 
   // Passively bind AI Conduit
-  const { isAnalyzing: isGlobalAnalyzing, analyzeData } = useAnalyzeFederationData(posts);
+  const { isAnalyzing: isGlobalAnalyzing, analyzeData, lastSyncTime } = useAnalyzeFederationData(posts);
   const [localAnalyzing, setLocalAnalyzing] = useState(false);
   const [aiAnalysisSuccess, setAiAnalysisSuccess] = useState(false);
 
@@ -100,6 +100,11 @@ export function IntelligenceHub() {
               >
                 {localAnalyzing ? '[ TRANSMITTING SECURE CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
               </button>
+              {lastSyncTime && (
+                <div className="mt-2 text-apf-emerald font-vt323 text-xs tracking-widest uppercase">
+                  [ LAST SYNC: {lastSyncTime} ]
+                </div>
+              )}
 
             </div>
             <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-emerald pl-6">

@@ -23,6 +23,9 @@ export default defineConfig({
   server: {
     historyApiFallback: true,
   },
+  esbuild: {
+    pure: ['console.log'],
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,

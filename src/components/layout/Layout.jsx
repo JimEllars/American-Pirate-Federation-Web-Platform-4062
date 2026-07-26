@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from './Navbar';
 import { ContributeButton } from '../web3/ContributeButton';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
@@ -17,6 +17,14 @@ export function Layout({ children }) {
   }, [location.pathname, setIsSigning]);
   const scrollOffset = useParallax();
   const [queueDepth, setQueueDepth] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -213,6 +221,7 @@ export function Layout({ children }) {
               return;
             }
 
+            setIsSubmitting(true);
             try {
               const res = await fetch("https://api.emailit.com/v1/subscribers", {
                 method: "POST",
@@ -223,20 +232,28 @@ export function Layout({ children }) {
                 },
                 body: JSON.stringify({ email })
               });
-              if (res.ok) {
-                localStorage.setItem('apf_last_sub', now.toString());
-                logCommLinkSubscription(email);
-                useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION CONFIRMED ]", "success");
-                e.target.reset();
-              } else {
-                throw new Error("Subscription failed");
+              if (isMounted.current) {
+                if (res.ok) {
+                  localStorage.setItem('apf_last_sub', now.toString());
+                  logCommLinkSubscription(email);
+                  useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION CONFIRMED ]", "success");
+                  e.target.reset();
+                } else {
+                  throw new Error("Subscription failed");
+                }
               }
             } catch (error) {
-              useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION REJECTED ]", "error");
+              if (isMounted.current) {
+                useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION REJECTED ]", "error");
+              }
+            } finally {
+              if (isMounted.current) {
+                setIsSubmitting(false);
+              }
             }
           }} className="flex gap-2">
             <input type="email" name="email" placeholder="ENTER COMM-LINK ADDRESS..." className="flex-1 bg-black/50 border border-apf-purple/30 px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-apf-purple" />
-            <button type="submit" className="bg-apf-purple hover:bg-apf-purpleLight text-white px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors">INITIALIZE</button>
+            <button type="submit" disabled={isSubmitting} className="bg-apf-purple hover:bg-apf-purpleLight text-white px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors disabled:opacity-50">INITIALIZE</button>
           </form>
         </div>
         <p>SECURE NODE ESTABLISHED. APF © {new Date().getFullYear()}</p>

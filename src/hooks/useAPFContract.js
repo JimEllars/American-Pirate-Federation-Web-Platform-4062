@@ -40,14 +40,15 @@ export function useAPFContract() {
     }
   }, [isError, error]);
 
-  const resolvedBalance = hasTimedOut ? "0.00" : rawBalance;
+  const resolvedBalance = (hasTimedOut || isError) ? "0.00" : rawBalance;
   const defensiveBalance = (resolvedBalance === null || resolvedBalance === undefined || Number.isNaN(Number(resolvedBalance))) ? "0.00" : resolvedBalance;
-  const effectiveLoading = isLoading && !hasTimedOut;
+  const effectiveLoading = isLoading && !hasTimedOut && !isError;
 
   return {
     contract,
     treasuryBalance: defensiveBalance,
-    isLoadingBalance: effectiveLoading
+    isLoadingBalance: effectiveLoading,
+    isError
   };
 }
 
