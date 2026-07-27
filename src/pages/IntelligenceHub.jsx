@@ -24,6 +24,19 @@ export function IntelligenceHub() {
   const [localAnalyzing, setLocalAnalyzing] = useState(false);
   const [aiAnalysisSuccess, setAiAnalysisSuccess] = useState(false);
 
+
+  // AI Background Polling Scaffolding (Phase 70)
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      console.info('[ BACKGROUND_SYNC: INITIATING INTEL FETCH ]');
+      // TODO: Wire actual fetch call here
+    }, 300000); // 5 minutes
+
+    return () => {
+      clearInterval(pollInterval);
+    };
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
     const mergeFeeds = async () => {
