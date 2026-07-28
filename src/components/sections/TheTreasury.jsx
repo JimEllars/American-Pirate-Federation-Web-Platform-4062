@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
+import { ContributeButton } from '../web3/ContributeButton';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../../hooks/usePirateIntel';
@@ -361,6 +362,18 @@ export function TheTreasury() {
                      </div>
                    </motion.div>
                  )}
+
+
+                 {/* Contribute Section Mapping */}
+                 <div className="mb-8 w-full border border-apf-purple/30 bg-black/50 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div>
+                      <h4 className="text-white font-vt323 text-xl uppercase tracking-widest mb-1">Federation Funding</h4>
+                      <p className="text-gray-400 font-vt323 text-sm">Direct treasury contribution. Funds are routed instantly to the multisig vault.</p>
+                    </div>
+                    <div className="w-full md:w-auto">
+                       <ContributeButton className="w-full md:w-48" />
+                    </div>
+                 </div>
 
                  <div className="overflow-x-auto">
                     <table className="w-full text-left font-vt323">
