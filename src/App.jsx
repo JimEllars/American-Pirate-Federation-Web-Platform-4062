@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import { AnimatePresence } from 'framer-motion';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AiActionModal } from './components/ui/AiActionModal';
+
 
 
 
@@ -109,6 +111,7 @@ function App() {
           </AnimatePresence>
           </React.Suspense>
           <ToastContainer />
+        <AiActionModal isOpen={false} />
         </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>
