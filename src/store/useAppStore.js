@@ -35,12 +35,15 @@ export const useAppStore = create(
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
-      addToast: (message, type = 'info') => {
+      addToast: (message, type = 'info', persistent = false) => {
         const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
-        useAppStore.getState()._scheduleToastRemoval(id);
-        return set((state) => ({
+        if (!persistent) {
+          useAppStore.getState()._scheduleToastRemoval(id);
+        }
+        set((state) => ({
           toasts: [...state.toasts, { id, message, type }]
         }));
+        return id;
       },
 
       _scheduleToastRemoval: (id) => {

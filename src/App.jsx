@@ -24,9 +24,42 @@ import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 import { logUnhandledRejection } from './lib/api/telemetry';
 import { supabase } from './lib/api/supabaseClient';
+import { useAppStore } from './store/useAppStore';
 
 
 function App() {
+  const addToast = useAppStore((state) => state.addToast);
+  const removeToast = useAppStore((state) => state.removeToast);
+  const [offlineToastId, setOfflineToastId] = React.useState(null);
+
+  React.useEffect(() => {
+    const handleOffline = () => {
+      const id = addToast('[ CRITICAL: SECURE CONNECTION LOST - AWAITING SIGNAL ]', 'critical', true);
+      setOfflineToastId(id);
+    };
+
+    const handleOnline = () => {
+      if (offlineToastId) {
+        removeToast(offlineToastId);
+        setOfflineToastId(null);
+      }
+      addToast('[ NET_OPS: SIGNAL RESTORED ]', 'success');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Check initial state
+    if (!navigator.onLine) {
+        handleOffline();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [addToast, removeToast, offlineToastId]);
+
   React.useEffect(() => {
     const handleRejection = (event) => {
       logUnhandledRejection(event.reason);

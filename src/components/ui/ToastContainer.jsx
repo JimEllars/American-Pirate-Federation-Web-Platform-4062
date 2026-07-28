@@ -9,9 +9,9 @@ export function ToastContainer() {
     <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex flex-col gap-2 pointer-events-none max-w-sm">
       <AnimatePresence>
         {toasts.slice(-3).map((toast) => {
-          const isError = toast.type === 'error' || toast.type === 'warning';
-          const borderColor = isError ? 'border-apf-purple' : 'border-apf-emerald';
-          const textColor = isError ? 'text-apf-purple' : 'text-apf-emerald';
+          const isError = toast.type === 'error' || toast.type === 'warning' || toast.type === 'critical';
+          const borderColor = toast.type === 'critical' ? 'border-red-500' : isError ? 'border-apf-purple' : 'border-apf-emerald';
+          const textColor = toast.type === 'critical' ? 'text-red-500' : isError ? 'text-apf-purple' : 'text-apf-emerald';
 
           return (
             <motion.div
