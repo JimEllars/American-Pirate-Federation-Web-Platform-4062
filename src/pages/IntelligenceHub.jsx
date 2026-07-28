@@ -28,8 +28,10 @@ export function IntelligenceHub() {
   // AI Background Polling Scaffolding (Phase 70)
   useEffect(() => {
     const pollInterval = setInterval(() => {
-      console.info('[ BACKGROUND_SYNC: INITIATING INTEL FETCH ]');
-      // TODO: Wire actual fetch call here
+      if (!document.hidden) {
+        console.info('[ BACKGROUND_SYNC: INITIATING INTEL FETCH ]');
+        // TODO: Wire actual fetch call here
+      }
     }, 300000); // 5 minutes
 
     return () => {
