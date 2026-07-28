@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { aiConfig } from '../lib/api/aiConfig';
+import { parseAICommand } from '../lib/api/aiActionParser';
 
 /**
  * formatFeedForAI
@@ -96,4 +97,24 @@ export const useAnalyzeFederationData = (contextPayload) => {
         analyzeData,
         lastSyncTime
     };
+};
+
+
+export const executePirateCommand = (rawAiResponse) => {
+    const { hasAction, command } = parseAICommand(rawAiResponse);
+    if (!hasAction) return;
+
+    switch (command) {
+        case 'DRAFT_POLICY':
+            console.info(`[ SYSTEM: EXECUTING ${command} ]`);
+            break;
+        case 'QUERY_TREASURY':
+            console.info(`[ SYSTEM: EXECUTING ${command} ]`);
+            break;
+        case 'MUSTER_FLEET':
+            console.info(`[ SYSTEM: EXECUTING ${command} ]`);
+            break;
+        default:
+            console.info(`[ SYSTEM: UNKNOWN COMMAND ${command} ]`);
+    }
 };

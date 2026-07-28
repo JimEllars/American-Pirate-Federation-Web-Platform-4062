@@ -235,6 +235,7 @@ export function Propose() {
                       </label>
                       <textarea
                           id="summary"
+                          maxLength={2048}
                           disabled={isMining}
                           required
                           rows={4}
@@ -243,6 +244,9 @@ export function Propose() {
                           className="w-full bg-black/50 border border-gray-800 p-3 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors resize-none"
                           placeholder="Briefly explain the mechanism and intent of this protocol..."
                       />
+                      <div className={`font-vt323 text-sm text-right mt-1 ${formState.summary.length > 2048 * 0.9 ? 'text-red-500' : 'text-apf-emerald'}`}>
+                          BYTES: {formState.summary.length} / 2048
+                      </div>
                   </div>
 
                   <div className="space-y-2">
@@ -270,7 +274,7 @@ export function Propose() {
                       </div>
                       <button
                           type="submit"
-                          disabled={submitting || isSigning || isMining}
+                          disabled={submitting || isSigning || isMining || formState.summary.length === 0 || formState.summary.length > 2048}
                           aria-label="Submit to Queue"
                           className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
                               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
