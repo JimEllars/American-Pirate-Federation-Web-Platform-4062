@@ -10,6 +10,7 @@ import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useState, useEffect } from 'react';
 import { useAnalyzeFederationData } from '../hooks/usePirateAI';
 import { logUnhandledRejection } from '../lib/api/telemetry';
+import { formatTerminalDate } from '../lib/api/formatting';
 
 export function IntelligenceHub() {
     const { data: wpPosts, loading: wpLoading, error: wpError } = usePirateIntel('posts?_embed&per_page=12');
@@ -226,7 +227,7 @@ export function IntelligenceHub() {
                                  animate={{ opacity: 1, x: 0 }}
                                  className="flex gap-4"
                              >
-                                 <span className="text-gray-600">{new Date().toISOString().split('T')[1].substring(0,8)}</span>
+                                 <span className="text-gray-600 font-mono text-[10px]">{formatTerminalDate(new Date().toISOString())}</span>
                                  <span className="text-apf-emerald">NODE_SYNC</span>
                                  <span className="truncate">{node} connected to consensus cluster</span>
                              </motion.div>
@@ -279,7 +280,7 @@ export function IntelligenceHub() {
                         )}
                         <div className="p-6 flex-grow flex flex-col">
                           <p className="text-apf-purple text-xs font-mono mb-2">
-                            {new Date(post.date).toLocaleDateString()}
+                            {formatTerminalDate(post.date)}
                           </p>
                           <h3
                             className="text-xl font-bold mb-3 text-gray-100 group-hover:text-apf-purpleLight transition-colors"
