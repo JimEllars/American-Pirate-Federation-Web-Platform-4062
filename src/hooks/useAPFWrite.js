@@ -3,6 +3,7 @@ import { useSendTransaction } from "thirdweb/react";
 import { client } from "../lib/web3/client";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
 import { prepareContractCall } from "thirdweb";
+import { APF_POLICY_ADDRESS } from "../lib/web3/contracts";
 
 function useAPFContractBase() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
@@ -14,6 +15,11 @@ function useAPFContractBase() {
     address: contractAddress,
   }) : null;
 }
+
+export const useSubmitPolicy = () => {
+  const { mutate: sendTransaction, isPending } = useSendTransaction();
+  return { sendTransaction, isPending };
+};
 
 export function useSubmitFederationHash() {
   const contract = useAPFContractBase();
