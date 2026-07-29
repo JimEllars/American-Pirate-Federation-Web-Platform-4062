@@ -339,3 +339,21 @@ export const logCommLinkSubscription = async (email) => {
     // Intentionally empty
   }
 };
+
+
+export const logOnChainSuccess = async (txHash) => {
+  try {
+    const shortHash = txHash ? txHash.substring(0, 10) : '0x00000000';
+    useAppStore.getState().addTelemetryLog(`[ NET_OPS: TRANSACTION CONFIRMED ON-CHAIN ]`);
+  } catch (error) {
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
+  }
+};
+
+export const logOnChainRevert = async (error) => {
+  try {
+    useAppStore.getState().addTelemetryLog(`[ CRITICAL: TRANSACTION REVERTED BY EVM ]`);
+  } catch (error) {
+    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
+  }
+};

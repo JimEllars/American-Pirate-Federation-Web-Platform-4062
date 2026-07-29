@@ -48,7 +48,7 @@ export function Navbar() {
     if (activeTxQueue && activeTxQueue.length > 0) {
       const tx = activeTxQueue[0];
       try {
-        await processQueuedTransaction(tx, client);
+        await processQueuedTransaction(tx, account);
         addToast('[ SYSTEM: TRANSACTION EXECUTED ]', 'success');
         dequeueTx(tx.id);
       } catch (error) {
