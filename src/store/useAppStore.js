@@ -32,6 +32,9 @@ export const useAppStore = create(
       setLastSyncTime: (time) => set({ lastSyncTime: time }),
       aiContextPayload: null,
       setAiContextPayload: (payload) => set({ aiContextPayload: payload }),
+      pendingAiAction: null,
+      setPendingAiAction: (action) => set({ pendingAiAction: action }),
+      clearPendingAiAction: () => set({ pendingAiAction: null }),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 

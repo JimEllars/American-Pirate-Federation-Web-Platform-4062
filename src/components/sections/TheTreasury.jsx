@@ -365,7 +365,7 @@ export function TheTreasury() {
 
 
                  {/* Contribute Section Mapping */}
-                 <div className="mb-8 w-full border border-apf-purple/30 bg-black/50 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                 <div className="col-span-1 lg:col-span-3 mb-8 w-full border border-apf-purple/30 bg-black/50 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
                       <h4 className="text-white font-vt323 text-xl uppercase tracking-widest mb-1">Federation Funding</h4>
                       <p className="text-gray-400 font-vt323 text-sm">Direct treasury contribution. Funds are routed instantly to the multisig vault.</p>

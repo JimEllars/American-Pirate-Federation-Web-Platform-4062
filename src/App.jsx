@@ -111,7 +111,7 @@ function App() {
           </AnimatePresence>
           </React.Suspense>
           <ToastContainer />
-        <AiActionModal isOpen={false} />
+        <AiActionModal />
         </BrowserRouter>
       </HelmetProvider>
     </ErrorBoundary>

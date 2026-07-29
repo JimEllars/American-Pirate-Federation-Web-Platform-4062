@@ -1,10 +1,17 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
+import { useAppStore } from '../../store/useAppStore';
 
-export function AiActionModal({ isOpen, onClose, commandPayload }) {
+export function AiActionModal() {
+  const pendingAiAction = useAppStore(state => state.pendingAiAction);
+  const clearPendingAiAction = useAppStore(state => state.clearPendingAiAction);
+  const isOpen = !!pendingAiAction;
+  const commandPayload = pendingAiAction?.command;
+
   const handleAuthorize = () => {
     console.info('[ ACTION_AUTHORIZED ]');
+    // Implement transaction queue here later if needed
   };
 
   return (
@@ -46,7 +53,7 @@ export function AiActionModal({ isOpen, onClose, commandPayload }) {
 
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
                 <button
-                  onClick={onClose}
+                  onClick={clearPendingAiAction}
                   className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
                 >
                   [ DENY & PURGE ]
