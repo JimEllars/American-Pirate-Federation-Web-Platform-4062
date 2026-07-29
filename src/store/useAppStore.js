@@ -40,6 +40,7 @@ export const useAppStore = create(
       activeTxQueue: [],
       enqueueTx: (tx) => set((state) => ({ activeTxQueue: [...state.activeTxQueue, tx] })),
       dequeueTx: (txId) => set((state) => ({ activeTxQueue: state.activeTxQueue.filter(t => t.id !== txId) })),
+      clearTxQueue: () => set({ activeTxQueue: [] }),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
