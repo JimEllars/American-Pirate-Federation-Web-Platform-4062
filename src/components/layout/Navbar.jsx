@@ -6,6 +6,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { logOperatorConnected } from '../../lib/api/telemetry';
 import { useActiveAccount, useConnect, useDisconnect, useActiveWalletConnectionStatus, useActiveWallet } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
+import { arbitrum } from "thirdweb/chains";
 import { client } from "../../lib/web3/client";
 import { processQueuedTransaction } from "../../lib/web3/transactionProcessor";
 
@@ -71,7 +72,7 @@ export function Navbar() {
     try {
       const metamask = createWallet("io.metamask");
       await connect(async () => {
-        await metamask.connect({ client });
+        await metamask.connect({ client, chain: arbitrum });
         return metamask;
       });
     } catch (e) {
@@ -144,7 +145,7 @@ export function Navbar() {
                       [ {activeTxQueue.length} PENDING TX ]
                     </span>
                   </button>
-                  <button onClick={handlePurgeQueue} className="px-2 py-1.5 border border-red-500/50 bg-black/50 text-red-500 hover:bg-red-500/20 hover:border-red-500 hover:shadow-[0_0_10px_rgba(239,68,68,0.5)] rounded font-vt323 text-xs uppercase transition-all">
+                  <button onClick={handlePurgeQueue} className="text-xs text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all px-2 py-1 ml-2">
                     [ PURGE ]
                   </button>
                 </div>
@@ -193,7 +194,7 @@ export function Navbar() {
                       [{activeTxQueue.length} TX]
                     </span>
                   </button>
-                  <button onClick={handlePurgeQueue} className="px-1.5 py-1.5 border border-red-500/50 bg-black/50 text-red-500 hover:bg-red-500/20 hover:border-red-500 hover:shadow-[0_0_10px_rgba(239,68,68,0.5)] rounded font-vt323 text-xs uppercase transition-all" title="Purge Queue">
+                  <button onClick={handlePurgeQueue} className="text-xs text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all px-2 py-1 ml-2" title="Purge Queue">
                     [ X ]
                   </button>
                 </div>
