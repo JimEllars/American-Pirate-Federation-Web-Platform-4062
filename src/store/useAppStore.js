@@ -35,6 +35,9 @@ export const useAppStore = create(
       pendingAiAction: null,
       setPendingAiAction: (action) => set({ pendingAiAction: action }),
       clearPendingAiAction: () => set({ pendingAiAction: null }),
+      activeTxQueue: [],
+      enqueueTx: (tx) => set((state) => ({ activeTxQueue: [...state.activeTxQueue, tx] })),
+      dequeueTx: (txId) => set((state) => ({ activeTxQueue: state.activeTxQueue.filter(t => t.id !== txId) })),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
@@ -246,7 +249,8 @@ export const useAppStore = create(
         requisitionHistory: state.requisitionHistory,
         treasuryAddress: state.treasuryAddress,
         lastSyncTime: state.lastSyncTime,
-        deployedVaultAddress: state.deployedVaultAddress
+        deployedVaultAddress: state.deployedVaultAddress,
+        activeTxQueue: state.activeTxQueue
       }), // Specifically omit highly volatile or security-sensitive flags (like isSigning or active RPC loading states)
     }
   )

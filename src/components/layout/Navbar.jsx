@@ -9,6 +9,7 @@ import { createWallet } from "thirdweb/wallets";
 import { client } from "../../lib/web3/client";
 
 export function Navbar() {
+  const activeTxQueue = useAppStore((state) => state.activeTxQueue) || [];
   const [isOpen, setIsOpen] = useState(false);
   const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
   const account = useActiveAccount();
@@ -109,6 +110,24 @@ export function Navbar() {
                   </a>
               )}
 
+              {activeTxQueue?.length > 0 && (
+                <div className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-default">
+                  <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
+                    [ {activeTxQueue.length} PENDING TX ]
+                  </span>
+                </div>
+              )}
+
+              {activeTxQueue?.length > 0 && (
+                <div className="mt-4 flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-default w-full">
+                  <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
+                    [ {activeTxQueue.length} PENDING TX ]
+                  </span>
+                </div>
+              )}
+
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
                   disabled
@@ -139,6 +158,17 @@ export function Navbar() {
           </div>
 
           <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
+              {activeTxQueue?.length > 0 && (
+                <div className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse" title={`${activeTxQueue.length} Pending Tx`}>
+                  <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                  <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none hidden sm:inline-block">
+                    [ {activeTxQueue.length} PENDING TX ]
+                  </span>
+                  <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none sm:hidden">
+                    [{activeTxQueue.length} TX]
+                  </span>
+                </div>
+              )}
               {address && (
                 <div
                   className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald/30 bg-black/50 rounded max-w-full overflow-hidden"

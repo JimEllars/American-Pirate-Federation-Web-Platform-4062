@@ -6,12 +6,14 @@ import { useAppStore } from '../../store/useAppStore';
 export function AiActionModal() {
   const pendingAiAction = useAppStore(state => state.pendingAiAction);
   const clearPendingAiAction = useAppStore(state => state.clearPendingAiAction);
+  const enqueueTx = useAppStore(state => state.enqueueTx);
   const isOpen = !!pendingAiAction;
   const commandPayload = pendingAiAction?.command;
 
   const handleAuthorize = () => {
     console.info('[ ACTION_AUTHORIZED ]');
-    // Implement transaction queue here later if needed
+    enqueueTx({ id: Date.now(), command: commandPayload });
+    clearPendingAiAction();
   };
 
   return (
