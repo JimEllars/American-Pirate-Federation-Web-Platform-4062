@@ -12,7 +12,7 @@ import { processQueuedTransaction } from "../../lib/web3/transactionProcessor";
 export function Navbar() {
   const activeTxQueue = useAppStore((state) => state.activeTxQueue) || [];
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus, dequeueTx } = useAppStore();
+  const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus, dequeueTx, clearTxQueue } = useAppStore();
   const account = useActiveAccount();
   const wallet = useActiveWallet();
   const address = account?.address;
@@ -51,10 +51,20 @@ export function Navbar() {
         addToast('[ SYSTEM: TRANSACTION EXECUTED ]', 'success');
         dequeueTx(tx.id);
       } catch (error) {
-        addToast('[ SYSTEM: TRANSACTION FAILED ]', 'error');
+        const errorMsg = (error?.message || '').toLowerCase();
+        if (errorMsg.includes('user denied') || errorMsg.includes('rejected')) {
+          addToast('[ CRITICAL: SIGNATURE REJECTED - TRANSACTION RETAINED IN QUEUE ]', 'error');
+        } else {
+          addToast('[ SYSTEM: TRANSACTION FAILED ]', 'error');
+        }
         console.error(error);
       }
     }
+  };
+
+  const handlePurgeQueue = () => {
+    clearTxQueue();
+    addToast('[ SYSTEM: LOCAL TRANSACTION QUEUE WIPED ]', 'success');
   };
 
   const handleConnect = async () => {
@@ -127,22 +137,20 @@ export function Navbar() {
               )}
 
               {activeTxQueue?.length > 0 && (
-                <button onClick={handleProcessTx} className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80">
-                  <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                  <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    [ {activeTxQueue.length} PENDING TX ]
-                  </span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button onClick={handleProcessTx} className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80">
+                    <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                    <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
+                      [ {activeTxQueue.length} PENDING TX ]
+                    </span>
+                  </button>
+                  <button onClick={handlePurgeQueue} className="px-2 py-1.5 border border-red-500/50 bg-black/50 text-red-500 hover:bg-red-500/20 hover:border-red-500 hover:shadow-[0_0_10px_rgba(239,68,68,0.5)] rounded font-vt323 text-xs uppercase transition-all">
+                    [ PURGE ]
+                  </button>
+                </div>
               )}
 
-              {activeTxQueue?.length > 0 && (
-                <button onClick={handleProcessTx} className="mt-4 flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer w-full hover:border-apf-emerald/80 hover:bg-black/80">
-                  <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                  <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                    [ {activeTxQueue.length} PENDING TX ]
-                  </span>
-                </button>
-              )}
+
 
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
@@ -175,15 +183,20 @@ export function Navbar() {
 
           <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
               {activeTxQueue?.length > 0 && (
-                <button onClick={handleProcessTx} className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80" title={`${activeTxQueue.length} Pending Tx`}>
-                  <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                  <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none hidden sm:inline-block">
-                    [ {activeTxQueue.length} PENDING TX ]
-                  </span>
-                  <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none sm:hidden">
-                    [{activeTxQueue.length} TX]
-                  </span>
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={handleProcessTx} className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80" title={`${activeTxQueue.length} Pending Tx`}>
+                    <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
+                    <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none hidden sm:inline-block">
+                      [ {activeTxQueue.length} PENDING TX ]
+                    </span>
+                    <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none sm:hidden">
+                      [{activeTxQueue.length} TX]
+                    </span>
+                  </button>
+                  <button onClick={handlePurgeQueue} className="px-1.5 py-1.5 border border-red-500/50 bg-black/50 text-red-500 hover:bg-red-500/20 hover:border-red-500 hover:shadow-[0_0_10px_rgba(239,68,68,0.5)] rounded font-vt323 text-xs uppercase transition-all" title="Purge Queue">
+                    [ X ]
+                  </button>
+                </div>
               )}
               {address && (
                 <div
