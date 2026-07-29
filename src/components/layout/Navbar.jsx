@@ -7,11 +7,12 @@ import { logOperatorConnected } from '../../lib/api/telemetry';
 import { useActiveAccount, useConnect, useDisconnect, useActiveWalletConnectionStatus, useActiveWallet } from "thirdweb/react";
 import { createWallet } from "thirdweb/wallets";
 import { client } from "../../lib/web3/client";
+import { processQueuedTransaction } from "../../lib/web3/transactionProcessor";
 
 export function Navbar() {
   const activeTxQueue = useAppStore((state) => state.activeTxQueue) || [];
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus } = useAppStore();
+  const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus, dequeueTx } = useAppStore();
   const account = useActiveAccount();
   const wallet = useActiveWallet();
   const address = account?.address;
@@ -40,6 +41,21 @@ export function Navbar() {
     // Mobile navigation auto-close on route change
     setIsOpen(false);
   }, [location.pathname]);
+
+
+  const handleProcessTx = async () => {
+    if (activeTxQueue && activeTxQueue.length > 0) {
+      const tx = activeTxQueue[0];
+      try {
+        await processQueuedTransaction(tx, client);
+        addToast('[ SYSTEM: TRANSACTION EXECUTED ]', 'success');
+        dequeueTx(tx.id);
+      } catch (error) {
+        addToast('[ SYSTEM: TRANSACTION FAILED ]', 'error');
+        console.error(error);
+      }
+    }
+  };
 
   const handleConnect = async () => {
     try {
@@ -111,21 +127,21 @@ export function Navbar() {
               )}
 
               {activeTxQueue?.length > 0 && (
-                <div className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-default">
+                <button onClick={handleProcessTx} className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80">
                   <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
                     [ {activeTxQueue.length} PENDING TX ]
                   </span>
-                </div>
+                </button>
               )}
 
               {activeTxQueue?.length > 0 && (
-                <div className="mt-4 flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-default w-full">
+                <button onClick={handleProcessTx} className="mt-4 flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer w-full hover:border-apf-emerald/80 hover:bg-black/80">
                   <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
                     [ {activeTxQueue.length} PENDING TX ]
                   </span>
-                </div>
+                </button>
               )}
 
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
@@ -159,7 +175,7 @@ export function Navbar() {
 
           <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
               {activeTxQueue?.length > 0 && (
-                <div className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse" title={`${activeTxQueue.length} Pending Tx`}>
+                <button onClick={handleProcessTx} className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80" title={`${activeTxQueue.length} Pending Tx`}>
                   <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none hidden sm:inline-block">
                     [ {activeTxQueue.length} PENDING TX ]
@@ -167,7 +183,7 @@ export function Navbar() {
                   <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none sm:hidden">
                     [{activeTxQueue.length} TX]
                   </span>
-                </div>
+                </button>
               )}
               {address && (
                 <div
