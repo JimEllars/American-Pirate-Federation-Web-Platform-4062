@@ -13,7 +13,7 @@ import { logSignatureRejection, logTransactionDispatched, logGasException } from
 import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 
 export function Propose() {
-  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning } = useAppStore();
+  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning, enqueueTx } = useAppStore();
   const navigate = useNavigate();
   const address = account?.address;
   const account = useActiveAccount();
@@ -29,7 +29,7 @@ export function Propose() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [isMining, setIsMining] = useState(false);
-  const { submitHash: mutateAsync } = useSubmitFederationHash();
+
   const isLoaded = useRef(false);
 
   const isAuthorized = ['Navigator', 'Guild Master'].includes(userRole);
@@ -78,37 +78,21 @@ export function Propose() {
     };
 
     try {
-        if (account) {
-            setIsSigning(true);
-            try {
-                await account.signMessage("Authorize APF Protocol Revision: " + sanitizedData.title);
-            } finally {
-                setIsSigning(false);
-            }
-        }
-        setIsMining(true);
-        const tx = await mutateAsync({ args: [JSON.stringify(sanitizedData)] });
+        enqueueTx({
+            id: Date.now(),
+            command: 'DRAFT_POLICY',
+            payload: JSON.stringify(sanitizedData)
+        });
 
-        addProposedAmendment(sanitizedData);
-        addReputation(25, "Protocol Revision Proposed");
-        logTransactionDispatched(tx.receipt.transactionHash, 'Propose Protocol Revision');
-        addToast('[ PROTOCOL REVISION SIGNED & BROADCAST ]', 'success');
+        addToast('[ SYSTEM: PROPOSAL QUEUED FOR SIGNATURE ]', 'success');
+
+        setFormState({ title: '', summary: '', alignment: '' });
         localStorage.removeItem('apf_proposal_draft');
-        navigate('/policies');
     } catch (err) {
-        setSubmitting(false);
-        const errMsg = (err.message || '').toLowerCase();
-        if (err.code === 4001 || errMsg.includes('user rejected')) {
-            logSignatureRejection('/propose');
-            addToast('[ SIGNATURE REJECTED - PROPOSAL ABORTED ]', 'error');
-        } else if (errMsg.includes('insufficient funds') || errMsg.includes('gas')) {
-            logGasException(address);
-            addToast('[ SYSTEM ALERT: INSUFFICIENT ARBITRUM GAS FOR DISPATCH ]', 'error');
-        } else {
-            addToast('[ SIGNATURE FAILED - PROPOSAL ABORTED ]', 'error');
-        }
+        console.error("Queue error", err);
+        addToast('[ SYSTEM ERROR: FAILED TO ENQUEUE TX ]', 'error');
     } finally {
-        setIsMining(false);
+        setSubmitting(false);
     }
   };
 

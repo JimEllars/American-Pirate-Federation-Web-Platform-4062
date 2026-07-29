@@ -1,31 +1,30 @@
 import { prepareContractCall, sendTransaction } from 'thirdweb';
+import { PolicyContract as APF_POLICY_CONTRACT } from './contracts.js';
 
-export const processQueuedTransaction = async (txPayload, thirdwebClient) => {
+export const processQueuedTransaction = async (txPayload, account) => {
   switch (txPayload.command) {
     case 'DRAFT_POLICY':
-    case 'EXECUTE_TREASURY_TRANSFER':
-      console.info('[ SYSTEM: PROCESSOR READY FOR ABI INJECTION ]');
-      /*
-      // 5% Scaffolding for Thirdweb Contract Calls
-      const contract = getContract({
-        client: thirdwebClient,
-        chain: ARBITRUM_CHAIN_ID,
-        address: txPayload.targetAddress
-      });
-
+      console.info('[ SYSTEM: PROCESSOR EXECUTING ABI INJECTION ]');
       const tx = prepareContractCall({
-        contract,
-        method: "function executeAction(bytes32 payload)",
-        params: [txPayload.encodedData]
+        contract: APF_POLICY_CONTRACT,
+        method: "function submitProposal(string text)",
+        params: [txPayload.payload]
       });
 
-      const { transactionHash } = await sendTransaction({
-        transaction: tx,
-        account: activeAccount
-      });
-      console.info('[ SYSTEM: TX MINED ]', transactionHash);
-      */
-      return Promise.resolve(true); // Return safely for the Navbar to process
+      try {
+          const { transactionHash } = await sendTransaction({
+            transaction: tx,
+            account
+          });
+          console.info('[ SYSTEM: TX MINED ]', transactionHash);
+          return transactionHash;
+      } catch (err) {
+          console.error('[ SYSTEM: TX EXCEPTION ]', err);
+          throw err;
+      }
+    case 'EXECUTE_TREASURY_TRANSFER':
+      console.info('[ SYSTEM: PROCESSOR READY FOR TREASURY ABI INJECTION ]');
+      return Promise.resolve(true);
     default:
       console.info('[ SYSTEM: UNKNOWN COMMAND IN PROCESSOR ]');
       return Promise.resolve(true);
