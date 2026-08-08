@@ -1,28 +1,46 @@
 import React from 'react';
-import { usePirateIntel } from '../../hooks/usePirateIntel';
+import { useWPContent } from '../../hooks/useWPContent';
 import DOMPurify from 'isomorphic-dompurify';
 import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 
 export function NewsFeed() {
-  const { data: posts, loading, error } = usePirateIntel('posts?_embed&per_page=3');
+  const { data: posts, isLoading, error } = useWPContent();
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="py-12 flex justify-center text-apf-purple font-vt323 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
-        <SafeIcon name="Loader" className="animate-spin mr-2" />
-        ESTABLISHING SECURE CONNECTION...
+      <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-10 border-b border-apf-purple/30 pb-4">
+          <SafeIcon name="Terminal" className="text-apf-purple h-6 w-6 animate-pulse" />
+          <h2 className="text-3xl font-black uppercase text-white tracking-widest animate-pulse">
+            [ DECRYPTING INCOMING TRANSMISSIONS... ]
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="h-64 bg-[#050505] border border-apf-emerald/20 animate-pulse shadow-2xl transition-all duration-500 rounded-sm"
+            >
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
 
-  // AXiM Stability Protocol: Graceful degradation on intel failure
-  if (error || !posts) {
+  if (!isLoading && (error || !posts || posts.length === 0)) {
     return (
-      <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
-        <div className="border border-red-500/50 bg-red-500/10 p-6 text-red-400 font-vt323 flex items-center gap-3">
-          <SafeIcon name="AlertTriangle" className="h-6 w-6" />
-          <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH INTEL DECK</span>
+      <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-10 border-b border-apf-purple/30 pb-4">
+          <SafeIcon name="Terminal" className="text-apf-purple h-6 w-6" />
+          <h2 className="text-3xl font-black uppercase text-white tracking-widest">Pirate News</h2>
+        </div>
+        <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
+          <div className="border border-apf-purple/50 bg-apf-purple/10 p-6 text-apf-purple font-vt323 flex items-center gap-3 text-xl">
+            <SafeIcon name="AlertTriangle" className="h-6 w-6" />
+            <span>[ FEDERATION COMM-LINK CURRENTLY OFFLINE. RETRYING CONNECTION... ]</span>
+          </div>
         </div>
       </div>
     );
