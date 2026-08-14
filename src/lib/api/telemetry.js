@@ -1,45 +1,11 @@
-import { useAppStore } from '../../store/useAppStore';
 import { supabase } from './supabaseClient';
+import { useAppStore } from '../../store/useAppStore';
 
-
-// Throttle Queue
 const insertQueue = [];
-let isQueueProcessing = false;
+let telemetryInterval;
 
-const processInsertQueue = async () => {
-  if (isQueueProcessing || insertQueue.length === 0) return;
-  isQueueProcessing = true;
-
-  const batch = [...insertQueue];
-  insertQueue.length = 0; // Clear the queue
-
-  try {
-    // Group by table
-    const grouped = batch.reduce((acc, item) => {
-      if (!acc[item.table]) acc[item.table] = [];
-      acc[item.table].push(item.payload);
-      return acc;
-    }, {});
-
-    for (const [table, payloads] of Object.entries(grouped)) {
-      const { error } = await supabase.from(table).insert(payloads);
-      if (error) throw error;
-    }
-  } catch (error) {
-    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-    // Put them back in queue or local storage if needed, but for now just log it
-    // Actually, following the original logic, we would use queuePayload for each on failure
-    for (const item of batch) {
-      queuePayload(`${import.meta.env.VITE_SUPABASE_URL || 'MISSING_KEY'}/rest/v1/${item.table}`, item.payload);
-    }
-  } finally {
-    isQueueProcessing = false;
-  }
-};
-
-let telemetryInterval = null;
 if (typeof window !== 'undefined') {
-  telemetryInterval = setInterval(processInsertQueue, 3000);
+  telemetryInterval = setInterval(flushInsertQueue, 3000);
 }
 
 if (import.meta.hot) {
@@ -48,8 +14,26 @@ if (import.meta.hot) {
   });
 }
 
+async function flushInsertQueue() {
+  if (insertQueue.length === 0) return;
+  const batch = insertQueue.splice(0, insertQueue.length);
+
+  try {
+    const { error } = await supabase.from('telemetry_events').insert(batch);
+    if (error) {
+      console.warn('[ TELEMETRY BATCH INSERT FAILURE ]', error);
+      // Re-queue
+      insertQueue.push(...batch);
+    }
+  } catch (error) {
+    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error);
+    // Re-queue
+    insertQueue.push(...batch);
+  }
+}
+
 const queueInsert = (table, payload, successMessage) => {
-  insertQueue.push({ table, payload });
+  insertQueue.push({ table, payload, created_at: new Date().toISOString() });
   if (successMessage) {
     useAppStore.getState().addTelemetryLog(successMessage);
   }
@@ -91,7 +75,11 @@ const queuePayload = async (url, payload) => {
     integrityHash: checksum
   });
   localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
-  useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
+  try {
+      useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
+  } catch(e) {
+      console.warn('[ TELEMETRY TOAST FAILED ]', e);
+  }
 };
 
 export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
