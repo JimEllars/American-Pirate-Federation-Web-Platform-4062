@@ -22,3 +22,30 @@ export function formatTerminalDate(isoString) {
     return '[ PARSE_ERROR ]';
   }
 }
+
+/**
+ * HTML Sanitizer Utility
+ * Strips HTML tags using Regex and unescapes standard HTML entities.
+ */
+export function stripHtml(htmlString) {
+  if (!htmlString) return '';
+
+  // Strip HTML tags
+  let text = htmlString.replace(/<\/?[^>]+(>|$)/g, '');
+
+  // Unescape standard HTML entities
+  const entities = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&#8217;': "'",
+    '&#8216;': "'",
+    '&#8211;': '-',
+    '&#8212;': '-',
+    '&nbsp;': ' '
+  };
+
+  return text.replace(/&amp;|&lt;|&gt;|&quot;|&#39;|&#8217;|&#8216;|&#8211;|&#8212;|&nbsp;/g, match => entities[match] || match);
+}
