@@ -2,7 +2,8 @@ import React from "react";
 import { ConnectButton } from "thirdweb/react";
 import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
-import { client } from "../../lib/web3/client";
+import { client, isWeb3Configured } from "../../lib/web3/client";
+import { useAppStore } from "../../store/useAppStore";
 
 const ARBITRUM_CHAIN_ID = 42161;
 const AXIM_CORE_TELEMETRY_URL = "https://pvbcdndqjguzqeafhwhw.supabase.co/functions/v1/satellite-telemetry";
@@ -18,6 +19,8 @@ const wallets = [
 ];
 
 export default function Web3ConnectButton({ microAppName = "American-Pirate-Federation-UI" }) {
+  const addToast = useAppStore((state) => state.addToast);
+
   const handleWalletConnectionTelemetry = async (wallet) => {
     try {
       const address = wallet.getAccount()?.address;
@@ -48,8 +51,16 @@ export default function Web3ConnectButton({ microAppName = "American-Pirate-Fede
     }
   };
 
+  const handleContainerClick = (e) => {
+    if (!isWeb3Configured) {
+      e.stopPropagation();
+      e.preventDefault();
+      addToast("[ NET_OPS: WEB3 INFRASTRUCTURE RUNNING IN SIMULATION MODE ]", "warning");
+    }
+  };
+
   return (
-    <div className="axim-web3-button-wrapper">
+    <div className="axim-web3-button-wrapper" onClickCapture={handleContainerClick}>
       <ConnectButton
         client={client}
         wallets={wallets}

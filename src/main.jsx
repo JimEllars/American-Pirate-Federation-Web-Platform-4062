@@ -31,13 +31,7 @@ function AppWrapper() {
   }
 
   if (!hasRequiredEnv) {
-    return (
-      <div className="bg-[#0A0A0A] min-h-screen flex items-center justify-center p-8">
-        <div className="text-red-500 font-vt323 text-2xl uppercase tracking-widest animate-pulse border border-red-500/30 bg-red-500/10 p-8 text-center max-w-4xl shadow-2xl">
-          [ SYSTEM HALT: CRITICAL ENVIRONMENT CONFIGURATION MISSING ]
-        </div>
-      </div>
-    );
+    console.warn('[ APF_ENV_ALERT: RUNNING IN PREVIEW/DEFENSIVE MODE - SOME WEB3/BACKEND FEATURES WILL EMULATE SAFELY ]');
   }
 
   return (
