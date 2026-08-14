@@ -32,6 +32,16 @@ Vite + React single-page app configured for Cloudflare Pages.
 4. Deploy:
    `npm run deploy:cloudflare`
 
+## Production
+
+- Primary domain: `https://pirateusa.org`
+- Alternate domain: `https://www.pirateusa.org`
+- Cloudflare Pages project: `american-pirate-federation-web-platform-4062`
+
+The production Pages environment must define `VITE_THIRDWEB_CLIENT_ID`,
+`VITE_SUPABASE_URL`, and `VITE_SUPABASE_ANON_KEY`. Deploy production builds
+through the connected `main` branch so Vite includes those environment values.
+
 ## Useful scripts
 
 - `npm run build` - production build
