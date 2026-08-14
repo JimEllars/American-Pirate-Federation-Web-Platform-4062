@@ -28,8 +28,8 @@ export function SEO({ title, description, type = 'website', articleData }) {
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": "American Pirate Federation",
-          "url": "https://piratefederation.org",
-          "logo": "https://piratefederation.org/logo.png",
+          "url": "https://pirateusa.org",
+          "logo": "https://pirateusa.org/logo.png",
           "description": "A Hybrid Federation of DAO Nodes and Sovereign LLCs.",
           "sameAs": [
             "https://twitter.com/piratefederation"
