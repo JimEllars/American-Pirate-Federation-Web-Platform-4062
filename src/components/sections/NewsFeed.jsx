@@ -96,6 +96,7 @@ export function NewsFeed() {
                     alt="" 
                     className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity"
                     loading="lazy"
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
                   />
                 </div>
               )}

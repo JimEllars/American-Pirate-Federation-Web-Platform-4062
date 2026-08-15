@@ -8,12 +8,12 @@ import { logSignatureRejection } from '../../lib/api/telemetry';
 import { useSubmitMusterSignature } from '../../hooks/useAPFWrite';
 
 export function MusterRoll() {
-      const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
+  const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
+  const account = useActiveAccount();
   const address = account?.address;
+  const connectionStatus = useActiveWalletConnectionStatus();
   const { mutateAsync, isLoading } = useSubmitMusterSignature();
   console.info("[ MUSTER_HOOK_STAGED ]", { isLoading });
-  const account = useActiveAccount();
-  const connectionStatus = useActiveWalletConnectionStatus();
 
   useEffect(() => {
     if (address && musterRollDraft.walletAddress?.toLowerCase() !== address?.toLowerCase()) {

@@ -3,13 +3,13 @@ import { useSendTransaction } from "thirdweb/react";
 import { client } from "../lib/web3/client";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
 import { prepareContractCall } from "thirdweb";
-import { APF_POLICY_ADDRESS } from "../lib/web3/contracts";
+import { APF_POLICY_ADDRESS, isValidContractAddress } from "../lib/web3/contracts";
 
 function useAPFContractBase() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
   const chain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
 
-  return contractAddress ? getContract({
+  return isValidContractAddress(contractAddress) ? getContract({
     client,
     chain,
     address: contractAddress,
