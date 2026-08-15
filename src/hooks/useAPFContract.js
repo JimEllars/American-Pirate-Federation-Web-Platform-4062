@@ -4,12 +4,13 @@ import { getContract } from "thirdweb";
 import { useReadContract } from "thirdweb/react";
 import { client } from "../lib/web3/client";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
+import { isValidContractAddress } from "../lib/web3/contracts";
 
 export function useAPFContract() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
   const chain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
 
-  const contract = contractAddress ? getContract({
+  const contract = isValidContractAddress(contractAddress) ? getContract({
     client,
     chain,
     address: contractAddress,
@@ -18,7 +19,8 @@ export function useAPFContract() {
   const { data: rawBalance, isLoading, isError, error } = useReadContract({
     contract,
     method: "function getBalance() view returns (uint256)",
-    params: []
+    params: [],
+    queryOptions: { enabled: Boolean(contract) }
   });
 
   const [hasTimedOut, setHasTimedOut] = useState(false);

@@ -15,8 +15,8 @@ import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 export function Propose() {
   const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning, enqueueTx } = useAppStore();
   const navigate = useNavigate();
-  const address = account?.address;
   const account = useActiveAccount();
+  const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
   const chain = useActiveWalletChain();
   const isMismatched = chain?.id !== 42161;

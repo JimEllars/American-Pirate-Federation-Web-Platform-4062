@@ -5,6 +5,12 @@ export const processQueuedTransaction = async (txPayload, account) => {
   switch (txPayload.command) {
     case 'DRAFT_POLICY':
       console.info('[ SYSTEM: PROCESSOR EXECUTING ABI INJECTION ]');
+
+      if (!APF_POLICY_CONTRACT) {
+        console.warn('[ SYSTEM: POLICY CONTRACT NOT CONFIGURED - TRANSACTION SIMULATED ]');
+        return Promise.resolve("0xSIMULATED_PROPOSAL_HASH");
+      }
+
       const tx = prepareContractCall({
         contract: APF_POLICY_CONTRACT,
         method: "function submitProposal(string text)",
