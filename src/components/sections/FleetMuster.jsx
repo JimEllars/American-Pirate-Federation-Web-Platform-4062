@@ -1,12 +1,10 @@
 import React from 'react';
-import * as FiIcons from 'react-icons/fi';
 import { useActiveAccount } from "thirdweb/react";
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
 import { logEventSignal } from '../../lib/api/telemetry';
 import { logSignatureRejection } from '../../lib/api/telemetry';
 
-const { FiMapPin, FiUsers, FiClock } = FiIcons;
 
 export function FleetMuster({ event }) {
   const { musterRollDraft, registerSignal, isSigning, setIsSigning, addToast } = useAppStore();
@@ -51,13 +49,13 @@ export function FleetMuster({ event }) {
             <h3 className="text-2xl font-bold text-white mb-2">{event.title}</h3>
             <div className="flex flex-wrap gap-4 text-xs font-mono text-gray-400">
               <span className="flex items-center gap-1">
-                <SafeIcon icon={FiMapPin} className="text-apf-purple" /> {event.location}
+                <SafeIcon name="MapPin" className="text-apf-purple" /> {event.location}
               </span>
               <span className="flex items-center gap-1">
-                <SafeIcon icon={FiClock} className="text-apf-purple" /> {event.time}
+                <SafeIcon name="Clock" className="text-apf-purple" /> {event.time}
               </span>
               <span className="flex items-center gap-1">
-                <SafeIcon icon={FiUsers} className="text-apf-purple" /> {event.capacity}
+                <SafeIcon name="Users" className="text-apf-purple" /> {event.capacity}
               </span>
             </div>
           </div>

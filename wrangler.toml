@@ -1,3 +1,9 @@
 name = "american-pirate-federation-web-platform-4062"
 pages_build_output_dir = "dist"
 compatibility_date = "2024-03-20"
+
+[vars]
+VITE_THIRDWEB_CLIENT_ID = "production-placeholder-or-leave-blank"
+
+[env.preview.vars]
+VITE_THIRDWEB_CLIENT_ID = "preview-placeholder-or-leave-blank"

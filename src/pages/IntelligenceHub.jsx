@@ -239,8 +239,9 @@ export function IntelligenceHub() {
 
           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
           <section className="space-y-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
-              <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
+              <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative">
                  <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
+                 {error && <span className="absolute right-0 text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
               </h2>
 
               {loading ? (

@@ -5,11 +5,9 @@ import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
 import { PolicyCard } from '../components/sections/PolicyCard';
 import SafeIcon from '../common/SafeIcon';
-import * as FiIcons from 'react-icons/fi';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 
-const { FiBookOpen } = FiIcons;
 
 const POLICIES = [
   {
@@ -148,7 +146,7 @@ export function Policies() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
-              <SafeIcon icon={FiBookOpen} className="h-10 w-10 text-apf-purple" />
+              <SafeIcon name="BookOpen" className="h-10 w-10 text-apf-purple" />
               <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-vt323">
                 Policies
               </h1>

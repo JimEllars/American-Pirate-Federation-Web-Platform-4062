@@ -4,16 +4,24 @@ import { logNetworkTransition } from '../../lib/api/telemetry';
 
 export function NetworkSwitchModal({ isWrongNetwork, onSwitchNetwork, onDismiss }) {
   useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape' && onDismiss) {
+        handleDismiss();
+      }
+    };
+
     if (isWrongNetwork) {
       document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleEscape);
     } else {
       document.body.style.overflow = 'unset';
     }
 
     return () => {
       document.body.style.overflow = 'unset';
+      window.removeEventListener('keydown', handleEscape);
     };
-  }, [isWrongNetwork]);
+  }, [isWrongNetwork, onDismiss]);
 
   const handleDismiss = () => {
     document.body.style.overflow = 'unset';

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
@@ -9,6 +9,25 @@ export function AiActionModal() {
   const enqueueTx = useAppStore(state => state.enqueueTx);
   const isOpen = !!pendingAiAction;
   const commandPayload = pendingAiAction?.command;
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+          clearPendingAiAction();
+        }
+      };
+      window.addEventListener('keydown', handleEscape);
+      return () => {
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleEscape);
+      };
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen, clearPendingAiAction]);
+
 
   const handleAuthorize = () => {
     console.info('[ ACTION_AUTHORIZED ]');

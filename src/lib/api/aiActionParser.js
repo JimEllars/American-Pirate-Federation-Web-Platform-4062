@@ -1,3 +1,4 @@
+import { trackError } from './telemetry.js';
 /**
  * Scaffolded AI Action Parser (Phase 71)
  * Extracts actionable commands from an AI's response text block.
@@ -6,19 +7,24 @@
  * @returns {object} { hasAction: boolean, command: string | null }
  */
 export const parseAICommand = (aiResponseString) => {
-  if (typeof aiResponseString !== 'string') {
+  try {
+    if (typeof aiResponseString !== 'string') {
+      return { hasAction: false };
+    }
+
+    // Check for the [SYSTEM_ACTION] prefix
+    const match = aiResponseString.match(/\[SYSTEM_ACTION\]\s*(.+)/i);
+
+    if (match && match[1]) {
+      return {
+        hasAction: true,
+        command: match[1].trim()
+      };
+    }
+
+    return { hasAction: false };
+  } catch (error) {
+    trackError(error, { context: 'parseAICommand' });
     return { hasAction: false };
   }
-
-  // Check for the [SYSTEM_ACTION] prefix
-  const match = aiResponseString.match(/\[SYSTEM_ACTION\]\s*(.+)/i);
-
-  if (match && match[1]) {
-    return {
-      hasAction: true,
-      command: match[1].trim()
-    };
-  }
-
-  return { hasAction: false };
 };
