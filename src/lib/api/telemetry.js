@@ -41,6 +41,13 @@ const queueInsert = (table, payload, successMessage) => {
 
 const QUEUE_KEY = 'apf_telemetry_queue';
 
+const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
+                  import.meta.env.VITE_SUPABASE_URL.includes('mock.supabase.co') ||
+                  import.meta.env.VITE_SUPABASE_URL.includes('localhost');
+
+const TELEMETRY_ENDPOINT = isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`;
+
+
 export const generateChecksum = async (payloadString) => {
   let checksum = '';
   if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -102,18 +109,18 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
     };
 
     // Asynchronous mock uplink
-    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+    fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then((res) => {
       if (!res.ok) {
-        queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+        queuePayload(TELEMETRY_ENDPOINT, payload);
       } else {
         console.info('[ TELEMETRY UPLINK ESTABLISHED ]');
       }
     }).catch(() => {
-      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      queuePayload(TELEMETRY_ENDPOINT, payload);
     });
 
   } catch (error) {
@@ -177,12 +184,12 @@ export const logSignatureRejection = async (contextPath) => {
       }
     };
 
-    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+    fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).catch(() => {
-      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      queuePayload(TELEMETRY_ENDPOINT, payload);
     });
 
     useAppStore.getState().addTelemetryLog('[ NET_OPS: OPERATOR DENIED CRYPTOGRAPHIC SIGNATURE ]');
@@ -207,12 +214,12 @@ export const logRPCException = async (endpoint, errorCode) => {
       }
     };
 
-    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+    fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).catch(() => {
-      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      queuePayload(TELEMETRY_ENDPOINT, payload);
     });
 
     useAppStore.getState().addTelemetryLog('[ NET_OPS: RPC NODE RATE_LIMITED OR UNREACHABLE ]');
@@ -245,12 +252,12 @@ export const logGasException = async (walletAddress) => {
       }
     };
 
-    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+    fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).catch(() => {
-      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      queuePayload(TELEMETRY_ENDPOINT, payload);
     });
 
     useAppStore.getState().addTelemetryLog('[ NET_OPS: INSUFFICIENT GAS DETECTED ]');
@@ -283,12 +290,12 @@ export const logUnhandledRejection = async (reason) => {
       }
     };
 
-    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+    fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).catch(() => {
-      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      queuePayload(TELEMETRY_ENDPOINT, payload);
     });
 
   } catch (error) {
@@ -363,12 +370,12 @@ export const trackError = async (error, context = {}) => {
       }
     };
 
-    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+    fetch(TELEMETRY_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).catch(() => {
-      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+      queuePayload(TELEMETRY_ENDPOINT, payload);
     });
 
   } catch (err) {
