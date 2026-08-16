@@ -219,7 +219,10 @@ export function TransmissionHub() {
 
             {/* Episode List */}
             <div className="lg:col-span-2 space-y-6">
-               <h2 className="font-vt323 text-2xl text-white uppercase tracking-widest border-b border-white/10 pb-2">Assembly Records</h2>
+               <h2 className="font-vt323 text-2xl text-white uppercase tracking-widest border-b border-white/10 pb-2 flex justify-between items-center">
+                  <span>Assembly Records</span>
+                  {error && <span className="text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
+               </h2>
 
                {loading ? (
                   <div className="py-12 flex items-center text-apf-purple font-vt323">

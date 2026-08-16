@@ -3,12 +3,10 @@ import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
 import { SEO } from '../components/seo/SEO';
 import { FleetMuster } from '../components/sections/FleetMuster';
-import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 
-const { FiTarget, FiArchive, FiX } = FiIcons;
 
 const EVENTS = [
   {
@@ -109,7 +107,7 @@ export function Events() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="mb-16">
             <div className="flex items-center gap-4 mb-6">
-              <SafeIcon icon={FiTarget} className="h-10 w-10 text-apf-purple" />
+              <SafeIcon name="Target" className="h-10 w-10 text-apf-purple" />
               <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
                 Fleet Muster
               </h1>
@@ -133,7 +131,7 @@ export function Events() {
 
           <div className="mt-24 border-t border-gray-800 pt-16">
             <h2 className="text-3xl font-black uppercase tracking-tighter mb-8 text-white flex items-center gap-3">
-              <SafeIcon icon={FiArchive} className="text-apf-purple" />
+              <SafeIcon name="Archive" className="text-apf-purple" />
               Past Musters / Dispatch Reports
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -179,7 +177,7 @@ export function Events() {
                               <SafeIcon name="FileText" className="text-apf-purple" /> Dispatch Report
                           </h3>
                           <button onClick={() => setActiveReport(null)} className="text-gray-500 hover:text-white transition-colors">
-                              <SafeIcon icon={FiX} className="h-6 w-6" />
+                              <SafeIcon name="X" className="h-6 w-6" />
                           </button>
                       </div>
 

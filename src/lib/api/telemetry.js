@@ -345,3 +345,33 @@ export const logOnChainRevert = async (error) => {
     console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
   }
 };
+
+export const trackError = async (error, context = {}) => {
+  try {
+    const payload = {
+      meta: {
+        source: 'APF-Global-Listener',
+        event_type: 'system.error',
+        timestamp: new Date().toISOString()
+      },
+      telemetry: {
+        reason: error?.toString() || 'Unknown System Error',
+        stack: error?.stack || '',
+        context: context,
+        chain_id: 42161,
+        session_status: 'active'
+      }
+    };
+
+    fetch('https://mock.supabase.co/functions/v1/telemetry-ingress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(() => {
+      queuePayload('https://mock.supabase.co/functions/v1/telemetry-ingress', payload);
+    });
+
+  } catch (err) {
+    // Fail silently in production mode
+  }
+};

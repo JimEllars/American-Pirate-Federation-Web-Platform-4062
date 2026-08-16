@@ -78,7 +78,11 @@ export const useAnalyzeFederationData = (contextPayload) => {
             setIsAnalyzing(false);
             return {
                 isAnalyzing: false,
-                aiResponse: null
+                aiResponse: {
+                    status: 'fallback',
+                    message: '[ SYSTEM WARNING: OFFLINE MODE ACTIVE ]',
+                    timestamp: new Date().toISOString()
+                }
             };
         }
     };

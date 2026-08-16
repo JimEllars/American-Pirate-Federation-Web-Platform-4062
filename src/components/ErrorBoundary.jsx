@@ -1,5 +1,6 @@
 import React from 'react';
 import SafeIcon from '../common/SafeIcon';
+import { trackError } from '../lib/api/telemetry';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -23,6 +24,7 @@ export class ErrorBoundary extends React.Component {
     }
 
     console.error('[ APF_SYSTEM_FAULT: CRITICAL ERROR BOUNDARY TRIGGERED ]', error, errorInfo);
+    trackError(error, errorInfo);
   }
 
   clearCacheAndRestart() {

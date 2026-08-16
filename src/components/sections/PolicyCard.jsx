@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
@@ -7,7 +6,6 @@ import { useActiveAccount } from 'thirdweb/react';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection } from '../../lib/api/telemetry';
 
-const { FiChevronRight, FiShield, FiUsers, FiClock, FiActivity, FiMessageSquare } = FiIcons;
 
 export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision }) {
   const [showHistory, setShowHistory] = useState(false);
@@ -80,7 +78,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   return (
     <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
       <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity !pointer-events-none">
-        <SafeIcon icon={FiShield} className="h-24 w-24 text-apf-purple" />
+        <SafeIcon name="Shield" className="h-24 w-24 text-apf-purple" />
       </div>
 
       {hasSignaled && (
@@ -164,15 +162,15 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
           >
              <div className="flex justify-between">
                <span className="text-gray-500">Authorized By:</span>
-               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon icon={FiUsers} className="h-3 w-3"/> {sponsor}</span>
+               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon name="Users" className="h-3 w-3"/> {sponsor}</span>
              </div>
              <div className="flex justify-between">
                <span className="text-gray-500">Last Revision:</span>
-               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon icon={FiClock} className="h-3 w-3"/> {lastRevision}</span>
+               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon name="Clock" className="h-3 w-3"/> {lastRevision}</span>
              </div>
              <div className="flex justify-between">
                <span className="text-gray-500">Status:</span>
-               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon icon={FiActivity} className="h-3 w-3"/> {status}</span>
+               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon name="Activity" className="h-3 w-3"/> {status}</span>
              </div>
           </motion.div>
         ) : (
@@ -204,7 +202,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                   className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple focus:ring-1 focus:ring-apf-purple font-vt323"
                 />
                 <button type="submit" className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
-                  <SafeIcon icon={FiMessageSquare} className="h-4 w-4" />
+                  <SafeIcon name="MessageSquare" className="h-4 w-4" />
                 </button>
               </form>
             ) : (
@@ -218,7 +216,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
 
       <div className="flex items-center justify-between mt-auto pt-2 relative z-10 border-t border-gray-800/50">
         <button className="flex items-center gap-2 text-xs font-vt323 text-apf-purple hover:text-white transition-colors uppercase tracking-widest">
-          Review Protocol <SafeIcon icon={FiChevronRight} />
+          Review Protocol <SafeIcon name="ChevronRight" />
         </button>
 
         {canSignal && (
@@ -233,7 +231,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             }`}
           >
             <span className="relative z-10 flex items-center gap-2">
-              {hasSignaled ? <><SafeIcon icon={FiIcons.FiCheck} /> DIRECTIVE AUTHORIZED</> : 'AUTHORIZE DIRECTIVE'}
+              {hasSignaled ? <><SafeIcon name="Check" /> DIRECTIVE AUTHORIZED</> : 'AUTHORIZE DIRECTIVE'}
             </span>
           </button>
         )}

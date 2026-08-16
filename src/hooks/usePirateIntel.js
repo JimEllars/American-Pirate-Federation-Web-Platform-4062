@@ -27,6 +27,7 @@ export function usePirateIntel(endpoint = 'posts?_embed') {
       } catch (err) {
         if (isMounted) {
           setError(err.message || 'Unknown network error');
+          setData([]); // gracefully degrade to empty array instead of null
           setLoading(false);
         }
       }
