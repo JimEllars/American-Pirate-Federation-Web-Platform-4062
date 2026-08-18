@@ -235,7 +235,15 @@ export const useAppStore = create(
     }),
     {
       name: 'apf-tx-queue',
-      partialize: (state) => ({ activeTxQueue: state.activeTxQueue, aiDecryptedResponse: state.aiDecryptedResponse })
+      partialize: (state) => ({ activeTxQueue: state.activeTxQueue, aiDecryptedResponse: state.aiDecryptedResponse }),
+      onRehydrateStorage: () => (state, error) => {
+        if (error) {
+          console.warn('[Zustand] Rehydration error, resetting state:', error);
+          if (typeof localStorage !== 'undefined') {
+            localStorage.removeItem('apf-tx-queue');
+          }
+        }
+      }
     }
   )
 );

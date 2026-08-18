@@ -1,4 +1,5 @@
 import React from 'react';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Layout } from '../components/layout/Layout';
 import { Hero } from '../components/sections/Hero';
 import { Ticker } from '../components/sections/Ticker';
@@ -12,12 +13,12 @@ export function Home() {
   return (
     <Layout>
       <SEO title="The New Paradigm" />
-      <Hero />
-      <Ticker />
-      <ThePirateCode />
-      <TheTreasury />
-      <NewsFeed />
-      <MusterRoll />
+      <ErrorBoundary><Hero /></ErrorBoundary>
+      <ErrorBoundary><Ticker /></ErrorBoundary>
+      <ErrorBoundary><ThePirateCode /></ErrorBoundary>
+      <ErrorBoundary><TheTreasury /></ErrorBoundary>
+      <ErrorBoundary><NewsFeed /></ErrorBoundary>
+      <ErrorBoundary><MusterRoll /></ErrorBoundary>
     </Layout>
   );
 }

@@ -62,14 +62,24 @@ const sendOrQueueTelemetry = (endpoint, payload) => {
     }
 };
 
+let telemetryBackoffTimer = null;
+let telemetryBackoffDelay = 1000;
+
 async function flushEdgeTelemetryBuffer() {
+  if (telemetryBackoffTimer) return; // Wait until backoff clears
+
   if (edgeTelemetryBuffer.length === 0) {
       if (typeof localStorage !== 'undefined') {
-          const localQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-          if (localQueue.length > 0) {
-              edgeTelemetryBuffer = localQueue.map(item => item.payload);
+          try {
+              const localQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+              if (localQueue.length > 0) {
+                  edgeTelemetryBuffer = localQueue.map(item => item.payload);
+                  localStorage.removeItem(QUEUE_KEY);
+              } else {
+                  return;
+              }
+          } catch(e) {
               localStorage.removeItem(QUEUE_KEY);
-          } else {
               return;
           }
       } else {
@@ -78,21 +88,40 @@ async function flushEdgeTelemetryBuffer() {
   }
 
   const batch = edgeTelemetryBuffer.splice(0, edgeTelemetryBuffer.length);
-  const EP = typeof TELEMETRY_ENDPOINT !== 'undefined' ? TELEMETRY_ENDPOINT : (isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`);
+  const EP = typeof TELEMETRY_ENDPOINT !== 'undefined' ? TELEMETRY_ENDPOINT : '/api/telemetry';
 
   try {
+    const headers = { 'Content-Type': 'application/json' };
+
+    // If routing directly to Supabase, add required auth headers
+    if (EP.includes('supabase.co')) {
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+      headers['apikey'] = anonKey;
+      headers['Authorization'] = `Bearer ${anonKey}`;
+    }
+
     const res = await fetch(EP, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(batch)
     });
 
     if (!res.ok) {
-        throw new Error('Network response was not ok');
+        if (res.status === 401 || res.status === 403 || res.status >= 500) {
+            // Apply exponential backoff on auth/server errors
+            telemetryBackoffDelay = Math.min(telemetryBackoffDelay * 2, 60000);
+            telemetryBackoffTimer = setTimeout(() => {
+                telemetryBackoffTimer = null;
+            }, telemetryBackoffDelay);
+        }
+        throw new Error(`Network response was not ok: ${res.status}`);
     }
+
+    // Reset backoff on success
+    telemetryBackoffDelay = 1000;
     console.info('[ TELEMETRY UPLINK ESTABLISHED ] Batch Size:', batch.length);
   } catch (error) {
-    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error);
+    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error.message);
     batch.forEach(payload => queuePayload(EP, payload));
   }
 }
@@ -101,7 +130,9 @@ const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
                   import.meta.env.VITE_SUPABASE_URL.includes('mock.supabase.co') ||
                   import.meta.env.VITE_SUPABASE_URL.includes('localhost');
 
-const TELEMETRY_ENDPOINT = isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`;
+// Always prefer Cloudflare Pages Functions edge endpoint.
+// If direct Supabase is needed, ensure valid formatting.
+const TELEMETRY_ENDPOINT = '/api/telemetry';
 
 
 
