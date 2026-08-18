@@ -99,13 +99,13 @@ function App() {
           <React.Suspense fallback={<LoadingFallback />}>
           <AnimatePresence mode="wait">
             <Routes>
-              <Route path="/" element={<LazyHome />} />
-              <Route path="/intelligence" element={<LazyIntelligenceHub />} />
-              <Route path="/policies" element={<LazyPolicies />} />
-              <Route path="/events" element={<LazyEvents />} />
-              <Route path="/podcast" element={<LazyTransmissionHub />} />
-              <Route path="/shop" element={<LazyArmory />} />
-              <Route path="/propose" element={<LazyPropose />} />
+              <Route path="/" element={<ErrorBoundary><LazyHome /></ErrorBoundary>} />
+              <Route path="/intelligence" element={<ErrorBoundary><LazyIntelligenceHub /></ErrorBoundary>} />
+              <Route path="/policies" element={<ErrorBoundary><LazyPolicies /></ErrorBoundary>} />
+              <Route path="/events" element={<ErrorBoundary><LazyEvents /></ErrorBoundary>} />
+              <Route path="/podcast" element={<ErrorBoundary><LazyTransmissionHub /></ErrorBoundary>} />
+              <Route path="/shop" element={<ErrorBoundary><LazyArmory /></ErrorBoundary>} />
+              <Route path="/propose" element={<ErrorBoundary><LazyPropose /></ErrorBoundary>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>
