@@ -128,7 +128,7 @@ export function Armory() {
         <PageTransition>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
             <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
                   [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
                 </div>
@@ -156,7 +156,7 @@ export function Armory() {
         <PageTransition>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
             <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
                   [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
                 </div>
@@ -183,22 +183,22 @@ export function Armory() {
                   The Armory
                 </h1>
               </div>
-              <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
+              <p className="max-w-2xl text-gray-200 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
                 Quartermaster Provisions. High-grade equipment for verified Federation units.
               </p>
             </div>
 
             {/* Clearance Status */}
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
-               <div className="text-gray-500 uppercase mb-1">Current Clearance</div>
+            <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
+               <div className="text-gray-300 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
                  <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-                 <span className={musterRollDraft.walletAddress ? 'text-white' : 'text-gray-400'}>
+                 <span className={musterRollDraft.walletAddress ? 'text-white' : 'text-gray-200'}>
                    {userRole}
                  </span>
                </div>
                <div className="flex justify-between items-center text-xs relative cursor-pointer group" onClick={() => setShowRepLog(!showRepLog)}>
-                 <span className="text-gray-500 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
+                 <span className="text-gray-300 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
                      Reputation: <SafeIcon name="Info" className="h-3 w-3" />
                  </span>
                  <span className="text-apf-purpleLight font-bold">{reputationPoints} PTS</span>
@@ -206,7 +206,7 @@ export function Armory() {
                  {/* Reputation Log Dropdown */}
                  {showRepLog && (
                      <div className="absolute top-full right-0 mt-2 w-64 bg-black border border-gray-800 shadow-2xl p-4 z-50 max-h-48 overflow-y-auto custom-scrollbar">
-                         <div className="text-gray-400 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
+                         <div className="text-gray-200 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
                          {reputationHistory && reputationHistory.length > 0 ? (
                              <ul className="space-y-2">
                                  {reputationHistory.map((log, idx) => (
@@ -231,7 +231,7 @@ export function Armory() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
              {inventoryLoading ? (
                  <div className="col-span-full py-12 flex justify-center items-center">
-                    <div className="bg-black/40 backdrop-blur-md border border-[#10B981]/10 p-6 rounded-lg shadow-2xl">
+                    <div className="bg-black/40 backdrop-blur-md transform-gpu border border-[#10B981]/10 p-6 rounded-lg shadow-2xl">
                         <div className="text-[#10B981] font-vt323 text-lg animate-pulse">
                             [ QUARTERMASTER: RE-INDEXING AVAILABLE HARDWARE MATRIX... ]
                         </div>
@@ -256,7 +256,7 @@ export function Armory() {
                            <div className="text-center font-vt323">
                               <SafeIcon name="Lock" className="mx-auto h-8 w-8 text-red-500 mb-2" />
                               <div className="text-red-500 font-bold uppercase tracking-widest text-sm">Restricted Access</div>
-                              <div className="text-gray-400 text-xs mt-1">Requires {item.requirement} Clearance</div>
+                              <div className="text-gray-200 text-xs mt-1">Requires {item.requirement} Clearance</div>
                            </div>
                         </div>
                       )}
@@ -280,8 +280,8 @@ export function Armory() {
                          <button
                            disabled={!eligible || procuring === item.id || !canAfford || isSigning}
                            onClick={() => handleRequisition(item)}
-                           className={`px-4 py-2 font-vt323 text-xs uppercase tracking-widest transition-all border ${
-                             isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
+                           className={`px-4 py-2 min-h-[44px] font-vt323 text-xs uppercase tracking-widest transition-all border ${
+                             isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-300' :
                              !eligible || !canAfford
                              ? 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
                              : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white'
@@ -301,23 +301,23 @@ export function Armory() {
             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                 <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // PROVISION_TRANSCRIPTS ]
             </h3>
-            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 overflow-hidden">
+            <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 overflow-hidden">
               {requisitionHistory && requisitionHistory.length > 0 ? (
                   <div className="overflow-x-auto">
                       <table className="w-full text-left font-vt323 text-sm">
-                          <thead className="text-xs text-gray-500 uppercase bg-gray-900/50 border-y border-gray-800">
+                          <thead className="text-xs text-gray-300 uppercase bg-gray-900/50 border-y border-gray-800">
                               <tr>
-                                  <th className="px-4 py-2">Item</th>
-                                  <th className="px-4 py-2">Type</th>
-                                  <th className="px-4 py-2 text-right">Cost</th>
-                                  <th className="px-4 py-2 text-right">Status</th>
+                                  <th className="px-4 py-2 min-h-[44px]">Item</th>
+                                  <th className="px-4 py-2 min-h-[44px]">Type</th>
+                                  <th className="px-4 py-2 min-h-[44px] text-right">Cost</th>
+                                  <th className="px-4 py-2 min-h-[44px] text-right">Status</th>
                               </tr>
                           </thead>
                           <tbody>
                               {requisitionHistory.map((req, idx) => (
                                   <tr key={idx} className="border-b border-gray-800/50 hover:bg-white/5 transition-colors">
                                       <td className="px-4 py-3 text-white">{DOMPurify.sanitize(req.name)}</td>
-                                      <td className="px-4 py-3 text-gray-400">{DOMPurify.sanitize(req.type || 'Standard')}</td>
+                                      <td className="px-4 py-3 text-gray-200">{DOMPurify.sanitize(req.type || 'Standard')}</td>
                                       <td className="px-4 py-3 text-right text-red-400">-{req.cost} PTS</td>
                                       <td className="px-4 py-3 text-right">
                                           <span className="text-[10px] uppercase tracking-widest border border-[#10B981] text-[#10B981] bg-[#10B981]/10 px-2 py-1">
@@ -330,7 +330,7 @@ export function Armory() {
                       </table>
                   </div>
               ) : (
-                  <div className="p-8 text-center text-gray-500 font-vt323 text-sm uppercase">
+                  <div className="p-8 text-center text-gray-300 font-vt323 text-sm uppercase">
                       [ NO LOGISTICAL PROVISIONS AUTHORIZED TO CURRENT NODE ID ]
                   </div>
               )}

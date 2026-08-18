@@ -6,9 +6,19 @@ import { client } from "../lib/web3/client";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
 import { isValidContractAddress } from "../lib/web3/contracts";
 
+
+import { useActiveWalletChain } from "thirdweb/react";
+
 export function useAPFContract() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
-  const chain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
+  const configuredChain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
+  const activeChain = useActiveWalletChain();
+
+  // Use connected chain if available and supported, else fallback to configured chain (public RPC)
+  const chain = (activeChain && (activeChain.id === arbitrum.id || activeChain.id === arbitrumSepolia.id))
+      ? activeChain
+      : configuredChain;
+
 
   const contract = isValidContractAddress(contractAddress) ? getContract({
     client,
@@ -31,7 +41,7 @@ export function useAPFContract() {
       timeout = setTimeout(() => {
         setHasTimedOut(true);
         logRPCException("Arbitrum One", "RPC Timeout Exceeded Threshold");
-      }, 5000);
+      }, 6000);
     }
     return () => clearTimeout(timeout);
   }, [isLoading, hasTimedOut]);

@@ -1,0 +1,778 @@
+diff --git a/functions/api/telemetry.js b/functions/api/telemetry.js
+index a396868..215643c 100644
+--- a/functions/api/telemetry.js
++++ b/functions/api/telemetry.js
+@@ -11,11 +11,29 @@ export async function onRequest(context) {
+     });
+   }
+
+-  return new Response(JSON.stringify({ status: 'ok', mode: 'edge-logged' }), {
+-    status: 200,
+-    headers: {
+-      "Content-Type": "application/json",
+-      "Access-Control-Allow-Origin": "*",
+-    },
+-  });
++  try {
++    const requestData = await context.request.json();
++    const isBatch = Array.isArray(requestData);
++
++    // Placeholder for actual telemetry processing logic
++    // For now, we'll just log it to the edge console and return a success response.
++    console.info(`[ TELEMETRY INGEST ] Mode: ${isBatch ? 'Batch' : 'Single'}`);
++
++    return new Response(JSON.stringify({ status: 'ok', mode: 'edge-logged', processed: isBatch ? requestData.length : 1 }), {
++      status: 200,
++      headers: {
++        "Content-Type": "application/json",
++        "Access-Control-Allow-Origin": "*",
++      },
++    });
++  } catch (error) {
++    console.error('[ TELEMETRY INGEST ERROR ]', error);
++    return new Response(JSON.stringify({ error: 'Internal Server Error', message: 'Failed to parse telemetry payload' }), {
++      status: 500,
++      headers: {
++        "Content-Type": "application/json",
++        "Access-Control-Allow-Origin": "*",
++      },
++    });
++  }
+ }
+diff --git a/src/components/ui/AiActionModal.jsx b/src/components/ui/AiActionModal.jsx
+index d4677b0..cb3e1c1 100644
+--- a/src/components/ui/AiActionModal.jsx
++++ b/src/components/ui/AiActionModal.jsx
+@@ -1,4 +1,5 @@
+-import React, { useEffect } from 'react';
++
++import React, { useEffect, useState } from 'react';
+ import { motion, AnimatePresence } from 'framer-motion';
+ import SafeIcon from '../../common/SafeIcon';
+ import { useAppStore } from '../../store/useAppStore';
+@@ -9,12 +10,13 @@ export function AiActionModal() {
+   const enqueueTx = useAppStore(state => state.enqueueTx);
+   const isOpen = !!pendingAiAction;
+   const commandPayload = pendingAiAction?.command;
++  const [isExecuting, setIsExecuting] = useState(false);
+
+   useEffect(() => {
+     if (isOpen) {
+       document.body.style.overflow = 'hidden';
+       const handleEscape = (e) => {
+-        if (e.key === 'Escape') {
++        if (e.key === 'Escape' && !isExecuting) {
+           clearPendingAiAction();
+         }
+       };
+@@ -25,15 +27,25 @@ export function AiActionModal() {
+       };
+     } else {
+       document.body.style.overflow = 'unset';
++      setIsExecuting(false);
+     }
+-  }, [isOpen, clearPendingAiAction]);
++  }, [isOpen, clearPendingAiAction, isExecuting]);
+
+
+   const handleAuthorize = () => {
++    setIsExecuting(true);
+     console.info('[ ACTION_AUTHORIZED ]');
+-    enqueueTx({ id: Date.now(), command: commandPayload });
+-    clearPendingAiAction();
++
++    // Simulate execution loading before dispatching
++    setTimeout(() => {
++        enqueueTx({ id: Date.now(), command: commandPayload });
++        clearPendingAiAction();
++    }, 800);
+   };
++
++  const displayPayload = typeof commandPayload === 'object'
++    ? JSON.stringify(commandPayload, null, 2)
++    : (commandPayload || 'No payload provided.');
+
+   return (
+     <AnimatePresence>
+@@ -67,24 +79,32 @@ export function AiActionModal() {
+                 <div className="text-amber-500 mb-2 uppercase text-xs tracking-widest border-b border-amber-500/30 pb-1">
+                   Proposed Command Payload:
+                 </div>
+-                <pre className="whitespace-pre-wrap text-sm text-green-400 break-words">
+-                  {commandPayload || 'No payload provided.'}
+-                </pre>
++                {isExecuting ? (
++                    <div className="flex justify-center items-center py-4">
++                        <div className="animate-pulse text-amber-500 text-sm tracking-widest">[ EXECUTING COMMAND SEQUENCE... ]</div>
++                    </div>
++                ) : (
++                    <pre className="whitespace-pre-wrap text-sm text-green-400 break-words">
++                      {displayPayload}
++                    </pre>
++                )}
+               </div>
+
+               <div className="flex flex-col sm:flex-row gap-4 justify-end">
+                 <button
+                   onClick={clearPendingAiAction}
+-                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
++                  disabled={isExecuting}
++                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                 >
+-                  [ DENY & PURGE ]
++                  [ CANCEL ACTION ]
+                 </button>
+                 <button
+                   onClick={handleAuthorize}
+-                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 relative group"
++                  disabled={isExecuting}
++                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 relative group disabled:opacity-50 disabled:cursor-not-allowed"
+                 >
+                   <div className="absolute inset-0 bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+-                  [ AUTHORIZE & SIGN ]
++                  {isExecuting ? '[ PROCESSING... ]' : '[ AUTHORIZE & SIGN ]'}
+                 </button>
+               </div>
+             </div>
+diff --git a/src/hooks/useAPFContract.js b/src/hooks/useAPFContract.js
+index f73e1e6..bcb4778 100644
+--- a/src/hooks/useAPFContract.js
++++ b/src/hooks/useAPFContract.js
+@@ -6,9 +6,19 @@ import { client } from "../lib/web3/client";
+ import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
+ import { isValidContractAddress } from "../lib/web3/contracts";
+
++
++import { useActiveWalletChain } from "thirdweb/react";
++
+ export function useAPFContract() {
+   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
+-  const chain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
++  const configuredChain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
++  const activeChain = useActiveWalletChain();
++
++  // Use connected chain if available and supported, else fallback to configured chain (public RPC)
++  const chain = (activeChain && (activeChain.id === arbitrum.id || activeChain.id === arbitrumSepolia.id))
++      ? activeChain
++      : configuredChain;
++
+
+   const contract = isValidContractAddress(contractAddress) ? getContract({
+     client,
+@@ -31,7 +41,7 @@ export function useAPFContract() {
+       timeout = setTimeout(() => {
+         setHasTimedOut(true);
+         logRPCException("Arbitrum One", "RPC Timeout Exceeded Threshold");
+-      }, 5000);
++      }, 6000);
+     }
+     return () => clearTimeout(timeout);
+   }, [isLoading, hasTimedOut]);
+diff --git a/src/lib/api/aiActionParser.js b/src/lib/api/aiActionParser.js
+index 29f3d24..10fb232 100644
+--- a/src/lib/api/aiActionParser.js
++++ b/src/lib/api/aiActionParser.js
+@@ -1,10 +1,12 @@
++
+ import { trackError } from './telemetry.js';
++import DOMPurify from 'dompurify';
++
+ /**
+- * Scaffolded AI Action Parser (Phase 71)
+  * Extracts actionable commands from an AI's response text block.
+  *
+  * @param {string} aiResponseString - The text generated by the AI agent
+- * @returns {object} { hasAction: boolean, command: string | null }
++ * @returns {object} { hasAction: boolean, command: object | null }
+  */
+ export const parseAICommand = (aiResponseString) => {
+   try {
+@@ -12,14 +14,52 @@ export const parseAICommand = (aiResponseString) => {
+       return { hasAction: false };
+     }
+
+-    // Check for the [SYSTEM_ACTION] prefix
+     const match = aiResponseString.match(/\[SYSTEM_ACTION\]\s*(.+)/i);
+
+     if (match && match[1]) {
+-      return {
+-        hasAction: true,
+-        command: match[1].trim()
+-      };
++      let commandPayload = match[1].trim();
++      let parsedCommand = null;
++
++      try {
++          parsedCommand = JSON.parse(commandPayload);
++      } catch(e) {
++          // Fallback if not valid JSON, treat as raw text
++          parsedCommand = { type: 'raw', payload: DOMPurify.sanitize(commandPayload), timestamp: new Date().toISOString() };
++      }
++
++      if (parsedCommand && typeof parsedCommand === 'object') {
++          // Deep sanitize nested payload
++          const sanitizePayload = (obj) => {
++              if (typeof obj === 'string') {
++                  // Ensure markdown codeblocks or quotes within strings aren't broken by sanitization, but still strip active scripts
++                  return DOMPurify.sanitize(obj, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'code', 'pre'] });
++              } else if (Array.isArray(obj)) {
++                  return obj.map(sanitizePayload);
++              } else if (obj !== null && typeof obj === 'object') {
++                  const result = {};
++                  for (const key in obj) {
++                      result[key] = sanitizePayload(obj[key]);
++                  }
++                  return result;
++              }
++              return obj;
++          };
++
++          const type = typeof parsedCommand.type === 'string' ? DOMPurify.sanitize(parsedCommand.type) : 'unknown';
++          const target = typeof parsedCommand.target === 'string' ? DOMPurify.sanitize(parsedCommand.target) : 'system';
++          const payload = sanitizePayload(parsedCommand.payload);
++          const timestamp = typeof parsedCommand.timestamp === 'string' ? DOMPurify.sanitize(parsedCommand.timestamp) : new Date().toISOString();
++
++          return {
++            hasAction: true,
++            command: {
++                type,
++                target,
++                payload,
++                timestamp
++            }
++          };
++      }
+     }
+
+     return { hasAction: false };
+diff --git a/src/lib/api/telemetry.js b/src/lib/api/telemetry.js
+index e5589dd..4097f74 100644
+--- a/src/lib/api/telemetry.js
++++ b/src/lib/api/telemetry.js
+@@ -39,8 +39,64 @@ const queueInsert = (table, payload, successMessage) => {
+   }
+ };
+
++
+ const QUEUE_KEY = 'apf_telemetry_queue';
+
++let edgeTelemetryBuffer = [];
++let edgeTelemetryInterval;
++
++if (typeof window !== 'undefined') {
++  edgeTelemetryInterval = setInterval(flushEdgeTelemetryBuffer, 5000);
++}
++
++if (import.meta.hot) {
++  import.meta.hot.dispose(() => {
++    if (edgeTelemetryInterval) clearInterval(edgeTelemetryInterval);
++  });
++}
++
++const sendOrQueueTelemetry = (endpoint, payload) => {
++    edgeTelemetryBuffer.push(payload);
++    if (edgeTelemetryBuffer.length >= 10) {
++        flushEdgeTelemetryBuffer();
++    }
++};
++
++async function flushEdgeTelemetryBuffer() {
++  if (edgeTelemetryBuffer.length === 0) {
++      if (typeof localStorage !== 'undefined') {
++          const localQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
++          if (localQueue.length > 0) {
++              edgeTelemetryBuffer = localQueue.map(item => item.payload);
++              localStorage.removeItem(QUEUE_KEY);
++          } else {
++              return;
++          }
++      } else {
++          return;
++      }
++  }
++
++  const batch = edgeTelemetryBuffer.splice(0, edgeTelemetryBuffer.length);
++  const EP = typeof TELEMETRY_ENDPOINT !== 'undefined' ? TELEMETRY_ENDPOINT : (isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`);
++
++  try {
++    const res = await fetch(EP, {
++      method: 'POST',
++      headers: { 'Content-Type': 'application/json' },
++      body: JSON.stringify(batch)
++    });
++
++    if (!res.ok) {
++        throw new Error('Network response was not ok');
++    }
++    console.info('[ TELEMETRY UPLINK ESTABLISHED ] Batch Size:', batch.length);
++  } catch (error) {
++    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error);
++    batch.forEach(payload => queuePayload(EP, payload));
++  }
++}
++
+ const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
+                   import.meta.env.VITE_SUPABASE_URL.includes('mock.supabase.co') ||
+                   import.meta.env.VITE_SUPABASE_URL.includes('localhost');
+@@ -48,7 +104,9 @@ const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
+ const TELEMETRY_ENDPOINT = isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`;
+
+
+-export const generateChecksum = async (payloadString) => {
++
++export
++const generateChecksum = async (payloadString) => {
+   let checksum = '';
+   if (typeof crypto !== 'undefined' && crypto.subtle) {
+       const encoder = new TextEncoder();
+@@ -68,11 +126,23 @@ export const generateChecksum = async (payloadString) => {
+   return checksum;
+ };
+
++
++
++
+ const queuePayload = async (url, payload) => {
+   const payloadString = JSON.stringify(payload);
+   const checksum = await generateChecksum(payloadString);
+
+-  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
++  let queue = [];
++  try {
++      queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
++  } catch(e) {
++      queue = [];
++  }
++
++  if (queue.length >= 50) {
++      queue.shift(); // Enforce limit of 50
++  }
+
+   queue.push({
+     id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+@@ -81,7 +151,21 @@ const queuePayload = async (url, payload) => {
+     stagedAt: Date.now(),
+     integrityHash: checksum
+   });
+-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
++
++  try {
++      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
++  } catch (e) {
++      if (e.name === 'QuotaExceededError' || e.code === 22) {
++          // Fallback: purge half the queue if storage is full
++          queue.splice(0, Math.floor(queue.length / 2));
++          try {
++              localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
++          } catch(err) {
++              console.warn('[ TELEMETRY LOCAL STORAGE FULL - UNABLE TO QUEUE ]');
++          }
++      }
++  }
++
+   try {
+       useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
+   } catch(e) {
+@@ -89,6 +173,8 @@ const queuePayload = async (url, payload) => {
+   }
+ };
+
++
++
+ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
+   try {
+     const payload = {
+@@ -109,19 +195,7 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
+     };
+
+     // Asynchronous mock uplink
+-    fetch(TELEMETRY_ENDPOINT, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(payload)
+-    }).then((res) => {
+-      if (!res.ok) {
+-        queuePayload(TELEMETRY_ENDPOINT, payload);
+-      } else {
+-        console.info('[ TELEMETRY UPLINK ESTABLISHED ]');
+-      }
+-    }).catch(() => {
+-      queuePayload(TELEMETRY_ENDPOINT, payload);
+-    });
++    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
+
+   } catch (error) {
+     // Critical uplink error is handled silently in background
+@@ -184,13 +258,7 @@ export const logSignatureRejection = async (contextPath) => {
+       }
+     };
+
+-    fetch(TELEMETRY_ENDPOINT, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(payload)
+-    }).catch(() => {
+-      queuePayload(TELEMETRY_ENDPOINT, payload);
+-    });
++    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
+
+     useAppStore.getState().addTelemetryLog('[ NET_OPS: OPERATOR DENIED CRYPTOGRAPHIC SIGNATURE ]');
+   } catch (error) {
+@@ -214,13 +282,7 @@ export const logRPCException = async (endpoint, errorCode) => {
+       }
+     };
+
+-    fetch(TELEMETRY_ENDPOINT, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(payload)
+-    }).catch(() => {
+-      queuePayload(TELEMETRY_ENDPOINT, payload);
+-    });
++    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
+
+     useAppStore.getState().addTelemetryLog('[ NET_OPS: RPC NODE RATE_LIMITED OR UNREACHABLE ]');
+   } catch (error) {
+@@ -252,13 +314,7 @@ export const logGasException = async (walletAddress) => {
+       }
+     };
+
+-    fetch(TELEMETRY_ENDPOINT, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(payload)
+-    }).catch(() => {
+-      queuePayload(TELEMETRY_ENDPOINT, payload);
+-    });
++    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
+
+     useAppStore.getState().addTelemetryLog('[ NET_OPS: INSUFFICIENT GAS DETECTED ]');
+   } catch (error) {
+@@ -290,13 +346,7 @@ export const logUnhandledRejection = async (reason) => {
+       }
+     };
+
+-    fetch(TELEMETRY_ENDPOINT, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(payload)
+-    }).catch(() => {
+-      queuePayload(TELEMETRY_ENDPOINT, payload);
+-    });
++    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
+
+   } catch (error) {
+     // Fail silently in production mode
+@@ -370,13 +420,7 @@ export const trackError = async (error, context = {}) => {
+       }
+     };
+
+-    fetch(TELEMETRY_ENDPOINT, {
+-      method: 'POST',
+-      headers: { 'Content-Type': 'application/json' },
+-      body: JSON.stringify(payload)
+-    }).catch(() => {
+-      queuePayload(TELEMETRY_ENDPOINT, payload);
+-    });
++    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
+
+   } catch (err) {
+     // Fail silently in production mode
+diff --git a/src/lib/web3/transactionQueue.js b/src/lib/web3/transactionQueue.js
+index 7f3f762..deae231 100644
+--- a/src/lib/web3/transactionQueue.js
++++ b/src/lib/web3/transactionQueue.js
+@@ -1,4 +1,28 @@
++
++import { useAppStore } from '../../store/useAppStore';
++
+ export const queueWeb3Transaction = async (actionPayload, thirdwebClient) => {
+   console.info(`[ SYSTEM: TRANSACTION QUEUED FOR SIGNATURE - ${actionPayload.type} ]`);
++
++  try {
++      useAppStore.getState().addToast(`[ TX QUEUED: ${actionPayload.type} ]`, 'info');
++      // Simulate broadcasting
++      setTimeout(() => {
++          useAppStore.getState().addToast(`[ TX BROADCASTED: Awaiting Confirmation ]`, 'warning');
++      }, 1500);
++
++      // Simulate success/failure for demonstration purposes (replace with real TX logic if available)
++      setTimeout(() => {
++          if (Math.random() > 0.1) {
++              useAppStore.getState().addToast(`[ TX CONFIRMED: ${actionPayload.type} ]`, 'success');
++          } else {
++              useAppStore.getState().addToast(`[ TX FAILED: Reverted by EVM ]`, 'error');
++          }
++      }, 3500);
++
++  } catch(e) {
++      console.warn("Toast failed", e);
++  }
++
+   return { status: 'queued' };
+ };
+diff --git a/src/pages/Armory.jsx b/src/pages/Armory.jsx
+index ca4a756..f7879be 100644
+--- a/src/pages/Armory.jsx
++++ b/src/pages/Armory.jsx
+@@ -128,7 +128,7 @@ export function Armory() {
+         <PageTransition>
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
+             <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
++              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+                   [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
+                 </div>
+@@ -156,7 +156,7 @@ export function Armory() {
+         <PageTransition>
+           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
+             <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
+-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
++              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+                   [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
+                 </div>
+@@ -183,22 +183,22 @@ export function Armory() {
+                   The Armory
+                 </h1>
+               </div>
+-              <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
++              <p className="max-w-2xl text-gray-200 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
+                 Quartermaster Provisions. High-grade equipment for verified Federation units.
+               </p>
+             </div>
+
+             {/* Clearance Status */}
+-            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
+-               <div className="text-gray-500 uppercase mb-1">Current Clearance</div>
++            <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
++               <div className="text-gray-300 uppercase mb-1">Current Clearance</div>
+                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
+                  <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+-                 <span className={musterRollDraft.walletAddress ? 'text-white' : 'text-gray-400'}>
++                 <span className={musterRollDraft.walletAddress ? 'text-white' : 'text-gray-200'}>
+                    {userRole}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-xs relative cursor-pointer group" onClick={() => setShowRepLog(!showRepLog)}>
+-                 <span className="text-gray-500 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
++                 <span className="text-gray-300 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
+                      Reputation: <SafeIcon name="Info" className="h-3 w-3" />
+                  </span>
+                  <span className="text-apf-purpleLight font-bold">{reputationPoints} PTS</span>
+@@ -206,7 +206,7 @@ export function Armory() {
+                  {/* Reputation Log Dropdown */}
+                  {showRepLog && (
+                      <div className="absolute top-full right-0 mt-2 w-64 bg-black border border-gray-800 shadow-2xl p-4 z-50 max-h-48 overflow-y-auto custom-scrollbar">
+-                         <div className="text-gray-400 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
++                         <div className="text-gray-200 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
+                          {reputationHistory && reputationHistory.length > 0 ? (
+                              <ul className="space-y-2">
+                                  {reputationHistory.map((log, idx) => (
+@@ -231,7 +231,7 @@ export function Armory() {
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
+              {inventoryLoading ? (
+                  <div className="col-span-full py-12 flex justify-center items-center">
+-                    <div className="bg-black/40 backdrop-blur-md border border-[#10B981]/10 p-6 rounded-lg shadow-2xl">
++                    <div className="bg-black/40 backdrop-blur-md transform-gpu border border-[#10B981]/10 p-6 rounded-lg shadow-2xl">
+                         <div className="text-[#10B981] font-vt323 text-lg animate-pulse">
+                             [ QUARTERMASTER: RE-INDEXING AVAILABLE HARDWARE MATRIX... ]
+                         </div>
+@@ -256,7 +256,7 @@ export function Armory() {
+                            <div className="text-center font-vt323">
+                               <SafeIcon name="Lock" className="mx-auto h-8 w-8 text-red-500 mb-2" />
+                               <div className="text-red-500 font-bold uppercase tracking-widest text-sm">Restricted Access</div>
+-                              <div className="text-gray-400 text-xs mt-1">Requires {item.requirement} Clearance</div>
++                              <div className="text-gray-200 text-xs mt-1">Requires {item.requirement} Clearance</div>
+                            </div>
+                         </div>
+                       )}
+@@ -280,8 +280,8 @@ export function Armory() {
+                          <button
+                            disabled={!eligible || procuring === item.id || !canAfford || isSigning}
+                            onClick={() => handleRequisition(item)}
+-                           className={`px-4 py-2 font-vt323 text-xs uppercase tracking-widest transition-all border ${
+-                             isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
++                           className={`px-4 py-2 min-h-[44px] font-vt323 text-xs uppercase tracking-widest transition-all border ${
++                             isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-300' :
+                              !eligible || !canAfford
+                              ? 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
+                              : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white'
+@@ -301,23 +301,23 @@ export function Armory() {
+             <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                 <SafeIcon name="List" className="text-apf-purple h-5 w-5" /> [ SECURE_LOGISTICS_LEDGER // PROVISION_TRANSCRIPTS ]
+             </h3>
+-            <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 overflow-hidden">
++            <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 overflow-hidden">
+               {requisitionHistory && requisitionHistory.length > 0 ? (
+                   <div className="overflow-x-auto">
+                       <table className="w-full text-left font-vt323 text-sm">
+-                          <thead className="text-xs text-gray-500 uppercase bg-gray-900/50 border-y border-gray-800">
++                          <thead className="text-xs text-gray-300 uppercase bg-gray-900/50 border-y border-gray-800">
+                               <tr>
+-                                  <th className="px-4 py-2">Item</th>
+-                                  <th className="px-4 py-2">Type</th>
+-                                  <th className="px-4 py-2 text-right">Cost</th>
+-                                  <th className="px-4 py-2 text-right">Status</th>
++                                  <th className="px-4 py-2 min-h-[44px]">Item</th>
++                                  <th className="px-4 py-2 min-h-[44px]">Type</th>
++                                  <th className="px-4 py-2 min-h-[44px] text-right">Cost</th>
++                                  <th className="px-4 py-2 min-h-[44px] text-right">Status</th>
+                               </tr>
+                           </thead>
+                           <tbody>
+                               {requisitionHistory.map((req, idx) => (
+                                   <tr key={idx} className="border-b border-gray-800/50 hover:bg-white/5 transition-colors">
+                                       <td className="px-4 py-3 text-white">{DOMPurify.sanitize(req.name)}</td>
+-                                      <td className="px-4 py-3 text-gray-400">{DOMPurify.sanitize(req.type || 'Standard')}</td>
++                                      <td className="px-4 py-3 text-gray-200">{DOMPurify.sanitize(req.type || 'Standard')}</td>
+                                       <td className="px-4 py-3 text-right text-red-400">-{req.cost} PTS</td>
+                                       <td className="px-4 py-3 text-right">
+                                           <span className="text-[10px] uppercase tracking-widest border border-[#10B981] text-[#10B981] bg-[#10B981]/10 px-2 py-1">
+@@ -330,7 +330,7 @@ export function Armory() {
+                       </table>
+                   </div>
+               ) : (
+-                  <div className="p-8 text-center text-gray-500 font-vt323 text-sm uppercase">
++                  <div className="p-8 text-center text-gray-300 font-vt323 text-sm uppercase">
+                       [ NO LOGISTICAL PROVISIONS AUTHORIZED TO CURRENT NODE ID ]
+                   </div>
+               )}
+diff --git a/src/pages/IntelligenceHub.jsx b/src/pages/IntelligenceHub.jsx
+index ba73dbc..516512e 100644
+--- a/src/pages/IntelligenceHub.jsx
++++ b/src/pages/IntelligenceHub.jsx
+@@ -111,7 +111,7 @@ export function IntelligenceHub() {
+                       }
+                   }
+                 }}
+-                className={`px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
++                className={`px-6 py-3 min-h-[44px] border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
+                 disabled={localAnalyzing}
+               >
+                 {localAnalyzing ? '[ TRANSMITTING SECURE CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
+@@ -123,20 +123,20 @@ export function IntelligenceHub() {
+               )}
+
+             </div>
+-            <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-emerald pl-6">
++            <p className="max-w-2xl text-gray-200 font-mono text-lg border-l-2 border-apf-emerald pl-6">
+               Real-time synchronization status, fleet telemetry, and decrypted intelligence logs from the American Pirate Federation network.
+             </p>
+           </div>
+
+           {/* Section 1: Fleet Telemetry (Census) */}
+-          <section className="space-y-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
++          <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
+                  <SafeIcon name="Database" className="text-apf-purple h-8 w-8" /> Fleet Telemetry
+               </h2>
+
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                   {/* Personnel Distribution */}
+-                  <div className="lg:col-span-1 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
++                  <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
+                       <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
+                       <div className="relative z-10">
+                           <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+@@ -170,19 +170,19 @@ export function IntelligenceHub() {
+                   </div>
+
+                   {/* Readiness Score */}
+-                    <div className="lg:col-span-1 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
++                    <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
+                         <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
+                         <div className="relative z-10">
+                             <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4 animate-pulse" />
+                             <div className="text-6xl font-black text-white font-vt323 mb-2">94<span className="text-3xl text-apf-emerald">%</span></div>
+                             <div className="font-vt323 text-apf-purple uppercase tracking-[0.2em] text-sm">Fleet Readiness Index</div>
+-                            <div className="mt-4 text-xs text-gray-500 font-vt323 uppercase">Status: Optimal</div>
++                            <div className="mt-4 text-xs text-gray-300 font-vt323 uppercase">Status: Optimal</div>
+                         </div>
+                     </div>
+               </div>
+
+               {/* Node Heatmap Placeholder */}
+-              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
++              <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
+                  <div className="absolute inset-0 neon-grid opacity-30 z-0 !pointer-events-none" />
+                  <div className="relative z-10">
+                       <h3 className="font-vt323 text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+@@ -204,7 +204,7 @@ export function IntelligenceHub() {
+                             <circle cx="700" cy="100" r="12" fill="#10B981" className="opacity-50" />
+                             <circle cx="250" cy="250" r="20" fill="#9400FF" className="animate-pulse opacity-60" />
+                          </svg>
+-                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-500 uppercase !pointer-events-none">
++                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-300 uppercase !pointer-events-none">
+                              [ LIVE TELEMETRY FEED ]
+                          </div>
+                       </div>
+@@ -213,13 +213,13 @@ export function IntelligenceHub() {
+
+
+               {/* Terminal Feed */}
+-              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 relative overflow-hidden">
++              <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 relative overflow-hidden">
+                  <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
+                  <div className="relative z-10">
+                      <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
+                          [ RESOLVED_NODE_CONNECTIONS ]
+                      </h4>
+-                     <div className="font-vt323 text-gray-400 text-xs flex flex-col gap-1 h-24 overflow-hidden">
++                     <div className="font-vt323 text-gray-200 text-xs flex flex-col gap-1 h-24 overflow-hidden">
+                          {nodes.map((node, i) => (
+                              <motion.div
+                                  key={node + i}
+@@ -238,19 +238,19 @@ export function IntelligenceHub() {
+           </section>
+
+           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
+-          <section className="space-y-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
++          <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative">
+                  <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
+                  {error && <span className="absolute right-0 text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
+               </h2>
+
+               {loading ? (
+-                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
++                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+                   <SafeIcon name="Loader" className="animate-spin mr-2 h-8 w-8" />
+                   SYNCING ARCHIVES...
+                 </div>
+               ) : error || !posts ? (
+-                <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
++                <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+                   <div className="border border-red-500/50 bg-red-500/10 p-6 rounded text-red-400 font-mono flex items-center gap-3">
+                     <SafeIcon name="AlertTriangle" className="h-6 w-6" />
+                     <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH ARCHIVES</span>
+@@ -267,7 +267,7 @@ export function IntelligenceHub() {
+                         whileInView={{ opacity: 1, y: 0 }}
+                         transition={{ delay: index * 0.05 }}
+                         key={post.id}
+-                        className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden group flex flex-col"
++                        className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden group flex flex-col"
+                       >
+                         {featuredMedia && (
+                           <div className="h-48 overflow-hidden">
+@@ -288,7 +288,7 @@ export function IntelligenceHub() {
+                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title.rendered) }}
+                           />
+                           <div
+-                            className="prose prose-invert prose-sm text-gray-400 line-clamp-3 font-mono flex-grow mb-4"
++                            className="prose prose-invert prose-sm text-gray-200 line-clamp-3 font-mono flex-grow mb-4"
+                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
+                           />
+                           <button className="mt-auto w-fit text-sm font-mono text-apf-purple hover:text-white flex items-center gap-2 uppercase tracking-widest">
+@@ -302,8 +302,8 @@ export function IntelligenceHub() {
+               )}
+
+               {!loading && !error && posts && (
+-                <div className="mt-12 p-8 text-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
+-                   <button className="text-apf-purple hover:text-white font-mono text-xs uppercase tracking-widest border border-apf-purple/50 px-6 py-3 hover:bg-apf-purple/10 transition-colors">
++                <div className="mt-12 p-8 text-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
++                   <button className="text-apf-purple hover:text-white font-mono text-xs uppercase tracking-widest border border-apf-purple/50 px-6 py-3 min-h-[44px] hover:bg-apf-purple/10 transition-colors">
+                      Load Older Transmissions
+                    </button>
+                 </div>
