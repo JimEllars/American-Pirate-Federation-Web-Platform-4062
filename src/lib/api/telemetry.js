@@ -39,7 +39,63 @@ const queueInsert = (table, payload, successMessage) => {
   }
 };
 
+
 const QUEUE_KEY = 'apf_telemetry_queue';
+
+let edgeTelemetryBuffer = [];
+let edgeTelemetryInterval;
+
+if (typeof window !== 'undefined') {
+  edgeTelemetryInterval = setInterval(flushEdgeTelemetryBuffer, 5000);
+}
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (edgeTelemetryInterval) clearInterval(edgeTelemetryInterval);
+  });
+}
+
+const sendOrQueueTelemetry = (endpoint, payload) => {
+    edgeTelemetryBuffer.push(payload);
+    if (edgeTelemetryBuffer.length >= 10) {
+        flushEdgeTelemetryBuffer();
+    }
+};
+
+async function flushEdgeTelemetryBuffer() {
+  if (edgeTelemetryBuffer.length === 0) {
+      if (typeof localStorage !== 'undefined') {
+          const localQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+          if (localQueue.length > 0) {
+              edgeTelemetryBuffer = localQueue.map(item => item.payload);
+              localStorage.removeItem(QUEUE_KEY);
+          } else {
+              return;
+          }
+      } else {
+          return;
+      }
+  }
+
+  const batch = edgeTelemetryBuffer.splice(0, edgeTelemetryBuffer.length);
+  const EP = typeof TELEMETRY_ENDPOINT !== 'undefined' ? TELEMETRY_ENDPOINT : (isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`);
+
+  try {
+    const res = await fetch(EP, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(batch)
+    });
+
+    if (!res.ok) {
+        throw new Error('Network response was not ok');
+    }
+    console.info('[ TELEMETRY UPLINK ESTABLISHED ] Batch Size:', batch.length);
+  } catch (error) {
+    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error);
+    batch.forEach(payload => queuePayload(EP, payload));
+  }
+}
 
 const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
                   import.meta.env.VITE_SUPABASE_URL.includes('mock.supabase.co') ||
@@ -48,7 +104,9 @@ const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
 const TELEMETRY_ENDPOINT = isMockEnv ? '/api/telemetry' : `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/telemetry-ingress`;
 
 
-export const generateChecksum = async (payloadString) => {
+
+export
+const generateChecksum = async (payloadString) => {
   let checksum = '';
   if (typeof crypto !== 'undefined' && crypto.subtle) {
       const encoder = new TextEncoder();
@@ -68,11 +126,23 @@ export const generateChecksum = async (payloadString) => {
   return checksum;
 };
 
+
+
+
 const queuePayload = async (url, payload) => {
   const payloadString = JSON.stringify(payload);
   const checksum = await generateChecksum(payloadString);
 
-  const queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+  let queue = [];
+  try {
+      queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+  } catch(e) {
+      queue = [];
+  }
+
+  if (queue.length >= 50) {
+      queue.shift(); // Enforce limit of 50
+  }
 
   queue.push({
     id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
@@ -81,13 +151,29 @@ const queuePayload = async (url, payload) => {
     stagedAt: Date.now(),
     integrityHash: checksum
   });
-  localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+
+  try {
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  } catch (e) {
+      if (e.name === 'QuotaExceededError' || e.code === 22) {
+          // Fallback: purge half the queue if storage is full
+          queue.splice(0, Math.floor(queue.length / 2));
+          try {
+              localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+          } catch(err) {
+              console.warn('[ TELEMETRY LOCAL STORAGE FULL - UNABLE TO QUEUE ]');
+          }
+      }
+  }
+
   try {
       useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
   } catch(e) {
       console.warn('[ TELEMETRY TOAST FAILED ]', e);
   }
 };
+
+
 
 export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
   try {
@@ -109,19 +195,7 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
     };
 
     // Asynchronous mock uplink
-    fetch(TELEMETRY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).then((res) => {
-      if (!res.ok) {
-        queuePayload(TELEMETRY_ENDPOINT, payload);
-      } else {
-        console.info('[ TELEMETRY UPLINK ESTABLISHED ]');
-      }
-    }).catch(() => {
-      queuePayload(TELEMETRY_ENDPOINT, payload);
-    });
+    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
 
   } catch (error) {
     // Critical uplink error is handled silently in background
@@ -184,13 +258,7 @@ export const logSignatureRejection = async (contextPath) => {
       }
     };
 
-    fetch(TELEMETRY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => {
-      queuePayload(TELEMETRY_ENDPOINT, payload);
-    });
+    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
 
     useAppStore.getState().addTelemetryLog('[ NET_OPS: OPERATOR DENIED CRYPTOGRAPHIC SIGNATURE ]');
   } catch (error) {
@@ -214,13 +282,7 @@ export const logRPCException = async (endpoint, errorCode) => {
       }
     };
 
-    fetch(TELEMETRY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => {
-      queuePayload(TELEMETRY_ENDPOINT, payload);
-    });
+    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
 
     useAppStore.getState().addTelemetryLog('[ NET_OPS: RPC NODE RATE_LIMITED OR UNREACHABLE ]');
   } catch (error) {
@@ -252,13 +314,7 @@ export const logGasException = async (walletAddress) => {
       }
     };
 
-    fetch(TELEMETRY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => {
-      queuePayload(TELEMETRY_ENDPOINT, payload);
-    });
+    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
 
     useAppStore.getState().addTelemetryLog('[ NET_OPS: INSUFFICIENT GAS DETECTED ]');
   } catch (error) {
@@ -290,13 +346,7 @@ export const logUnhandledRejection = async (reason) => {
       }
     };
 
-    fetch(TELEMETRY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => {
-      queuePayload(TELEMETRY_ENDPOINT, payload);
-    });
+    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
 
   } catch (error) {
     // Fail silently in production mode
@@ -370,13 +420,7 @@ export const trackError = async (error, context = {}) => {
       }
     };
 
-    fetch(TELEMETRY_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    }).catch(() => {
-      queuePayload(TELEMETRY_ENDPOINT, payload);
-    });
+    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
 
   } catch (err) {
     // Fail silently in production mode

@@ -111,7 +111,7 @@ export function IntelligenceHub() {
                       }
                   }
                 }}
-                className={`px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
+                className={`px-6 py-3 min-h-[44px] border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
                 disabled={localAnalyzing}
               >
                 {localAnalyzing ? '[ TRANSMITTING SECURE CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
@@ -123,20 +123,20 @@ export function IntelligenceHub() {
               )}
 
             </div>
-            <p className="max-w-2xl text-gray-400 font-mono text-lg border-l-2 border-apf-emerald pl-6">
+            <p className="max-w-2xl text-gray-200 font-mono text-lg border-l-2 border-apf-emerald pl-6">
               Real-time synchronization status, fleet telemetry, and decrypted intelligence logs from the American Pirate Federation network.
             </p>
           </div>
 
           {/* Section 1: Fleet Telemetry (Census) */}
-          <section className="space-y-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+          <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
                  <SafeIcon name="Database" className="text-apf-purple h-8 w-8" /> Fleet Telemetry
               </h2>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                   {/* Personnel Distribution */}
-                  <div className="lg:col-span-1 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
+                  <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
                       <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                       <div className="relative z-10">
                           <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -170,19 +170,19 @@ export function IntelligenceHub() {
                   </div>
 
                   {/* Readiness Score */}
-                    <div className="lg:col-span-1 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
+                    <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
                         <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                         <div className="relative z-10">
                             <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4 animate-pulse" />
                             <div className="text-6xl font-black text-white font-vt323 mb-2">94<span className="text-3xl text-apf-emerald">%</span></div>
                             <div className="font-vt323 text-apf-purple uppercase tracking-[0.2em] text-sm">Fleet Readiness Index</div>
-                            <div className="mt-4 text-xs text-gray-500 font-vt323 uppercase">Status: Optimal</div>
+                            <div className="mt-4 text-xs text-gray-300 font-vt323 uppercase">Status: Optimal</div>
                         </div>
                     </div>
               </div>
 
               {/* Node Heatmap Placeholder */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
+              <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
                  <div className="absolute inset-0 neon-grid opacity-30 z-0 !pointer-events-none" />
                  <div className="relative z-10">
                       <h3 className="font-vt323 text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -204,7 +204,7 @@ export function IntelligenceHub() {
                             <circle cx="700" cy="100" r="12" fill="#10B981" className="opacity-50" />
                             <circle cx="250" cy="250" r="20" fill="#9400FF" className="animate-pulse opacity-60" />
                          </svg>
-                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-500 uppercase !pointer-events-none">
+                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-300 uppercase !pointer-events-none">
                              [ LIVE TELEMETRY FEED ]
                          </div>
                       </div>
@@ -213,13 +213,13 @@ export function IntelligenceHub() {
 
 
               {/* Terminal Feed */}
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 relative overflow-hidden">
+              <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 relative overflow-hidden">
                  <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                  <div className="relative z-10">
                      <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
                          [ RESOLVED_NODE_CONNECTIONS ]
                      </h4>
-                     <div className="font-vt323 text-gray-400 text-xs flex flex-col gap-1 h-24 overflow-hidden">
+                     <div className="font-vt323 text-gray-200 text-xs flex flex-col gap-1 h-24 overflow-hidden">
                          {nodes.map((node, i) => (
                              <motion.div
                                  key={node + i}
@@ -238,19 +238,19 @@ export function IntelligenceHub() {
           </section>
 
           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
-          <section className="space-y-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+          <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative">
                  <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
                  {error && <span className="absolute right-0 text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
               </h2>
 
               {loading ? (
-                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
                   <SafeIcon name="Loader" className="animate-spin mr-2 h-8 w-8" />
                   SYNCING ARCHIVES...
                 </div>
               ) : error || !posts ? (
-                <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+                <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
                   <div className="border border-red-500/50 bg-red-500/10 p-6 rounded text-red-400 font-mono flex items-center gap-3">
                     <SafeIcon name="AlertTriangle" className="h-6 w-6" />
                     <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH ARCHIVES</span>
@@ -267,7 +267,7 @@ export function IntelligenceHub() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         key={post.id}
-                        className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden group flex flex-col"
+                        className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden group flex flex-col"
                       >
                         {featuredMedia && (
                           <div className="h-48 overflow-hidden">
@@ -288,7 +288,7 @@ export function IntelligenceHub() {
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title.rendered) }}
                           />
                           <div
-                            className="prose prose-invert prose-sm text-gray-400 line-clamp-3 font-mono flex-grow mb-4"
+                            className="prose prose-invert prose-sm text-gray-200 line-clamp-3 font-mono flex-grow mb-4"
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                           />
                           <button className="mt-auto w-fit text-sm font-mono text-apf-purple hover:text-white flex items-center gap-2 uppercase tracking-widest">
@@ -302,8 +302,8 @@ export function IntelligenceHub() {
               )}
 
               {!loading && !error && posts && (
-                <div className="mt-12 p-8 text-center bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
-                   <button className="text-apf-purple hover:text-white font-mono text-xs uppercase tracking-widest border border-apf-purple/50 px-6 py-3 hover:bg-apf-purple/10 transition-colors">
+                <div className="mt-12 p-8 text-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
+                   <button className="text-apf-purple hover:text-white font-mono text-xs uppercase tracking-widest border border-apf-purple/50 px-6 py-3 min-h-[44px] hover:bg-apf-purple/10 transition-colors">
                      Load Older Transmissions
                    </button>
                 </div>

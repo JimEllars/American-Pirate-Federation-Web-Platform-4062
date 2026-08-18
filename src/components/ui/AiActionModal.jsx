@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
@@ -9,12 +10,13 @@ export function AiActionModal() {
   const enqueueTx = useAppStore(state => state.enqueueTx);
   const isOpen = !!pendingAiAction;
   const commandPayload = pendingAiAction?.command;
+  const [isExecuting, setIsExecuting] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
       const handleEscape = (e) => {
-        if (e.key === 'Escape') {
+        if (e.key === 'Escape' && !isExecuting) {
           clearPendingAiAction();
         }
       };
@@ -25,15 +27,25 @@ export function AiActionModal() {
       };
     } else {
       document.body.style.overflow = 'unset';
+      setIsExecuting(false);
     }
-  }, [isOpen, clearPendingAiAction]);
+  }, [isOpen, clearPendingAiAction, isExecuting]);
 
 
   const handleAuthorize = () => {
+    setIsExecuting(true);
     console.info('[ ACTION_AUTHORIZED ]');
-    enqueueTx({ id: Date.now(), command: commandPayload });
-    clearPendingAiAction();
+
+    // Simulate execution loading before dispatching
+    setTimeout(() => {
+        enqueueTx({ id: Date.now(), command: commandPayload });
+        clearPendingAiAction();
+    }, 800);
   };
+
+  const displayPayload = typeof commandPayload === 'object'
+    ? JSON.stringify(commandPayload, null, 2)
+    : (commandPayload || 'No payload provided.');
 
   return (
     <AnimatePresence>
@@ -67,24 +79,32 @@ export function AiActionModal() {
                 <div className="text-amber-500 mb-2 uppercase text-xs tracking-widest border-b border-amber-500/30 pb-1">
                   Proposed Command Payload:
                 </div>
-                <pre className="whitespace-pre-wrap text-sm text-green-400 break-words">
-                  {commandPayload || 'No payload provided.'}
-                </pre>
+                {isExecuting ? (
+                    <div className="flex justify-center items-center py-4">
+                        <div className="animate-pulse text-amber-500 text-sm tracking-widest">[ EXECUTING COMMAND SEQUENCE... ]</div>
+                    </div>
+                ) : (
+                    <pre className="whitespace-pre-wrap text-sm text-green-400 break-words">
+                      {displayPayload}
+                    </pre>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
                 <button
                   onClick={clearPendingAiAction}
-                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                  disabled={isExecuting}
+                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  [ DENY & PURGE ]
+                  [ CANCEL ACTION ]
                 </button>
                 <button
                   onClick={handleAuthorize}
-                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 relative group"
+                  disabled={isExecuting}
+                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 relative group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <div className="absolute inset-0 bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  [ AUTHORIZE & SIGN ]
+                  {isExecuting ? '[ PROCESSING... ]' : '[ AUTHORIZE & SIGN ]'}
                 </button>
               </div>
             </div>
