@@ -26,6 +26,8 @@ export const useAppStore = create(
       deploymentStatus: 'idle', // idle, pending, success, failed
       treasuryDeploymentStatus: 'idle',
       isSigning: false,
+      isCorrectNetwork: true,
+      setIsCorrectNetwork: (status) => set({ isCorrectNetwork: status }),
       isCoreSynced: false,
       setIsCoreSynced: (status) => set({ isCoreSynced: status }),
       lastSyncTime: null,
