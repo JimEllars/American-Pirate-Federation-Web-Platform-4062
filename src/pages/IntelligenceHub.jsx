@@ -291,7 +291,7 @@ export function IntelligenceHub() {
                             className="prose prose-invert prose-sm text-gray-200 line-clamp-3 font-mono flex-grow mb-4"
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                           />
-                          <button className="mt-auto w-fit text-sm font-mono text-apf-purple hover:text-white flex items-center gap-2 uppercase tracking-widest">
+                          <button onClick={() => setActivePost(post)} className="mt-auto w-fit text-sm font-mono text-apf-purple hover:text-white flex items-center gap-2 uppercase tracking-widest">
                             Read Decrypt <SafeIcon name="ArrowRight" />
                           </button>
                         </div>
@@ -312,6 +312,11 @@ export function IntelligenceHub() {
 
         </div>
       </PageTransition>
+            <TransmissionModal
+        isOpen={!!activePost}
+        onClose={() => setActivePost(null)}
+        post={activePost}
+      />
     </Layout>
   );
 }

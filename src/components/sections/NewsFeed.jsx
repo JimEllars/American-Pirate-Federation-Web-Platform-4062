@@ -1,4 +1,5 @@
 import React from 'react';
+import TransmissionModal from '../ui/TransmissionModal';
 import { useWPContent } from '../../hooks/useWPContent';
 import DOMPurify from 'isomorphic-dompurify';
 import { stripHtml } from '../../lib/api/formatting';
@@ -7,6 +8,8 @@ import SafeIcon from '../../common/SafeIcon';
 
 export function NewsFeed() {
   const { data: posts, isLoading, error } = useWPContent();
+  const [activePost, setActivePost] = React.useState(null);
+
 
   if (isLoading) {
     return (
@@ -114,7 +117,7 @@ export function NewsFeed() {
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(stripHtml(post.excerpt.rendered)) }}
                   />
                 </div>
-                <button className="mt-4 text-sm font-vt323 uppercase tracking-widest text-apf-purpleLight hover:text-white flex items-center gap-2 self-start">
+                <button onClick={() => setActivePost(post)} className="mt-4 text-sm font-vt323 uppercase tracking-widest text-apf-purpleLight hover:text-white flex items-center gap-2 self-start">
                   Read Decrypt <SafeIcon name="ArrowRight" />
                 </button>
               </div>
@@ -122,6 +125,11 @@ export function NewsFeed() {
           );
         })}
       </div>
+            <TransmissionModal
+        isOpen={!!activePost}
+        onClose={() => setActivePost(null)}
+        post={activePost}
+      />
     </div>
   );
 }
