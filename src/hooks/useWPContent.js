@@ -15,7 +15,10 @@ export function useWPContent(endpoint = 'posts?_embed&per_page=3') {
 
     const fetchIntel = async () => {
       try {
-        const response = await fetch(`https://intel.piratefederation.org/wp-json/wp/v2/${endpoint}`);
+        const rawWpUrl = import.meta.env.VITE_WP_API_URL || 'https://piratefederation.org/wp-json';
+        const cleanBaseUrl = rawWpUrl.replace(/\/+$/, '');
+        const requestUrl = `${cleanBaseUrl}/wp/v2/${endpoint}`;
+        const response = await fetch(requestUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const result = await response.json();
 

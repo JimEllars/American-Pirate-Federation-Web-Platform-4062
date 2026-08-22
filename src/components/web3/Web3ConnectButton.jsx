@@ -6,7 +6,7 @@ import { client, isWeb3Configured } from "../../lib/web3/client";
 import { useAppStore } from "../../store/useAppStore";
 
 const ARBITRUM_CHAIN_ID = 42161;
-const AXIM_CORE_TELEMETRY_URL = "https://pvbcdndqjguzqeafhwhw.supabase.co/functions/v1/satellite-telemetry";
+const AXIM_CORE_TELEMETRY_URL = "/api/telemetry";
 
 const wallets = [
   inAppWallet({
