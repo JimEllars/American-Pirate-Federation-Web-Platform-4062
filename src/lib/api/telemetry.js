@@ -42,6 +42,18 @@ const queueInsert = (table, payload, successMessage) => {
 
 const QUEUE_KEY = 'apf_telemetry_queue';
 
+if (typeof localStorage !== 'undefined') {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    if (raw && (raw.includes('supabase.co') || raw.includes('/rest/v1/'))) {
+      localStorage.removeItem(QUEUE_KEY);
+    }
+  } catch (e) {
+    localStorage.removeItem(QUEUE_KEY);
+  }
+}
+
+
 let edgeTelemetryBuffer = [];
 let edgeTelemetryInterval;
 
@@ -107,8 +119,10 @@ async function flushEdgeTelemetryBuffer() {
     });
 
     if (!res.ok) {
-        if (res.status === 401 || res.status === 403 || res.status >= 500) {
-            // Apply exponential backoff on auth/server errors
+        if (res.status === 401 || res.status === 403 || res.status === 404) {
+            // Drop failed payload to prevent infinite error loops
+            return;
+        } else if (res.status >= 500) {
             telemetryBackoffDelay = Math.min(telemetryBackoffDelay * 2, 60000);
             telemetryBackoffTimer = setTimeout(() => {
                 telemetryBackoffTimer = null;
