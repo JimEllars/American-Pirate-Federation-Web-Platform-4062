@@ -48,9 +48,13 @@ export function Armory() {
   const isMismatched = chain?.id !== 42161;
   const switchChain = () => {};
   const [procuring, setProcuring] = useState(null);
+  const [activeCategory, setActiveCategory] = useState('ALL');
+  const categories = ['ALL', 'HARDWARE', 'APPAREL', 'TECH'];
   const [showRepLog, setShowRepLog] = useState(false);
   const { fetchArmoryInventory, loading: hydrationLoading } = useAXiMHydration();
   const [liveInventory, setLiveInventory] = useState([]);
+
+  const filteredInventory = liveInventory.filter(item => activeCategory === 'ALL' ? true : item.type.toUpperCase() === activeCategory);
   const [inventoryLoading, setInventoryLoading] = useState(true);
 
   useEffect(() => {
@@ -89,32 +93,36 @@ export function Armory() {
   };
 
   const handleRequisition = async (item) => {
+    if (!address) {
+      addToast('[ SYSTEM ERROR: UNAUTHORIZED NODE ]', 'error');
+      return;
+    }
+    if (reputationPoints < item.price) {
+      addToast(`[ INSUFFICIENT REPUTATION: REQUIRE ${item.price} PTS ]`, 'error');
+      return;
+    }
     if (!isEligible(item.requirement) || isSigning) return;
 
-    if (reputationPoints >= item.price) {
-      setProcuring(item.id);
-      setIsSigning(true);
-      try {
-        if (account) {
+    setProcuring(item.id);
+    setIsSigning(true);
+    try {
+      if (account) {
           await account.signMessage("Authorize APF Requisition Transfer for: " + item.name);
-        }
-        spendReputation(item.price);
-        addRequisition(item);
-        if (address) {
-          logRequisition(address, item.id, item.price);
-        }
-        addToast('[ REQUISITION TRANSFER AUTHORIZED ]', 'success');
-      } catch (err) {
-        if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
-          logSignatureRejection('/armory');
-          addToast('[ SIGNATURE REJECTED - REQUISITION DENIED ]', 'error');
-        } else {
-          addToast('[ SIGNATURE FAILED - REQUISITION DENIED ]', 'error');
-        }
-      } finally {
-        setIsSigning(false);
-        setProcuring(null);
       }
+      spendReputation(item.price);
+      addRequisition(item);
+      logRequisition(address || '0xANONYMOUS', item.id, item.price);
+      addToast(`[ AUTHORIZED: ${item.name} PROVISIONED ]`, 'success');
+    } catch (err) {
+      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
+        logSignatureRejection('/armory');
+        addToast('[ SIGNATURE REJECTED - REQUISITION DENIED ]', 'error');
+      } else {
+        addToast('[ AUTHORIZATION FAILED ]', 'error');
+      }
+    } finally {
+      setIsSigning(false);
+      setProcuring(null);
     }
   };
 
@@ -228,6 +236,7 @@ export function Armory() {
             </div>
           </div>
 
+          <ArmoryCategoryBar activeCategory={activeCategory} setActiveCategory={setActiveCategory} categories={categories} />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
              {inventoryLoading ? (
                  <div className="col-span-full py-12 flex justify-center items-center">
@@ -237,7 +246,7 @@ export function Armory() {
                         </div>
                     </div>
                  </div>
-             ) : liveInventory.map((item) => {
+             ) : filteredInventory.map((item) => {
                const eligible = isEligible(item.requirement);
                const canAfford = reputationPoints >= item.price;
 
@@ -248,6 +257,7 @@ export function Armory() {
                       <div className="absolute inset-0 bg-apf-purple/20 mix-blend-overlay z-10 !pointer-events-none" />
                       <img
                         src={item.image}
+                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
                         alt={item.name}
                         className={`w-full h-full object-cover transition-transform duration-700 ${eligible ? 'group-hover:scale-110' : 'grayscale opacity-50'}`}
                       />

@@ -17,7 +17,9 @@ export async function onRequest(context) {
 
     // Placeholder for actual telemetry processing logic
     // For now, we'll just log it to the edge console and return a success response.
-    console.info(`[ TELEMETRY INGEST ] Mode: ${isBatch ? 'Batch' : 'Single'}`);
+    const country = context.request.cf?.country || 'UNKNOWN';
+    const colo = context.request.cf?.colo || 'EDGE';
+    console.info(`[ TELEMETRY INGEST ] Node: ${colo} | Geo: ${country} | Mode: ${isBatch ? 'Batch' : 'Single'}`);
 
     return new Response(JSON.stringify({ status: 'ok', mode: 'edge-logged', processed: isBatch ? requestData.length : 1 }), {
       status: 200,
