@@ -237,7 +237,7 @@ export const useAppStore = create(
     }),
     {
       name: 'apf-tx-queue',
-      partialize: (state) => ({ activeTxQueue: state.activeTxQueue, aiDecryptedResponse: state.aiDecryptedResponse }),
+      partialize: (state) => ({ activeTxQueue: state.activeTxQueue, aiDecryptedResponse: state.aiDecryptedResponse, requisitionHistory: state.requisitionHistory, reputationPoints: state.reputationPoints, reputationHistory: state.reputationHistory }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.warn('[Zustand] Rehydration error, resetting state:', error);

@@ -16,6 +16,26 @@ if (!isSupabaseConfigured) {
 }
 
 // Create a deterministic mock client if not configured to prevent network errors
+const createMockQuery = (defaultData = []) => {
+  const query = {
+    data: defaultData,
+    error: null,
+    then: (resolve) => Promise.resolve({ data: defaultData, error: null }).then(resolve),
+    catch: (reject) => Promise.resolve({ data: defaultData, error: null }).catch(reject),
+    select: () => query,
+    insert: async () => ({ data: null, error: null }),
+    update: () => query,
+    delete: () => query,
+    eq: () => query,
+    neq: () => query,
+    order: () => query,
+    limit: () => query,
+    single: async () => ({ data: null, error: null }),
+    maybeSingle: async () => ({ data: null, error: null }),
+  };
+  return query;
+};
+
 const createMockClient = () => {
     return {
         auth: {
@@ -26,15 +46,10 @@ const createMockClient = () => {
             signOut: async () => ({ error: null })
         },
         from: (table) => ({
-            insert: async () => ({ data: null, error: null }),
-            select: () => ({
-                eq: () => ({
-                    single: async () => ({ data: null, error: null })
-                }),
-                order: () => ({
-                   limit: async () => ({ data: [], error: null })
-                })
-            })
+            insert: () => createMockQuery(),
+            select: () => createMockQuery(),
+            update: () => createMockQuery(),
+            delete: () => createMockQuery()
         }),
         functions: {
             invoke: async () => ({ data: null, error: null })

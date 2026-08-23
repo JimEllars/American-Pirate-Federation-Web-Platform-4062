@@ -19,6 +19,15 @@ export function IntelligenceHub() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activePost, setActivePost] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredPosts = posts ? posts.filter(post => {
+    const term = searchTerm.toLowerCase();
+    const title = (post.title?.rendered || '').toLowerCase();
+    const excerpt = (post.excerpt?.rendered || '').toLowerCase();
+    return title.includes(term) || excerpt.includes(term);
+  }) : null;
 
   // Passively bind AI Conduit
   const { isAnalyzing: isGlobalAnalyzing, analyzeData, lastSyncTime } = useAnalyzeFederationData(posts);
@@ -239,10 +248,11 @@ export function IntelligenceHub() {
 
           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
           <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
-              <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative">
+              <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative mb-6">
                  <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
                  {error && <span className="absolute right-0 text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
               </h2>
+              <IntelFilterBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
               {loading ? (
                 <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
@@ -258,7 +268,7 @@ export function IntelligenceHub() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {posts.map((post, index) => {
+                  {filteredPosts.map((post, index) => {
                     const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 
                     return (
