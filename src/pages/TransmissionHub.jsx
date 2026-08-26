@@ -64,13 +64,26 @@ export function TransmissionHub() {
 
   const togglePlay = (episode) => {
     if (activeEpisode?.id === episode.id) {
-      setIsPlaying(!isPlaying);
+      const newIsPlaying = !isPlaying;
+      setIsPlaying(newIsPlaying);
+      if (newIsPlaying && audioRef.current && activeEpisode?.audio_url) {
+        audioRef.current.play().catch(() => {
+          // Fallback to visualizer-only simulation mode
+        });
+      } else if (!newIsPlaying && audioRef.current) {
+        audioRef.current.pause();
+      }
     } else {
       setIsGlitching(true);
       glitchTimeoutRef.current = setTimeout(() => {
         setActiveEpisode(episode);
         setIsPlaying(true);
         setIsGlitching(false);
+        if (audioRef.current && episode?.audio_url) {
+          audioRef.current.play().catch(() => {
+            // Fallback to visualizer-only simulation mode
+          });
+        }
       }, 300); // 300ms glitch duration
     }
   };
