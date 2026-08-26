@@ -1,4 +1,3 @@
-
 import { trackError } from './telemetry.js';
 import DOMPurify from 'dompurify';
 
@@ -21,7 +20,9 @@ export const parseAICommand = (aiResponseString) => {
       let parsedCommand = null;
 
       try {
-          parsedCommand = JSON.parse(commandPayload);
+          // LLM might sometimes leave unescaped quotes or markdown json blocks
+          let cleanedPayload = commandPayload.replace(/^```json/i, '').replace(/```$/i, '').trim();
+          parsedCommand = JSON.parse(cleanedPayload);
       } catch(e) {
           // Fallback if not valid JSON, treat as raw text
           parsedCommand = { type: 'raw', payload: DOMPurify.sanitize(commandPayload), timestamp: new Date().toISOString() };

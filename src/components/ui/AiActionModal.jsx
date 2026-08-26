@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
@@ -8,9 +7,11 @@ export function AiActionModal() {
   const pendingAiAction = useAppStore(state => state.pendingAiAction);
   const clearPendingAiAction = useAppStore(state => state.clearPendingAiAction);
   const enqueueTx = useAppStore(state => state.enqueueTx);
+  const addToast = useAppStore(state => state.addToast);
   const isOpen = !!pendingAiAction;
   const commandPayload = pendingAiAction?.command;
   const [isExecuting, setIsExecuting] = useState(false);
+  const [errorState, setErrorState] = useState(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -28,19 +29,38 @@ export function AiActionModal() {
     } else {
       document.body.style.overflow = 'unset';
       setIsExecuting(false);
+      setErrorState(null);
     }
   }, [isOpen, clearPendingAiAction, isExecuting]);
 
-
-  const handleAuthorize = () => {
+  const handleAuthorize = async () => {
     setIsExecuting(true);
+    setErrorState(null);
     console.info('[ ACTION_AUTHORIZED ]');
 
-    // Simulate execution loading before dispatching
-    setTimeout(() => {
+    try {
+        // Simulate execution loading before dispatching
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        if (!commandPayload) {
+            throw new Error("Invalid command payload");
+        }
+
         enqueueTx({ id: Date.now(), command: commandPayload });
         clearPendingAiAction();
-    }, 800);
+        addToast('[ ACTION DISPATCHED TO QUEUE ]', 'success');
+    } catch (error) {
+        console.error('[ ACTION_FAILED ]', error);
+        setErrorState(error.message || 'Execution Failed');
+        addToast(`[ ERROR: ${error.message || 'EXECUTION FAILED'} ]`, 'error');
+        setIsExecuting(false);
+    }
+  };
+
+  const handleRollback = () => {
+      setErrorState(null);
+      clearPendingAiAction();
+      addToast('[ ACTION ROLLED BACK ]', 'info');
   };
 
   const displayPayload = typeof commandPayload === 'object'
@@ -76,36 +96,56 @@ export function AiActionModal() {
               </div>
 
               <div className="mb-8 font-vt323 text-gray-300 bg-black border border-amber-500/30 p-4">
-                <div className="text-amber-500 mb-2 uppercase text-xs tracking-widest border-b border-amber-500/30 pb-1">
-                  Proposed Command Payload:
+                <div className="text-amber-500 mb-2 uppercase text-xs tracking-widest border-b border-amber-500/30 pb-1 flex justify-between">
+                  <span>Proposed Command Payload:</span>
+                  {errorState && <span className="text-red-500">[ ERROR ]</span>}
                 </div>
+
                 {isExecuting ? (
-                    <div className="flex justify-center items-center py-4">
-                        <div className="animate-pulse text-amber-500 text-sm tracking-widest">[ EXECUTING COMMAND SEQUENCE... ]</div>
+                    <div className="flex flex-col space-y-2 py-4">
+                        <div className="h-4 bg-amber-500/20 animate-pulse w-3/4"></div>
+                        <div className="h-4 bg-amber-500/20 animate-pulse w-1/2"></div>
+                        <div className="h-4 bg-amber-500/20 animate-pulse w-5/6"></div>
+                        <div className="text-amber-500 text-sm tracking-widest mt-4 text-center">[ EXECUTING COMMAND SEQUENCE... ]</div>
+                    </div>
+                ) : errorState ? (
+                    <div className="text-red-500 text-sm py-4">
+                        SYSTEM ERROR: {errorState}
                     </div>
                 ) : (
-                    <pre className="whitespace-pre-wrap text-sm text-green-400 break-words">
+                    <pre className="whitespace-pre-wrap text-sm text-green-400 break-words max-h-60 overflow-y-auto">
                       {displayPayload}
                     </pre>
                 )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-end">
-                <button
-                  onClick={clearPendingAiAction}
-                  disabled={isExecuting}
-                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  [ CANCEL ACTION ]
-                </button>
-                <button
-                  onClick={handleAuthorize}
-                  disabled={isExecuting}
-                  className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 relative group disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div className="absolute inset-0 bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  {isExecuting ? '[ PROCESSING... ]' : '[ AUTHORIZE & SIGN ]'}
-                </button>
+                {errorState ? (
+                    <button
+                        onClick={handleRollback}
+                        className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                    >
+                        [ ROLLBACK ]
+                    </button>
+                ) : (
+                    <>
+                        <button
+                          onClick={clearPendingAiAction}
+                          disabled={isExecuting}
+                          className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-red-500 text-red-500 hover:bg-red-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          [ CANCEL ACTION ]
+                        </button>
+                        <button
+                          onClick={handleAuthorize}
+                          disabled={isExecuting}
+                          className="px-6 py-3 font-vt323 text-lg uppercase tracking-widest border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500/50 relative group disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <div className="absolute inset-0 bg-amber-500/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                          {isExecuting ? '[ PROCESSING... ]' : '[ AUTHORIZE & SIGN ]'}
+                        </button>
+                    </>
+                )}
               </div>
             </div>
           </motion.div>

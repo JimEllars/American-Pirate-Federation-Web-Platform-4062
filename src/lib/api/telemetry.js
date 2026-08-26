@@ -1,157 +1,17 @@
-import { supabase } from './supabaseClient';
-import { useAppStore } from '../../store/useAppStore';
-
-const insertQueue = [];
-let telemetryInterval;
-
-if (typeof window !== 'undefined') {
-  telemetryInterval = setInterval(flushInsertQueue, 3000);
-}
-
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    if (telemetryInterval) clearInterval(telemetryInterval);
-  });
-}
-
-async function flushInsertQueue() {
-  if (insertQueue.length === 0) return;
-  const batch = insertQueue.splice(0, insertQueue.length);
-
-  try {
-    const { error } = await supabase.from('telemetry_events').insert(batch);
-    if (error) {
-      console.warn('[ TELEMETRY BATCH INSERT FAILURE ]', error);
-      // Re-queue
-      insertQueue.push(...batch);
-    }
-  } catch (error) {
-    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error);
-    // Re-queue
-    insertQueue.push(...batch);
-  }
-}
-
-const queueInsert = (table, payload, successMessage) => {
-  insertQueue.push({ table, payload, created_at: new Date().toISOString() });
-  if (successMessage) {
-    useAppStore.getState().addTelemetryLog(successMessage);
-  }
-};
-
+import { supabase } from './supabaseClient.js';
+import { useAppStore } from '../../store/useAppStore.js';
 
 const QUEUE_KEY = 'apf_telemetry_queue';
-
-if (typeof localStorage !== 'undefined') {
-  try {
-    const raw = localStorage.getItem(QUEUE_KEY);
-    if (raw && (raw.includes('supabase.co') || raw.includes('/rest/v1/'))) {
-      localStorage.removeItem(QUEUE_KEY);
-    }
-  } catch (e) {
-    localStorage.removeItem(QUEUE_KEY);
-  }
-}
-
-
-let edgeTelemetryBuffer = [];
-let edgeTelemetryInterval;
-
-if (typeof window !== 'undefined') {
-  edgeTelemetryInterval = setInterval(flushEdgeTelemetryBuffer, 5000);
-}
-
-if (import.meta.hot) {
-  import.meta.hot.dispose(() => {
-    if (edgeTelemetryInterval) clearInterval(edgeTelemetryInterval);
-  });
-}
-
-const sendOrQueueTelemetry = (endpoint, payload) => {
-    edgeTelemetryBuffer.push(payload);
-    if (edgeTelemetryBuffer.length >= 10) {
-        flushEdgeTelemetryBuffer();
-    }
-};
-
-let telemetryBackoffTimer = null;
-let telemetryBackoffDelay = 1000;
-
-async function flushEdgeTelemetryBuffer() {
-  if (telemetryBackoffTimer) return; // Wait until backoff clears
-
-  if (edgeTelemetryBuffer.length === 0) {
-      if (typeof localStorage !== 'undefined') {
-          try {
-              const localQueue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
-              if (localQueue.length > 0) {
-                  edgeTelemetryBuffer = localQueue.map(item => item.payload);
-                  localStorage.removeItem(QUEUE_KEY);
-              } else {
-                  return;
-              }
-          } catch(e) {
-              localStorage.removeItem(QUEUE_KEY);
-              return;
-          }
-      } else {
-          return;
-      }
-  }
-
-  const batch = edgeTelemetryBuffer.splice(0, edgeTelemetryBuffer.length);
-  const EP = typeof TELEMETRY_ENDPOINT !== 'undefined' ? TELEMETRY_ENDPOINT : '/api/telemetry';
-
-  try {
-    const headers = { 'Content-Type': 'application/json' };
-
-    // If routing directly to Supabase, add required auth headers
-    if (EP.includes('supabase.co')) {
-      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-      headers['apikey'] = anonKey;
-      headers['Authorization'] = `Bearer ${anonKey}`;
-    }
-
-    const res = await fetch(EP, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(batch)
-    });
-
-    if (!res.ok) {
-        if (res.status === 401 || res.status === 403 || res.status === 404) {
-            // Drop failed payload to prevent infinite error loops
-            return;
-        } else if (res.status >= 500) {
-            telemetryBackoffDelay = Math.min(telemetryBackoffDelay * 2, 60000);
-            telemetryBackoffTimer = setTimeout(() => {
-                telemetryBackoffTimer = null;
-            }, telemetryBackoffDelay);
-        }
-        throw new Error(`Network response was not ok: ${res.status}`);
-    }
-
-    // Reset backoff on success
-    telemetryBackoffDelay = 1000;
-    console.info('[ TELEMETRY UPLINK ESTABLISHED ] Batch Size:', batch.length);
-  } catch (error) {
-    console.warn('[ TELEMETRY BATCH INSERT EXCEPTION ]', error.message);
-    batch.forEach(payload => queuePayload(EP, payload));
-  }
-}
+const RETRY_DELAY_BASE = 1000;
+const MAX_RETRY_DELAY = 30000;
 
 const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
                   import.meta.env.VITE_SUPABASE_URL.includes('mock.supabase.co') ||
                   import.meta.env.VITE_SUPABASE_URL.includes('localhost');
 
-// Always prefer Cloudflare Pages Functions edge endpoint.
-// If direct Supabase is needed, ensure valid formatting.
 const TELEMETRY_ENDPOINT = '/api/telemetry';
 
-
-
-export
-const generateChecksum = async (payloadString) => {
+export const generateChecksum = async (payloadString) => {
   let checksum = '';
   if (typeof crypto !== 'undefined' && crypto.subtle) {
       const encoder = new TextEncoder();
@@ -170,9 +30,6 @@ const generateChecksum = async (payloadString) => {
   }
   return checksum;
 };
-
-
-
 
 const queuePayload = async (url, payload) => {
   const payloadString = JSON.stringify(payload);
@@ -194,14 +51,14 @@ const queuePayload = async (url, payload) => {
     url,
     payload,
     stagedAt: Date.now(),
-    integrityHash: checksum
+    integrityHash: checksum,
+    retryCount: 0
   });
 
   try {
       localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
   } catch (e) {
       if (e.name === 'QuotaExceededError' || e.code === 22) {
-          // Fallback: purge half the queue if storage is full
           queue.splice(0, Math.floor(queue.length / 2));
           try {
               localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
@@ -211,14 +68,133 @@ const queuePayload = async (url, payload) => {
       }
   }
 
-  try {
-      useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
-  } catch(e) {
-      console.warn('[ TELEMETRY TOAST FAILED ]', e);
+  if (typeof useAppStore !== 'undefined' && useAppStore.getState) {
+    try {
+        useAppStore.getState().addToast('[ TELEMETRY STAGED: LOCAL BUFFER BUFFERING TRANSACTION ]', 'warning');
+    } catch(e) {
+        console.warn('[ TELEMETRY TOAST FAILED ]', e);
+    }
   }
 };
 
+let flushTimeout = null;
 
+export const flushTelemetryQueue = async () => {
+    let queue = [];
+    try {
+        queue = JSON.parse(localStorage.getItem(QUEUE_KEY) || '[]');
+    } catch(e) {
+        queue = [];
+    }
+
+    if (queue.length === 0) return;
+
+    // Time-To-Live check (2 hours = 7200000 ms)
+    const now = Date.now();
+    const validQueue = queue.filter(item => (now - item.stagedAt) < 7200000);
+
+    if (validQueue.length !== queue.length) {
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(validQueue));
+        queue = validQueue;
+        if (queue.length === 0) return;
+    }
+
+    const batch = queue.map(item => item.payload);
+    const retryCounts = queue.map(item => item.retryCount);
+    const maxRetryCount = Math.max(...retryCounts, 0);
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(TELEMETRY_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(batch),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+            localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+            console.info('[ TELEMETRY BATCH FLUSHED SUCCESSFULLY ]');
+        } else if (response.status >= 500 || response.status === 429) {
+            throw new Error(`Server returned ${response.status}`);
+        } else {
+            // Bad request or similar, drop the batch to avoid infinite loop
+            localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+        }
+    } catch (error) {
+        console.warn('[ TELEMETRY FLUSH FAILED - WILL RETRY ]', error.message);
+
+        // Update retry counts and schedule next flush
+        const updatedQueue = queue.map(item => ({ ...item, retryCount: (item.retryCount || 0) + 1 }));
+        localStorage.setItem(QUEUE_KEY, JSON.stringify(updatedQueue));
+
+        const nextDelay = Math.min(MAX_RETRY_DELAY, RETRY_DELAY_BASE * Math.pow(2, maxRetryCount));
+
+        if (flushTimeout) clearTimeout(flushTimeout);
+        flushTimeout = setTimeout(flushTelemetryQueue, nextDelay);
+    }
+};
+
+// Listen for network reconnect
+if (typeof window !== 'undefined') {
+    window.addEventListener('online', flushTelemetryQueue);
+}
+
+export const sendOrQueueTelemetry = async (url, payload) => {
+    if (isMockEnv) return;
+
+    // Convert to strict schema for new edge function
+    const strictPayload = {
+      event: payload.meta?.event_type || 'unknown_event',
+      timestamp: Date.now(),
+      metadata: payload.telemetry || payload
+    };
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(strictPayload),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.status >= 500 || response.status === 429) {
+            throw new Error(`Server returned ${response.status}`);
+        } else if (!response.ok) {
+            // Do not queue client errors (like 400 Bad Request)
+            console.warn(`[ TELEMETRY DROPPED: ${response.status} ]`);
+        }
+    } catch (error) {
+        console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT - QUEUEING ]', error.message);
+        queuePayload(url, strictPayload);
+    }
+};
+
+const queueInsert = async (table, payload, successMsg) => {
+    // Treat Supabase inserts similarly - queue via edge telemetry if it fails
+    if (isMockEnv) return;
+
+    try {
+        const { error } = await supabase.from(table).insert(payload);
+        if (error) throw error;
+        if (successMsg) console.info(successMsg);
+    } catch (error) {
+        console.warn('[ SUPABASE INSERT FAILED - FALLING BACK TO EDGE TELEMETRY QUEUE ]', error.message);
+        const strictPayload = {
+            event: 'supabase_insert_fallback',
+            timestamp: Date.now(),
+            metadata: { table, payload }
+        };
+        queuePayload(TELEMETRY_ENDPOINT, strictPayload);
+    }
+}
 
 export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
   try {
@@ -238,13 +214,8 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
         network_layer: "Arbitrum One (Chain ID: 42161)"
       }
     };
-
-    // Asynchronous mock uplink
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-
-  } catch (error) {
-    // Critical uplink error is handled silently in background
-  }
+  } catch (error) { /* empty */ }
 };
 
 export const logSovereignEntry = async (walletAddress, alias, signature) => {
@@ -255,7 +226,6 @@ export const logSovereignEntry = async (walletAddress, alias, signature) => {
     console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
   }
 };
-
 
 export const logRequisition = async (walletAddress, itemID, cost) => {
   try {
@@ -304,11 +274,8 @@ export const logSignatureRejection = async (contextPath) => {
     };
 
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-
     useAppStore.getState().addTelemetryLog('[ NET_OPS: OPERATOR DENIED CRYPTOGRAPHIC SIGNATURE ]');
-  } catch (error) {
-    // Intentionally empty
-  }
+  } catch (error) { /* empty */ }
 };
 
 export const logRPCException = async (endpoint, errorCode) => {
@@ -328,11 +295,8 @@ export const logRPCException = async (endpoint, errorCode) => {
     };
 
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-
     useAppStore.getState().addTelemetryLog('[ NET_OPS: RPC NODE RATE_LIMITED OR UNREACHABLE ]');
-  } catch (error) {
-    // Intentionally empty
-  }
+  } catch (error) { /* empty */ }
 };
 
 export const logTransactionDispatched = async (txHash, context) => {
@@ -360,11 +324,8 @@ export const logGasException = async (walletAddress) => {
     };
 
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-
     useAppStore.getState().addTelemetryLog('[ NET_OPS: INSUFFICIENT GAS DETECTED ]');
-  } catch (error) {
-    // Intentionally empty
-  }
+  } catch (error) { /* empty */ }
 };
 
 export const logOperatorConnected = async (walletAddress) => {
@@ -392,10 +353,7 @@ export const logUnhandledRejection = async (reason) => {
     };
 
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-
-  } catch (error) {
-    // Fail silently in production mode
-  }
+  } catch (error) { /* empty */ }
 };
 
 export const logCheckoutException = async (reason) => {
@@ -409,11 +367,9 @@ export const logCheckoutException = async (reason) => {
       reason: reason
     };
     useAppStore.getState().addTelemetryLog('[ NET_OPS: CHECKOUT SEQUENCE TERMINATED OR DECLINED ]');
-    // We intentionally don't store financial data in the queue
-  } catch (error) {
-    // Intentionally empty
-  }
+  } catch (error) { /* empty */ }
 };
+
 export const logCommLinkSubscription = async (email) => {
   try {
     const payload = {
@@ -425,11 +381,8 @@ export const logCommLinkSubscription = async (email) => {
       email: email
     };
     useAppStore.getState().addTelemetryLog('[ NET_OPS: COMM LINK SUBSCRIPTION STAGED ]');
-  } catch (error) {
-    // Intentionally empty
-  }
+  } catch (error) { /* empty */ }
 };
-
 
 export const logOnChainSuccess = async (txHash) => {
   try {
@@ -466,8 +419,5 @@ export const trackError = async (error, context = {}) => {
     };
 
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-
-  } catch (err) {
-    // Fail silently in production mode
-  }
+  } catch (err) { /* empty */ }
 };
