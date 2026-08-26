@@ -11,6 +11,7 @@ import Web3ConnectButton from '../components/web3/Web3ConnectButton';
 import { logRequisition } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection } from '../lib/api/telemetry';
+import ArmoryCategoryBar from '../components/ui/ArmoryCategoryBar';
 
 const PROVISIONS = [
   {
@@ -54,7 +55,7 @@ export function Armory() {
   const { fetchArmoryInventory, loading: hydrationLoading } = useAXiMHydration();
   const [liveInventory, setLiveInventory] = useState([]);
 
-  const filteredInventory = liveInventory.filter(item => activeCategory === 'ALL' ? true : item.type.toUpperCase() === activeCategory);
+  const filteredInventory = liveInventory.filter(item => activeCategory === 'ALL' ? true : item.type.toLowerCase() === activeCategory.toLowerCase());
   const [inventoryLoading, setInventoryLoading] = useState(true);
 
   useEffect(() => {

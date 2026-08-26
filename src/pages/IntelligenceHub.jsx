@@ -11,6 +11,8 @@ import { useState, useEffect } from 'react';
 import { useAnalyzeFederationData } from '../hooks/usePirateAI';
 import { logUnhandledRejection } from '../lib/api/telemetry';
 import { formatTerminalDate } from '../lib/api/formatting';
+import IntelFilterBar from '../components/ui/IntelFilterBar';
+import TransmissionModal from '../components/ui/TransmissionModal';
 
 export function IntelligenceHub() {
     const { data: wpPosts, loading: wpLoading, error: wpError } = usePirateIntel('posts?_embed&per_page=12');

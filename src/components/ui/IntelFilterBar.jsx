@@ -1,5 +1,5 @@
 import React from 'react';
-import { SafeIcon } from './SafeIcon';
+import SafeIcon from '../../common/SafeIcon';
 
 export default function IntelFilterBar({ searchTerm, setSearchTerm }) {
   return (
