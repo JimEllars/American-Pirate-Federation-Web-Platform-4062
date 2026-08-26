@@ -163,6 +163,9 @@ export function TheTreasury() {
                   {(() => {
                     if (isLoadingBalance) return '[ SYNCING RPC... ]';
                     if (treasuryBalance === undefined || treasuryBalance === null) return '0.00 ETH';
+                    if (typeof treasuryBalance === 'string') {
+                      return treasuryBalance.includes('ETH') ? treasuryBalance : `${treasuryBalance} ETH`;
+                    }
                     try {
                       const formatted = ethers.utils.formatEther(treasuryBalance);
                       return `${formatted} ETH`;

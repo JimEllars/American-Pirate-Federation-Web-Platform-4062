@@ -1,3 +1,5 @@
+import DOMPurify from "isomorphic-dompurify";
+import { marked } from "marked";
 import React, { useState } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
@@ -188,7 +190,7 @@ export function Events() {
                           <h2 className="text-3xl font-black uppercase tracking-tighter text-white mb-6">
                               {activeReport.title}
                           </h2>
-                          <div className="prose prose-invert prose-p:font-vt323 prose-p:text-lg prose-p:text-gray-300 prose-a:text-apf-purple prose-strong:text-white max-w-none" dangerouslySetInnerHTML={{ __html: require('isomorphic-dompurify').sanitize(require('marked').parse(activeReport.report)) }} />
+                          <div className="prose prose-invert prose-p:font-vt323 prose-p:text-lg prose-p:text-gray-300 prose-a:text-apf-purple prose-strong:text-white max-w-none" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parse(activeReport.report)) }} />
                       </div>
                   </motion.div>
               </motion.div>
