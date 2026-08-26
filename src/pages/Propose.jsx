@@ -78,13 +78,22 @@ export function Propose() {
     };
 
     try {
+        const newId = Date.now();
         enqueueTx({
-            id: Date.now(),
+            id: newId,
             command: 'DRAFT_POLICY',
             payload: JSON.stringify(sanitizedData)
         });
 
-        addToast('[ SYSTEM: PROPOSAL QUEUED FOR SIGNATURE ]', 'success');
+        // Add to local state so it appears in drafts
+        addProposedAmendment({
+            id: newId,
+            ...sanitizedData,
+            status: 'draft',
+            created_at: new Date().toISOString()
+        });
+
+        addToast('[ SYSTEM: PROPOSAL QUEUED FOR SIGNATURE & LOCAL DRAFT RESTORED ]', 'success');
 
         setFormState({ title: '', summary: '', alignment: '' });
         localStorage.removeItem('apf_proposal_draft');
