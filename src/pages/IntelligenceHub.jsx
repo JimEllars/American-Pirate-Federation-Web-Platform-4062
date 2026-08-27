@@ -269,6 +269,11 @@ export function IntelligenceHub() {
                   </div>
                 </div>
               ) : (
+                filteredPosts.length === 0 ? (
+                  <div className="py-12 text-center text-gray-400 font-mono text-sm border border-gray-800 bg-black/40 p-8">
+                    [ NO MATCHING TRANSMISSION SIGNALS FOUND IN SECTOR ]
+                  </div>
+                ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                   {filteredPosts.map((post, index) => {
                     const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
@@ -311,7 +316,7 @@ export function IntelligenceHub() {
                     );
                   })}
                 </div>
-              )}
+              ))}
 
               {!loading && !error && posts && (
                 <div className="mt-12 p-8 text-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">

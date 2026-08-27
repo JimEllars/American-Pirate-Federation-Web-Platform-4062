@@ -4,6 +4,7 @@ import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
 import { client, isWeb3Configured } from "../../lib/web3/client";
 import { useAppStore } from "../../store/useAppStore";
+import { sendOrQueueTelemetry } from "../../lib/api/telemetry";
 
 const ARBITRUM_CHAIN_ID = 42161;
 const AXIM_CORE_TELEMETRY_URL = "/api/telemetry";
@@ -27,7 +28,7 @@ export default function Web3ConnectButton({ microAppName = "American-Pirate-Fede
       const walletId = wallet.id;
       if (!address) return;
 
-      const telemetryPayload = {
+      sendOrQueueTelemetry('/api/telemetry', {
         meta: {
           source: microAppName,
           event_type: "wallet.connected",
@@ -39,12 +40,6 @@ export default function Web3ConnectButton({ microAppName = "American-Pirate-Fede
           chain_id: ARBITRUM_CHAIN_ID,
           session_status: "active"
         }
-      };
-
-      await fetch(AXIM_CORE_TELEMETRY_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(telemetryPayload)
       });
     } catch (error) {
       console.warn("[Web3Connect] Telemetry sync skipped safely:", error.message);

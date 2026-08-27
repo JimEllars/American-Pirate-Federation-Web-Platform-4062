@@ -72,7 +72,7 @@ export function FleetMuster({ event }) {
                     return;
                   }
 
-                  const signature = await account.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
+                  const signature = await account.signMessage({ message: "Authorize Fleet Muster Signal: " + event.title });
                   registerSignal(event.title);
                   logEventSignal(address, event.title, signature);
                   addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");

@@ -246,7 +246,8 @@ export const useAppStore = create(
         userRole: state.userRole,
         guildAlignment: state.guildAlignment,
         musterRollDraft: state.musterRollDraft,
-        policySignals: state.policySignals
+        policySignals: state.policySignals,
+        proposedAmendments: state.proposedAmendments
       }),
       onRehydrateStorage: () => (state, error) => {
         if (error) {
