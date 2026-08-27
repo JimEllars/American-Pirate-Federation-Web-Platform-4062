@@ -11,6 +11,18 @@ export async function onRequest(context) {
     });
   }
 
+  // Check payload size
+  const contentLength = context.request.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > 16384) {
+    return new Response(JSON.stringify({ error: 'Payload Too Large', message: 'Payload size exceeds 16KB limit' }), {
+      status: 413,
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }
+
   try {
     const requestData = await context.request.json();
     const isBatch = Array.isArray(requestData);
@@ -32,11 +44,22 @@ export async function onRequest(context) {
         throw new Error('Invalid event payload: must be an object');
       }
 
-      const hasStrictSchema = (typeof evt.event === 'string' && typeof evt.timestamp === 'number' && typeof evt.metadata === 'object' && evt.metadata !== null);
+      // Schema check on event name, payload size < 16KB, timestamp sanity check
+      const now = Date.now();
+      const hasStrictSchema = (
+          typeof evt.event === 'string' &&
+          evt.event.length > 0 &&
+          evt.event.length <= 100 &&
+          typeof evt.timestamp === 'number' &&
+          evt.timestamp <= now + 86400000 && // Not more than 1 day in the future
+          evt.timestamp >= now - 7200000 && // Not more than 2 hours in the past
+          typeof evt.metadata === 'object' &&
+          evt.metadata !== null
+      );
 
       // If the payload does not match the strict schema, reject it.
       if (!hasStrictSchema) {
-        throw new Error('Invalid schema. Expected { event: string, timestamp: number, metadata: object }');
+        throw new Error('Invalid schema. Expected { event: string, timestamp: number, metadata: object } and timestamp within 2 hours of current time.');
       }
     }
 
@@ -51,6 +74,7 @@ export async function onRequest(context) {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store",
       },
     });
   } catch (error) {
@@ -60,6 +84,7 @@ export async function onRequest(context) {
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "no-store",
       },
     });
   }
