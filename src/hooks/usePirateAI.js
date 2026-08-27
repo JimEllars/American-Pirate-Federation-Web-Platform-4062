@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { aiConfig } from '../lib/api/aiConfig';
 import { parseAICommand } from '../lib/api/aiActionParser';
-import { sendOrQueueTelemetry } from '../lib/api/telemetry';
+import { sendOrQueueTelemetry, logUnhandledRejection } from '../lib/api/telemetry';
 
 export const formatFeedForAI = (rawDataArray) => {
     if (!Array.isArray(rawDataArray)) return '';
@@ -24,6 +24,23 @@ export const checkAIHealth = async () => {
     } catch (error) { /* empty */ }
 };
 
+const getCachedTacticalBrief = () => {
+    try {
+        const cached = localStorage.getItem('apf_tactical_brief_cache');
+        return cached ? JSON.parse(cached) : null;
+    } catch(e) {
+        return null;
+    }
+};
+
+const saveTacticalBriefCache = (brief) => {
+    try {
+        localStorage.setItem('apf_tactical_brief_cache', JSON.stringify(brief));
+    } catch(e) {
+        // ignore
+    }
+};
+
 export const useAnalyzeFederationData = (contextPayload) => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [lastSyncTime, setLastSyncTime] = useState(null);
@@ -40,7 +57,7 @@ export const useAnalyzeFederationData = (contextPayload) => {
             }
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+            const timeoutId = setTimeout(() => controller.abort(), 8000); // Strict 8s timeout
 
             const response = await fetch(aiEndpoint, {
                 method: 'POST',
@@ -61,6 +78,9 @@ export const useAnalyzeFederationData = (contextPayload) => {
 
             const data = await response.json();
 
+            // Cache successful responses for fallback
+            saveTacticalBriefCache(data);
+
             // Emit success telemetry
             sendOrQueueTelemetry('/api/telemetry', {
                 meta: { source: 'useAnalyzeFederationData', event_type: 'ai.prompt.success', timestamp: new Date().toISOString() },
@@ -72,6 +92,8 @@ export const useAnalyzeFederationData = (contextPayload) => {
             return { isAnalyzing: false, aiResponse: data };
 
         } catch (error) {
+            logUnhandledRejection(`AI Stream Failure: ${error.message}`);
+
             // Emit failure telemetry
             sendOrQueueTelemetry('/api/telemetry', {
                 meta: { source: 'useAnalyzeFederationData', event_type: 'ai.prompt.failure', timestamp: new Date().toISOString() },
@@ -79,11 +101,14 @@ export const useAnalyzeFederationData = (contextPayload) => {
             });
 
             setIsAnalyzing(false);
+
+            const cachedBrief = getCachedTacticalBrief();
+
             return {
                 isAnalyzing: false,
-                aiResponse: {
+                aiResponse: cachedBrief || {
                     status: 'fallback',
-                    message: '[ SYSTEM WARNING: OFFLINE MODE ACTIVE ]',
+                    message: '<span class="text-red-500">[ SYSTEM ERROR: AI CORE OFFLINE - RENDERING CACHED INTELLIGENCE ]</span>\n\nProceed with standard operational procedures. Network telemetry suggests a temporal disruption in the consensus layer.',
                     timestamp: new Date().toISOString()
                 }
             };

@@ -143,6 +143,39 @@ if (typeof window !== 'undefined') {
     window.addEventListener('online', flushTelemetryQueue);
 }
 
+let batchTimeout = null;
+let telemetryBatch = [];
+
+const processBatch = async () => {
+    if (telemetryBatch.length === 0) return;
+    const batchToProcess = [...telemetryBatch];
+    telemetryBatch = [];
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
+        const response = await fetch(TELEMETRY_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(batchToProcess),
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.status >= 500 || response.status === 429) {
+            throw new Error(`Server returned ${response.status}`);
+        } else if (!response.ok) {
+            console.warn(`[ TELEMETRY DROPPED: ${response.status} ]`);
+        }
+    } catch (error) {
+        console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT - QUEUEING ]', error.message);
+        for (const payload of batchToProcess) {
+            queuePayload(TELEMETRY_ENDPOINT, payload);
+        }
+    }
+};
+
 export const sendOrQueueTelemetry = async (url, payload) => {
     if (isMockEnv) return;
 
@@ -153,29 +186,26 @@ export const sendOrQueueTelemetry = async (url, payload) => {
       metadata: payload.telemetry || payload
     };
 
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+    telemetryBatch.push(strictPayload);
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(strictPayload),
-            signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (response.status >= 500 || response.status === 429) {
-            throw new Error(`Server returned ${response.status}`);
-        } else if (!response.ok) {
-            // Do not queue client errors (like 400 Bad Request)
-            console.warn(`[ TELEMETRY DROPPED: ${response.status} ]`);
-        }
-    } catch (error) {
-        console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT - QUEUEING ]', error.message);
-        queuePayload(url, strictPayload);
+    if (telemetryBatch.length >= 10) {
+        if (batchTimeout) clearTimeout(batchTimeout);
+        processBatch();
+    } else {
+        if (batchTimeout) clearTimeout(batchTimeout);
+        batchTimeout = setTimeout(processBatch, 5000);
     }
 };
+
+// Send beacon on unload
+if (typeof window !== 'undefined') {
+    window.addEventListener('unload', () => {
+        if (telemetryBatch.length > 0) {
+            const blob = new Blob([JSON.stringify(telemetryBatch)], { type: 'application/json' });
+            navigator.sendBeacon(TELEMETRY_ENDPOINT, blob);
+        }
+    });
+}
 
 const queueInsert = async (table, payload, successMsg) => {
     // Treat Supabase inserts similarly - queue via edge telemetry if it fails

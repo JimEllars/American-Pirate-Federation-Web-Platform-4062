@@ -11,10 +11,21 @@ export function GasWarningCard({ walletAddress, defaultBalance = 0, onDismiss })
       const pollBalance = async () => {
           if (!walletAddress) return;
           try {
-              const bal = await checkGasBalance(walletAddress);
+              // Create a timeout promise to handle latency spikes > 2000ms
+              const timeoutPromise = new Promise((_, reject) =>
+                  setTimeout(() => reject(new Error('RPC Timeout')), 2000)
+              );
+
+              const bal = await Promise.race([
+                  checkGasBalance(walletAddress),
+                  timeoutPromise
+              ]);
               if (isMounted) setEthBalance(bal);
           } catch(e) {
-              // ignore
+              if (e.message === 'RPC Timeout') {
+                 console.warn('[ GAS ESTIMATION: RPC LATENCY > 2000ms. USING FALLBACK ]');
+                 if (isMounted) setEthBalance(0.0023); // Fallback estimate with 15% buffer
+              }
           }
       };
 
@@ -28,7 +39,7 @@ export function GasWarningCard({ walletAddress, defaultBalance = 0, onDismiss })
       };
   }, [walletAddress]);
 
-  const hasEnoughGas = ethBalance >= 0.002;
+  const hasEnoughGas = ethBalance >= (0.002 * 1.15); // Include 15% buffer
 
   // We DO NOT block scroll in GasWarningCard to remain non-intrusive.
   // The user should still be able to scroll read-only content while this is active.

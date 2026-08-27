@@ -28,18 +28,23 @@ export const parseAICommand = (aiResponseString) => {
           parsedCommand = { type: 'raw', payload: DOMPurify.sanitize(commandPayload), timestamp: new Date().toISOString() };
       }
 
-      if (parsedCommand && typeof parsedCommand === 'object') {
+      if (parsedCommand && typeof parsedCommand === 'object' && parsedCommand !== null) {
           // Deep sanitize nested payload
           const sanitizePayload = (obj) => {
               if (typeof obj === 'string') {
                   // Ensure markdown codeblocks or quotes within strings aren't broken by sanitization, but still strip active scripts
-                  return DOMPurify.sanitize(obj, { ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'code', 'pre'] });
+                  return DOMPurify.sanitize(obj, {
+                      ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li', 'code', 'pre'],
+                      ALLOWED_ATTR: ['href', 'title', 'target', 'rel']
+                  });
               } else if (Array.isArray(obj)) {
                   return obj.map(sanitizePayload);
               } else if (obj !== null && typeof obj === 'object') {
                   const result = {};
                   for (const key in obj) {
-                      result[key] = sanitizePayload(obj[key]);
+                      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                         result[key] = sanitizePayload(obj[key]);
+                      }
                   }
                   return result;
               }
@@ -47,6 +52,14 @@ export const parseAICommand = (aiResponseString) => {
           };
 
           const type = typeof parsedCommand.type === 'string' ? DOMPurify.sanitize(parsedCommand.type) : 'unknown';
+
+          // Strict validation on type to prevent execution of arbitrary command types
+          const allowedTypes = ['DRAFT_POLICY', 'QUERY_TREASURY', 'MUSTER_FLEET', 'raw', 'EXECUTE_TREASURY_TRANSFER'];
+          if (!allowedTypes.includes(type)) {
+              console.warn(`[ AI PARSER ] Rejected unauthorized action type: ${type}`);
+              return { hasAction: false };
+          }
+
           const target = typeof parsedCommand.target === 'string' ? DOMPurify.sanitize(parsedCommand.target) : 'system';
           const payload = sanitizePayload(parsedCommand.payload);
           const timestamp = typeof parsedCommand.timestamp === 'string' ? DOMPurify.sanitize(parsedCommand.timestamp) : new Date().toISOString();

@@ -140,7 +140,7 @@ export function IntelligenceHub() {
           </div>
 
           {/* Section 1: Fleet Telemetry (Census) */}
-          <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+          <section className="space-y-4 sm:space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 sm:p-8">
               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
                  <SafeIcon name="Database" className="text-apf-purple h-8 w-8" /> Fleet Telemetry
               </h2>
@@ -249,7 +249,7 @@ export function IntelligenceHub() {
           </section>
 
           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
-          <section className="space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
+          <section className="space-y-4 sm:space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 sm:p-8">
               <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative mb-6">
                  <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
                  {error && <span className="absolute right-0 text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
@@ -269,7 +269,7 @@ export function IntelligenceHub() {
                   </div>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
                   {filteredPosts.map((post, index) => {
                     const featuredMedia = post._embedded?.['wp:featuredmedia']?.[0]?.source_url;
 

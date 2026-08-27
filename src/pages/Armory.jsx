@@ -238,7 +238,7 @@ export function Armory() {
           </div>
 
           <ArmoryCategoryBar activeCategory={activeCategory} setActiveCategory={setActiveCategory} categories={categories} />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 flex-grow">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 flex-grow">
              {inventoryLoading ? (
                  <div className="col-span-full py-12 flex justify-center items-center">
                     <div className="bg-black/40 backdrop-blur-md transform-gpu border border-[#10B981]/10 p-6 rounded-lg shadow-2xl">
