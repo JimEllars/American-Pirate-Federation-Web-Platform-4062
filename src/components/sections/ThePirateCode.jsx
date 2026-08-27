@@ -53,7 +53,7 @@ export function ThePirateCode() {
               <p className="font-vt323 text-gray-500 uppercase text-xs tracking-widest mb-4">
                 {article.theme}
               </p>
-              <div className="prose prose-invert prose-sm opacity-0 group-hover:opacity-100 transition-all duration-500">
+              <div className="prose prose-invert prose-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500">
                 {article.reference ? (
                   <p className="font-vt323 text-gray-300 text-lg">
                     {article.content}{' '}

@@ -80,6 +80,7 @@ export function TransmissionHub() {
         setIsPlaying(true);
         setIsGlitching(false);
         if (audioRef.current && episode?.audio_url) {
+          audioRef.current.src = episode.audio_url || '';
           audioRef.current.play().catch(() => {
             // Fallback to visualizer-only simulation mode
           });
@@ -144,6 +145,22 @@ export function TransmissionHub() {
             {/* Audio Player Panel */}
             <div className="lg:col-span-1">
                <div className={`sticky top-24 bg-black/60 backdrop-blur-2xl border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-white/5 shadow-2xl hover:border-apf-purple/40'} p-6 transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
+                                  {/* Frequency Selector Scaffolding */}
+                 <div className="flex justify-between items-center mb-4 gap-2 border-b border-gray-800 pb-2">
+                   <button
+                     className="flex-1 text-left font-vt323 text-xs uppercase tracking-widest text-apf-purpleLight hover:text-white hover:bg-apf-purple/20 p-2 border border-transparent hover:border-apf-purple/50 transition-colors focus:outline-none"
+                     onClick={(e) => { e.currentTarget.blur(); /* Simulation */ }}
+                   >
+                     [ 433.92 MHz :: HIGH GAIN ]
+                   </button>
+                   <button
+                     className="flex-1 text-right font-vt323 text-xs uppercase tracking-widest text-apf-emerald hover:text-white hover:bg-apf-emerald/20 p-2 border border-transparent hover:border-apf-emerald/50 transition-colors focus:outline-none"
+                     onClick={(e) => { e.currentTarget.blur(); /* Simulation */ }}
+                   >
+                     [ 915.00 MHz :: MESH RELAY ]
+                   </button>
+                 </div>
+
                  <div className="mb-6 border-b border-gray-800 pb-4 relative min-h-[80px]">
                     <span className="font-vt323 text-xs uppercase text-apf-purple tracking-widest block mb-2">Current Frequency</span>
                     <AnimatePresence mode="wait">
@@ -161,6 +178,16 @@ export function TransmissionHub() {
                       </motion.h3>
                     </AnimatePresence>
                  </div>
+
+                                  {/* Hidden Audio Element */}
+                 <audio
+                   ref={audioRef}
+                   onEnded={() => setIsPlaying(false)}
+                   onError={() => {
+                     // Silently fallback to visualizer simulation
+                     console.warn('Audio playback failed or unavailable');
+                   }}
+                 />
 
                  {/* Custom Audio Visualizer (SVG) */}
                  <div className="h-24 w-full bg-gray-900 mb-6 flex items-end justify-center gap-[2px] overflow-hidden relative border border-gray-800 p-2">
