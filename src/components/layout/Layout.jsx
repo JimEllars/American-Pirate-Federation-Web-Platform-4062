@@ -77,12 +77,10 @@ export function Layout({ children }) {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("https://api.emailit.com/v1/subscribers", {
+      const res = await fetch("/api/subscribe", {
         method: "POST",
-        mode: "cors",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_EMAILIT_API_KEY || ""}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({ email })
       });
