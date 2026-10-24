@@ -17,7 +17,7 @@ const envAuditPlugin = () => {
   };
 };
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     envAuditPlugin(),
     react(),
@@ -43,7 +43,7 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: mode === 'development',
     chunkSizeWarningLimit: 5000,
     rollupOptions: {
       output: {
@@ -54,4 +54,4 @@ export default defineConfig({
       }
     }
   },
-});
+}));

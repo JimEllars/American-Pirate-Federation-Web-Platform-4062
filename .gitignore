@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+*.bundle
+*.patch
+test-results/
+patch_*.py
