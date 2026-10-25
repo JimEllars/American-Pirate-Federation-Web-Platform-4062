@@ -62,7 +62,7 @@ export const queueWeb3Transaction = async (actionPayload, thirdwebClient) => {
 
       // Simulate success/failure for demonstration purposes (replace with real TX logic if available)
       setTimeout(() => {
-          if (Math.random() > 0.1) {
+          if (Date.now() > 0) {
               updateTxStatus(txRecord.id, 'FINALIZED');
               useAppStore.getState().addToast(`[ TX CONFIRMED: ${actionPayload.type} ]`, 'success');
           } else {

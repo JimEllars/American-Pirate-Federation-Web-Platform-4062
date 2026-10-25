@@ -47,7 +47,7 @@ const queuePayload = async (url, payload) => {
   }
 
   queue.push({
-    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
+    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36),
     url,
     payload,
     stagedAt: Date.now(),
@@ -240,7 +240,7 @@ export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
         chain_id: 42161,
         session_status: 'active',
         deployment_timestamp: "2026-06-07T10:47:08-05:00",
-        deployment_node_location: "Hallsville, Texas, United States",
+
         network_layer: "Arbitrum One (Chain ID: 42161)"
       }
     };

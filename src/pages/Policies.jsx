@@ -7,6 +7,7 @@ import { PolicyCard } from '../components/sections/PolicyCard';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
+import { supabase } from '../lib/api/supabaseClient';
 
 
 const POLICIES = [
@@ -108,25 +109,25 @@ export function Policies() {
 
     const loadCoreData = async () => {
       try {
-        const [proposals, consensusData] = await Promise.all([
-          fetchActiveProposals(),
-          fetchPolicyConsensus()
-        ]);
+        const { data: dbPolicies, error } = await supabase.from('policy_consensus').select('*');
 
-        if (isMounted) {
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        if (isMounted && dbPolicies && dbPolicies.length > 0) {
           setIsCoreSynced(true);
-
-          if (proposals && proposals.length > 0) {
-            setActiveDrafts(proposals);
-          }
-
-          if (consensusData && Object.keys(consensusData).length > 0) {
-            const updatedPolicies = POLICIES.map(policy => ({
-              ...policy,
-              consensus: consensusData[policy.code] || policy.consensus
-            }));
-            setPolicyData(updatedPolicies);
-          }
+          const formatted = dbPolicies.map(p => ({
+            code: p.policy_code,
+            title: p.title,
+            summary: p.summary,
+            consensus: p.consensus_score,
+            sponsor: p.theme,
+            status: p.status,
+            lastRevision: p.last_revision
+          }));
+          setPolicyData(formatted);
         }
       } catch (err) {
         if (isMounted) {

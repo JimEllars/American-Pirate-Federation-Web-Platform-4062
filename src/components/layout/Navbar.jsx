@@ -1,121 +1,77 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import SafeIcon from '../../common/SafeIcon';
+import { motion } from 'framer-motion';
+import { useActiveWallet, useActiveAccount, useConnect, useDisconnect, useWalletDetailsModal } from 'thirdweb/react';
+import { client as thirdwebClient } from '../../lib/web3/client';
+import { embeddedWallet } from 'thirdweb/wallets';
 import { useAppStore } from '../../store/useAppStore';
-import { logOperatorConnected } from '../../lib/api/telemetry';
-import { useActiveAccount, useConnect, useDisconnect, useActiveWalletConnectionStatus, useActiveWallet } from "thirdweb/react";
-import { createWallet } from "thirdweb/wallets";
-import { arbitrum } from "thirdweb/chains";
-import { client } from "../../lib/web3/client";
-import { processQueuedTransaction } from "../../lib/web3/transactionProcessor";
 
 export function Navbar() {
-  const activeTxQueue = useAppStore((state) => state.activeTxQueue) || [];
   const [isOpen, setIsOpen] = useState(false);
-  const { musterRollDraft, guildAlignment, addToast, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus, dequeueTx, clearTxQueue } = useAppStore();
-  const account = useActiveAccount();
-  const wallet = useActiveWallet();
-  const address = account?.address;
-  const { connect } = useConnect();
-  const { disconnect } = useDisconnect();
-  const connectionStatus = useActiveWalletConnectionStatus();
   const location = useLocation();
+  const address = useActiveAccount()?.address;
+  const wallet = useActiveWallet();
+  const connectionStatus = wallet ? "connected" : "disconnected";
 
-
-  const [prevAddress, setPrevAddress] = useState(address);
-
-  useEffect(() => {
-    // Watchdog to clear state when address disconnects or changes
-    if (!address || (prevAddress && address !== prevAddress)) {
-      clearMusterRoll();
-      setIsSigning(false);
-      setDeploymentStatus('idle');
-      setTreasuryDeploymentStatus('idle');
-    } else if (address && !prevAddress) {
-      logOperatorConnected(address);
-    }
-    setPrevAddress(address);
-  }, [address, prevAddress, clearMusterRoll, setIsSigning, setDeploymentStatus, setTreasuryDeploymentStatus]);
-
-  useEffect(() => {
-    // Mobile navigation auto-close on route change
-    setIsOpen(false);
-  }, [location.pathname]);
-
-
-  const handleProcessTx = async () => {
-    if (activeTxQueue && activeTxQueue.length > 0) {
-      const tx = activeTxQueue[0];
-      try {
-        await processQueuedTransaction(tx, account);
-        addToast('[ SYSTEM: TRANSACTION EXECUTED ]', 'success');
-        dequeueTx(tx.id);
-      } catch (error) {
-        const errorMsg = (error?.message || '').toLowerCase();
-        if (errorMsg.includes('user denied') || errorMsg.includes('rejected')) {
-          addToast('[ CRITICAL: SIGNATURE REJECTED - TRANSACTION RETAINED IN QUEUE ]', 'error');
-        } else {
-          addToast('[ SYSTEM: TRANSACTION FAILED ]', 'error');
-        }
-        console.error(error);
-      }
-    }
-  };
-
-  const handlePurgeQueue = () => {
-    clearTxQueue();
-    addToast('[ SYSTEM: LOCAL TRANSACTION QUEUE WIPED ]', 'success');
-  };
+  const { connect } = useConnect({ client: thirdwebClient });
+  const { disconnect } = useDisconnect();
+  const { musterRollDraft, guildAlignment, activeTxQueue, enqueueTx, dequeueTx, clearTxQueue } = useAppStore();
 
   const handleConnect = async () => {
     try {
-      const metamask = createWallet("io.metamask");
-      await connect(async () => {
-        await metamask.connect({ client, chain: arbitrum });
-        return metamask;
-      });
+      await connect(embeddedWallet());
     } catch (e) {
-      addToast('[ WALLET EXTENSION NOT DETECTED ]', 'error');
+      console.error(e);
     }
   };
 
   const navLinks = [
-    { name: 'Intelligence Hub', path: '/intelligence' },
-    { name: 'Policies', path: '/policies' },
-    { name: 'Events', path: '/events' },
-    { name: 'Podcast', path: '/podcast' },
-    { name: 'Shop', path: '/shop' },
+    { name: 'Intel', path: '/intelligence' },
+    { name: 'Transmissions', path: '/podcast' },
+    { name: 'Directives', path: '/policies' },
+    { name: 'Fleet Muster', path: '/events' },
+    { name: 'Armory', path: '/shop' },
+    { name: 'Direct Democracy', path: '/propose' },
+    { name: 'Donate', path: '/donate' }
   ];
 
+  const handleProcessTx = () => {};
+  const handlePurgeQueue = () => clearTxQueue();
+
   const getGuildIcon = () => {
-    switch(guildAlignment) {
-      case "Shipwright's Guild": return "Tool";
-      case "Surgeon's Dispensary": return "Heart";
-      case "Quartermaster's Provisions": return "Package";
-      case "Navigator's Guild": return "Compass";
-      case "Federation Reserve": return "Anchor";
-      default: return "Shield";
-    }
+      switch(guildAlignment) {
+          case "Shipwright's Guild": return "Terminal";
+          case "Surgeon's Dispensary": return "Cross";
+          case "Quartermaster's Provisions": return "Package";
+          case "Navigator's Guild": return "Compass";
+          default: return "Shield";
+      }
   };
 
   return (
-    <nav className="fixed top-0 w-full z-40 bg-apf-black/80 backdrop-blur-md border-b border-apf-purple/20">
+    <nav className="fixed w-full z-50 bg-apf-black/90 backdrop-blur-md border-b border-apf-purple/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to="/" className="flex-shrink-0 flex items-center group w-1/2 md:w-auto">
-            <span className="logo-text text-lg sm:text-xl md:text-2xl whitespace-nowrap truncate">
-              PIRATE FEDERATION
-            </span>
-          </Link>
+          <div className="flex-shrink-0 flex items-center justify-between w-1/2 md:w-auto">
+            <Link to="/" className="flex items-center gap-3 group">
+              <SafeIcon name="Anchor" className="h-8 w-8 text-apf-purple group-hover:text-apf-purpleLight transition-colors" />
+              <span className="text-white font-black text-xl tracking-tighter uppercase sm:block hidden">APF</span>
+              <span className="text-white font-black text-xl tracking-tighter uppercase sm:hidden block">APF</span>
+            </Link>
+          </div>
 
-          <div className="hidden lg:flex items-center">
-            <div className="ml-10 flex items-baseline space-x-6">
+          <div className="hidden lg:block w-full">
+            <div className="flex items-center justify-end space-x-6 flex-wrap">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
                   to={link.path}
-                  className="text-gray-300 hover:text-apf-purple transition-colors px-3 py-2 rounded-md text-sm font-vt323 font-medium uppercase"
+                  className={`${
+                    location.pathname === link.path
+                      ? 'text-apf-purple'
+                      : 'text-gray-300 hover:text-white'
+                  } px-3 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap`}
                 >
                   {link.name}
                 </Link>
@@ -150,8 +106,6 @@ export function Navbar() {
                   </button>
                 </div>
               )}
-
-
 
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
@@ -269,7 +223,7 @@ export function Navbar() {
                 </button>
               ) : (
                 <button
-                  onClick={() => { disconnect(); setIsOpen(false); }}
+                  onClick={() => { disconnect(wallet); setIsOpen(false); }}
                   className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>

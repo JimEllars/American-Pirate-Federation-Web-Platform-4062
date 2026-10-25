@@ -47,7 +47,7 @@ export const useAppStore = create(
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
 
       addToast: (message, type = 'info', persistent = false) => {
-        const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9) + Date.now().toString(36);
+        const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Date.now().toString(36);
         if (!persistent) {
           useAppStore.getState()._scheduleToastRemoval(id);
         }

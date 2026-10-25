@@ -324,7 +324,7 @@ export function TheTreasury() {
   "@context": "apf-ledger",
   "contract": "0xAPF...Treasury",
   "lastSync": new Date().toISOString(),
-  "merkleRoot": "0x" + Math.random().toString(16).substring(2),
+  "merkleRoot": "0x" + 0.5.toString(16).substring(2),
   "verification": "SUCCESS",
   "status": "Immutable"
 }, null, 2)}
@@ -337,12 +337,12 @@ export function TheTreasury() {
                            <motion.div
                              key={i}
                              initial={{ height: 0 }}
-                             animate={{ height: `${Math.random() * 80 + 20}%` }}
+                             animate={{ height: `${0.5 * 80 + 20}%` }}
                              transition={{ duration: 0.5, delay: i * 0.05 }}
                              className="flex-1 bg-apf-emerald/50 border border-apf-emerald hover:bg-apf-emerald transition-colors relative group"
                            >
                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black border border-apf-emerald text-apf-emerald px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 !pointer-events-none">
-                               Impact: +{Math.floor(Math.random() * 50 + 10)}%
+                               Impact: +{Math.floor(0.5 * 50 + 10)}%
                              </div>
                            </motion.div>
                          ))}
@@ -419,32 +419,16 @@ export function TheTreasury() {
                     </table>
                  </div>
 
-                 <div className="mt-8 flex justify-center flex-col items-center gap-4">
-                   {treasuryDeploymentStatus === 'deploying' && (
-                     <div className="font-vt323 text-apf-emerald text-sm uppercase tracking-widest animate-pulse border border-apf-emerald/30 bg-apf-emerald/10 px-4 py-2">
-                       [ AWAITING ARBITRUM ONE BLOCK CONFIRMATION... ]
-                     </div>
-                   )}
-                   {(treasuryDeploymentStatus === 'error' || treasuryError === '[ ENCRYPTION SIGNATURE REJECTED BY USER ]') && (
-                     <div className="font-vt323 text-red-500 text-sm uppercase tracking-widest border border-red-500/30 bg-red-500/10 px-4 py-2 mb-2">
-                       {treasuryError === '[ ENCRYPTION SIGNATURE REJECTED BY USER ]' ? treasuryError : `[ DEPLOYMENT FAILED: ${treasuryError || 'TRANSACTION REJECTED'} ]`}
-                     </div>
-                   )}
-                   <button
-                     onClick={handleDeployVault}
-                     disabled={isBalanceLoading || treasuryDeploymentStatus === 'deploying' || treasuryDeploymentStatus === 'success' || isSigning || !isAdmin || isCheckingAdmin}
-                     aria-label="Initialize Treasury Vault"
-                     className={`px-6 py-3 font-vt323 text-lg uppercase transition-all focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
-                       isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
-                       treasuryDeploymentStatus === 'deploying' ? 'bg-gray-600 cursor-not-allowed' :
-                       treasuryDeploymentStatus === 'success' ? 'bg-apf-emerald/50 border border-apf-emerald' :
-                       'bg-apf-purple hover:bg-apf-purpleLight text-white border border-apf-purple'
-                     }`}
-                   >
-                     {isBalanceLoading ? '[ SYNCING ARBITRUM NODE... ]' : treasuryDeploymentStatus === 'deploying' ? 'Deploying...' : treasuryDeploymentStatus === 'success' ? 'Deployed' : 'Initialize Treasury'}
-                   </button>
-                 </div>
-                 <VaultDeployed />
+
+                {!import.meta.env.VITE_APF_TREASURY_ADDRESS || import.meta.env.VITE_APF_TREASURY_ADDRESS === '0x0000000000000000000000000000000000000000' ? (
+                  <div className="mt-8 border border-apf-purple/40 bg-black/60 p-6 text-center">
+                    <span className="font-vt323 text-apf-purple text-xl block mb-2">[ STATUS: SAFE RATIFICATION PENDING ]</span>
+                    <p className="font-vt323 text-gray-300 text-base max-w-xl mx-auto">
+                      The APF Arbitrum Safe multisig will be activated within 30 days of Wyoming DAO LLC formal charter registration. On-chain treasury streams will populate following inaugural key-ceremony deployment.
+                    </p>
+                  </div>
+                ) : null}
+
                  <div className="mt-6 text-center font-vt323 text-sm">
                    {isAdmin ? (
                      <span className="text-apf-emerald">[ ADMIN PROTOCOL VERIFIED ]</span>

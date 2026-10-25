@@ -27,3 +27,10 @@ dist-ssr
 *.patch
 test-results/
 patch_*.py
+
+# Agent & Patch Artifacts
+*.bundle
+*.patch
+patch_*.py
+test-results/
+.last-run.json
