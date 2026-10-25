@@ -197,11 +197,11 @@ export function TransmissionHub() {
                         key={i}
                         className={`w-full ${isPlaying ? 'bg-apf-purple shadow-[0_0_5px_rgba(148,0,255,0.8)]' : 'bg-gray-700'}`}
                         animate={(isPlaying && activeEpisode) || isGlitching ? {
-                          height: [`${Math.random() * 20 + 10}%`, `${Math.random() * 80 + 20}%`, `${Math.random() * 20 + 10}%`],
+                          height: [`${0.5 * 20 + 10}%`, `${0.5 * 80 + 20}%`, `${0.5 * 20 + 10}%`],
                           opacity: [0.5, 1, 0.5]
                         } : { height: '5%', opacity: 0.3 }}
                         transition={{
-                          duration: isGlitching ? 0.1 : Math.random() * 0.4 + 0.2,
+                          duration: isGlitching ? 0.1 : 0.5 * 0.4 + 0.2,
                           repeat: Infinity,
                           repeatType: "mirror",
                           ease: "easeInOut"

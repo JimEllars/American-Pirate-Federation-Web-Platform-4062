@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
 import { useAppStore } from '../../store/useAppStore';
+import { PassportModal } from '../auth/PassportModal';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSovereignEntry, logTransactionDispatched } from '../../lib/api/telemetry';

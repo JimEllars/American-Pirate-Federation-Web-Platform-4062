@@ -124,9 +124,13 @@ export function Events() {
                     [ NAV-COMMS: SYNCING FLEET MUSTER COORDINATES... ]
                 </div>
             ) : (
-                eventsData.map((event, idx) => (
+                eventsData.length === 0 ? (
+                <div className="py-12 flex items-center justify-center text-gray-400 font-vt323 text-xl bg-black/60 backdrop-blur-2xl border border-white/5 shadow-2xl">
+                    No active fleet gatherings scheduled. Connect your Pirate Passport to receive dispatch notices.
+                </div>
+              ) : eventsData.map((event, idx) => (
                   <FleetMuster key={idx} event={event} />
-                ))
+              ))
             )}
           </div>
 
