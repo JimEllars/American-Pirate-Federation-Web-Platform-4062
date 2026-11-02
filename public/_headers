@@ -1,13 +1,17 @@
 /*.html
   Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0
 
+# connect-src names exactly one Supabase project (xzdgytloaczpzmtflenl). A wildcard
+# `https://*.supabase.co` would let injected script exfiltrate to any Supabase project on
+# the internet, including an attacker's own free-tier one — SOP Playbook C requires
+# connect-src to be restricted to verified origins, not to a whole hosting provider.
 /*
   Cache-Control: no-cache
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(self)
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' https://*.thirdweb.com https://*.rpc.thirdweb.com https://*.ipfscdn.io https://*.supabase.co wss://*.supabase.co https://*.piratefederation.org https://piratefederation.org https://*.pirateusa.org https://pirateusa.org; img-src 'self' data: blob: https://piratefederation.org https://*.piratefederation.org https://pirateusa.org https://*.pirateusa.org https://*.wp.com https://secure.gravatar.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://checkout.thirdweb.com; form-action 'self'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; connect-src 'self' https://*.thirdweb.com https://*.rpc.thirdweb.com https://*.ipfscdn.io https://xzdgytloaczpzmtflenl.supabase.co wss://xzdgytloaczpzmtflenl.supabase.co https://*.piratefederation.org https://piratefederation.org https://*.pirateusa.org https://pirateusa.org; img-src 'self' data: blob: https://piratefederation.org https://*.piratefederation.org https://pirateusa.org https://*.pirateusa.org https://*.wp.com https://secure.gravatar.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https://checkout.thirdweb.com; form-action 'self'; upgrade-insecure-requests
 
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
