@@ -57,7 +57,7 @@ export function FleetMuster({ event }) {
 
                   const signature = await account.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
                   registerSignal(event.title);
-                  logEventSignal(address, event.title, signature);
+                  logEventSignal();
                   addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");
                 } catch (error) {
                   if (error.code === 4001 || error.message.includes('user rejected')) {

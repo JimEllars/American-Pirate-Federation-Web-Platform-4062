@@ -89,7 +89,7 @@ export function Layout({ children }) {
       if (isMounted.current) {
         if (res.ok) {
           localStorage.setItem('apf_last_sub', now.toString());
-          logCommLinkSubscription(email);
+          logCommLinkSubscription();
           useAppStore.getState().addToast("[ INTELLIGENCE FEED: SUBSCRIPTION CONFIRMED ]", "success");
           if (e.target.reset) {
             e.target.reset();

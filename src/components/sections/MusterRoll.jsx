@@ -51,7 +51,7 @@ export function MusterRoll() {
 
       let txHash = null;
       if (signature) {
-          logSovereignEntry(address, sanitizedData.alias, signature);
+          logSovereignEntry();
           const tx = await mutateAsync({ args: [signature] });
           if (tx && tx.receipt) {
               txHash = tx.receipt.transactionHash;

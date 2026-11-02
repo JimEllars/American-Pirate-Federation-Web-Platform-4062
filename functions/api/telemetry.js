@@ -5,10 +5,20 @@ export async function onRequest(context) {
   const corsPreflight = preflight(context.request);
   if (corsPreflight) return corsPreflight;
 
+  // POST-only ingress. Without this guard a GET or PUT fell through to the JSON parse and
+  // was reported as a malformed payload rather than an unsupported method.
+  if (context.request.method !== 'POST') {
+    return jsonResponse(
+      { status: 'error', message: 'Method not allowed. Telemetry ingress is POST-only.' },
+      405,
+      context.request
+    );
+  }
+
   // Check payload size
   const contentLength = context.request.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) > 16384) {
-    return jsonResponse({ error: 'Payload Too Large', message: 'Payload size exceeds 16KB limit' }, 413, context.request);
+    return jsonResponse({ status: 'error', message: 'Payload size exceeds the 16 KB limit.' }, 413, context.request);
   }
 
   try {
@@ -17,7 +27,7 @@ export async function onRequest(context) {
     let events = isBatch ? requestData : [requestData];
 
     if (events.length > 50) {
-      return jsonResponse({ error: 'Payload Too Large', message: 'Batch size exceeds 50 events limit' }, 413, context.request);
+      return jsonResponse({ status: 'error', message: 'Batch size exceeds the 50 event limit.' }, 413, context.request);
     }
 
     // Basic schema validation
@@ -56,6 +66,10 @@ export async function onRequest(context) {
     return jsonResponse({ status: 'ok', mode: 'edge-logged', processed: events.length }, 200, context.request);
   } catch (error) {
     console.error('[ TELEMETRY INGEST ERROR ]', error.message);
-    return jsonResponse({ error: 'Bad Request', message: error.message || 'Failed to parse telemetry payload' }, 400, context.request);
+    return jsonResponse(
+      { status: 'error', message: error.message || 'Failed to parse telemetry payload' },
+      400,
+      context.request
+    );
   }
 }
