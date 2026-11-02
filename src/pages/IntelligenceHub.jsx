@@ -82,10 +82,6 @@ export function IntelligenceHub() {
     return () => { isMounted = false; };
   }, [wpPosts, wpLoading, fetchIntelligenceFeeds]);
 
-  const nodes = [
-      'US-EAST-1', 'US-WEST-2', 'EU-CENTRAL-1', 'AP-SOUTH-1', 'SA-EAST-1'
-  ];
-
   return (
     <Layout>
       <SEO title="Intelligence Hub | Pirate Federation" description="Organizational health, fleet telemetry, and dispatch logs of the American Pirate Federation." />
@@ -151,7 +147,7 @@ export function IntelligenceHub() {
 
             </div>
             <p className="max-w-2xl text-gray-200 font-mono text-lg border-l-2 border-apf-emerald pl-6">
-              Real-time synchronization status, fleet telemetry, and decrypted intelligence logs from the American Pirate Federation network.
+              Dispatch logs from the Federation's CMS, and the declared limits of the edge telemetry ingress.
             </p>
           </div>
 
@@ -162,36 +158,26 @@ export function IntelligenceHub() {
               </h2>
 
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  {/* Personnel Distribution */}
+                  {/* Crew census. The previous card published a guild split of 42% / 28% /
+                      30% — three invented percentages for a members table that held zero
+                      rows. `members` is additionally RLS-scoped to the owning user, so no
+                      public census can be computed at all. The honest panel says why. */}
                   <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
                       <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                       <div className="relative z-10">
                           <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                              <SafeIcon name="Users" className="h-5 w-5 text-apf-purpleLight" /> Active Personnel
+                              <SafeIcon name="Users" className="h-5 w-5 text-apf-purpleLight" /> Crew Census
                           </h3>
 
-                          <div className="space-y-4">
-                              <div className="flex items-center justify-between mt-2">
-                                  <span className="font-vt323 text-white uppercase text-sm">Shipwright's Guild (Engineering)</span>
-                                  <span className="font-vt323 text-apf-emerald font-bold">42%</span>
-                              </div>
-                              <div className="w-full bg-gray-900 h-2">
-                                  <div className="bg-apf-emerald h-2" style={{ width: '42%' }}></div>
-                              </div>
-                              <div className="flex items-center justify-between mt-4">
-                                  <span className="font-vt323 text-white uppercase text-sm">Surgeon's Dispensary (Support)</span>
-                                  <span className="font-vt323 text-apf-purple font-bold">28%</span>
-                              </div>
-                              <div className="w-full bg-gray-900 h-2">
-                                  <div className="bg-apf-purple h-2" style={{ width: '28%' }}></div>
-                              </div>
-                              <div className="flex items-center justify-between mt-4">
-                                  <span className="font-vt323 text-white uppercase text-sm">Navigator's Guild (Ops)</span>
-                                  <span className="font-vt323 text-apf-emerald font-bold">30%</span>
-                              </div>
-                              <div className="w-full bg-gray-900 h-2">
-                                  <div className="bg-apf-emerald h-2" style={{ width: '30%' }}></div>
-                              </div>
+                          <div className="border-l-2 border-apf-purple/50 pl-4 py-1">
+                              <div className="font-vt323 text-[11px] uppercase tracking-widest text-gray-500 mb-2">Withheld by design</div>
+                              <p className="font-sans text-sm text-gray-400 leading-relaxed">
+                                  Member records are readable only by their owner. The Federation
+                                  publishes no roster, no guild split and no headcount.
+                              </p>
+                              <p className="font-vt323 text-[11px] uppercase tracking-widest text-apf-emerald mt-3">
+                                  Article VII — enforced by row-level security
+                              </p>
                           </div>
                       </div>
                   </div>
@@ -200,10 +186,18 @@ export function IntelligenceHub() {
                     <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
                         <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                         <div className="relative z-10">
-                            <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4 animate-pulse" />
-                            <div className="text-6xl font-black text-white font-vt323 mb-2">94<span className="text-3xl text-apf-emerald">%</span></div>
-                            <div className="font-vt323 text-apf-purple uppercase tracking-[0.2em] text-sm">Fleet Readiness Index</div>
-                            <div className="mt-4 text-xs text-gray-300 font-vt323 uppercase">Status: Optimal</div>
+                            <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4" />
+                            {/* Law 1: this card used to assert a "94% Fleet Readiness Index /
+                                Status: Optimal" against no instrument that produces such a
+                                number. It now counts the intel reports actually loaded from
+                                the CMS — a value the page can prove. */}
+                            <div className="text-6xl font-black text-white font-vt323 mb-2">
+                              {loading ? <span className="text-gray-600">--</span> : posts.length}
+                            </div>
+                            <div className="font-vt323 text-apf-purple uppercase tracking-[0.2em] text-sm">Intel Reports On File</div>
+                            <div className="mt-4 text-xs text-gray-400 font-vt323 uppercase">
+                              {loading ? 'Syncing with the CMS' : 'Live from piratefederation.org'}
+                            </div>
                         </div>
                     </div>
               </div>
@@ -231,35 +225,34 @@ export function IntelligenceHub() {
                             <circle cx="700" cy="100" r="12" fill="#10B981" className="opacity-50" />
                             <circle cx="250" cy="250" r="20" fill="#9400FF" className="animate-pulse opacity-60" />
                          </svg>
-                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-300 uppercase !pointer-events-none">
-                             [ LIVE TELEMETRY FEED ]
+                         <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-400 uppercase !pointer-events-none">
+                             [ SCHEMATIC — ILLUSTRATIVE ONLY ]
                          </div>
                       </div>
                  </div>
               </div>
 
 
-              {/* Terminal Feed */}
+              {/* Ingress protocol. This panel used to print five invented AWS-style "consoles"
+                  (US-EAST-1 ... connected to consensus cluster) stamped with the current
+                  clock, which read as live telemetry on a page whose whole claim is ground
+                  truth. The Federation has one edge ingress and it stores nothing; say that. */}
               <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 relative overflow-hidden">
                  <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
                  <div className="relative z-10">
                      <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
-                         [ RESOLVED_NODE_CONNECTIONS ]
+                         [ TELEMETRY INGRESS — DECLARED LIMITS ]
                      </h4>
-                     <div className="font-vt323 text-gray-200 text-xs flex flex-col gap-1 h-24 overflow-hidden">
-                         {nodes.map((node, i) => (
-                             <motion.div
-                                 key={node + i}
-                                 initial={{ opacity: 0, x: -10 }}
-                                 animate={{ opacity: 1, x: 0 }}
-                                 className="flex gap-4"
-                             >
-                                 <span className="text-gray-600 font-mono text-[10px]">{formatTerminalDate(new Date().toISOString())}</span>
-                                 <span className="text-apf-emerald">NODE_SYNC</span>
-                                 <span className="truncate">{node} connected to consensus cluster</span>
-                             </motion.div>
-                         ))}
+                     <div className="font-vt323 text-gray-300 text-xs flex flex-col gap-1.5">
+                         <div className="flex justify-between gap-4"><span className="text-gray-500">MAX PAYLOAD</span><span className="text-apf-emerald">16 KB</span></div>
+                         <div className="flex justify-between gap-4"><span className="text-gray-500">MAX BATCH</span><span className="text-apf-emerald">50 events</span></div>
+                         <div className="flex justify-between gap-4"><span className="text-gray-500">CLOCK SKEW</span><span className="text-apf-emerald">-2h / +24h</span></div>
+                         <div className="flex justify-between gap-4"><span className="text-gray-500">GEO</span><span className="text-apf-emerald">country · colo</span></div>
+                         <div className="flex justify-between gap-4"><span className="text-gray-500">DURABLE SINK</span><span className="text-amber-500">none yet</span></div>
                      </div>
+                     <p className="mt-3 pt-2 border-t border-gray-800 text-[10px] text-gray-500 uppercase tracking-wider">
+                         Validated at the edge and written to the edge log only. No third-party pixels.
+                     </p>
                  </div>
               </div>
           </section>

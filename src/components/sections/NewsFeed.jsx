@@ -38,29 +38,36 @@ export function NewsFeed() {
     );
   }
 
-  const fallbackPosts = [
-    {
-      id: 'fallback-1',
-      title: { rendered: 'Federation Core Operational' },
-      excerpt: { rendered: '<p>All systems running at nominal capacity. Internal audits are green across the board.</p>' },
-      date: new Date().toISOString()
-    },
-    {
-      id: 'fallback-2',
-      title: { rendered: 'New Protocols Initiated' },
-      excerpt: { rendered: '<p>Standard operating procedures updated in the latest security patch deployed across all regional hubs.</p>' },
-      date: new Date(Date.now() - 86400000).toISOString()
-    },
-    {
-      id: 'fallback-3',
-      title: { rendered: 'Maintenance Schedule' },
-      excerpt: { rendered: '<p>Routine checks scheduled for tomorrow at 0400 hours local time. Expect minor latency spikes.</p>' },
-      date: new Date(Date.now() - 172800000).toISOString()
-    }
-  ];
 
+  // Law 1: this used to render three invented dispatches — "Federation Core Operational",
+  // "New Protocols Initiated", "Maintenance Schedule" — whenever the CMS was unreachable
+  // or returned nothing, each stamped with a fresh timestamp. Fabricated news on a
+  // political organisation's home page is the single worst thing this codebase could do,
+  // so an empty wire now says it is empty.
   const hasOfflineError = error || !posts || posts.length === 0;
-  const displayPosts = hasOfflineError ? fallbackPosts : posts;
+
+  if (hasOfflineError) {
+    return (
+      <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-3 mb-10 border-b border-apf-purple/30 pb-4">
+          <SafeIcon name="Terminal" className="text-apf-purple h-6 w-6" />
+          <h2 className="text-3xl font-black uppercase text-white tracking-widest">Pirate News</h2>
+        </div>
+        <div className="border border-dashed border-gray-800 bg-black/40 p-10 text-center">
+          <SafeIcon name="Radio" className="mx-auto h-10 w-10 text-gray-600 mb-4" />
+          <div className="font-vt323 text-xl text-gray-300 uppercase tracking-widest mb-2">
+            [ NO DISPATCHES ON THE WIRE ]
+          </div>
+          <p className="font-sans text-sm text-gray-500 max-w-lg mx-auto leading-relaxed">
+            The Federation newsroom has published nothing yet, or the CMS is unreachable from
+            this node. This page never fills the gap with sample stories.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const displayPosts = posts;
 
   return (
     <div className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -68,15 +75,6 @@ export function NewsFeed() {
         <SafeIcon name="Terminal" className="text-apf-purple h-6 w-6" />
         <h2 className="text-3xl font-black uppercase text-white tracking-widest">Pirate News</h2>
       </div>
-
-      {hasOfflineError && (
-        <div className="mb-8">
-          <div className="text-apf-purple font-vt323 text-xl inline-flex items-center gap-2">
-            <SafeIcon name="AlertTriangle" className="h-6 w-6" />
-            <span>[ FEDERATION COMM-LINK OFFLINE // DISPLAYING CACHED ARCHIVES ]</span>
-          </div>
-        </div>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {displayPosts.map((post, index) => {

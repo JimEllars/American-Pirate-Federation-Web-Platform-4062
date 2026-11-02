@@ -13,32 +13,6 @@ import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection } from '../lib/api/telemetry';
 import ArmoryCategoryBar from '../components/ui/ArmoryCategoryBar';
 
-const PROVISIONS = [
-  {
-    id: 'badge-1',
-    name: 'Federation Deckhand Pin',
-    price: 15,
-    type: 'Hardware',
-    image: 'https://images.unsplash.com/photo-1614729939124-03290b5509ce?w=500&auto=format&fit=crop&q=60',
-    requirement: 'Deckhand'
-  },
-  {
-    id: 'hoodie-1',
-    name: 'Stealth-Mesh Protocol Hoodie',
-    price: 45,
-    type: 'Apparel',
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&auto=format&fit=crop&q=60',
-    requirement: 'Unverified' // Open to all
-  },
-  {
-    id: 'comms-1',
-    name: 'Encrypted Comms Module',
-    price: 120,
-    type: 'Tech',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&auto=format&fit=crop&q=60',
-    requirement: 'Navigator'
-  }
-];
 
 export function Armory() {
   const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
@@ -65,14 +39,13 @@ export function Armory() {
       try {
         const data = await fetchArmoryInventory();
         if (isMounted) {
-          if (data && data.length > 0) {
-            setLiveInventory(data);
-          } else {
-            setLiveInventory(PROVISIONS);
-          }
+          // Law 1: an empty armory renders the empty state. It used to fall back to a
+          // three-item catalogue of Unsplash stock photos presented as Federation
+          // provisions, so /shop always looked stocked while armory_inventory held 0 rows.
+          if (isMounted) setLiveInventory(Array.isArray(data) ? data : []);
         }
       } catch (error) {
-        if (isMounted) setLiveInventory(PROVISIONS);
+        if (isMounted) setLiveInventory([]);
       } finally {
         if (isMounted) setInventoryLoading(false);
       }
@@ -112,7 +85,7 @@ export function Armory() {
       }
       spendReputation(item.price);
       addRequisition(item);
-      logRequisition(address || '0xANONYMOUS', item.id, item.price);
+      logRequisition();
       addToast(`[ AUTHORIZED: ${item.name} PROVISIONED ]`, 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
@@ -245,6 +218,20 @@ export function Armory() {
                         <div className="text-[#10B981] font-vt323 text-lg animate-pulse">
                             [ QUARTERMASTER: RE-INDEXING AVAILABLE HARDWARE MATRIX... ]
                         </div>
+                    </div>
+                 </div>
+             ) : filteredInventory.length === 0 ? (
+                 <div className="col-span-full py-16 flex justify-center">
+                    <div className="max-w-xl w-full bg-black/40 backdrop-blur-md border border-dashed border-gray-800 p-8 text-center">
+                        <SafeIcon name="Package" className="mx-auto h-10 w-10 text-gray-600 mb-4" />
+                        <div className="font-vt323 text-lg text-gray-300 uppercase tracking-widest mb-2">
+                            {liveInventory.length === 0 ? 'The Armory is not stocked yet' : `No provisions in ${activeCategory}`}
+                        </div>
+                        <p className="font-sans text-sm text-gray-500 leading-relaxed">
+                            {liveInventory.length === 0
+                              ? 'Provisions appear here only once they exist in Federation inventory. Nothing is listed speculatively.'
+                              : 'Try another category.'}
+                        </p>
                     </div>
                  </div>
              ) : filteredInventory.map((item) => {
