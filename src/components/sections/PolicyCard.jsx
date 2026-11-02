@@ -7,7 +7,7 @@ import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection } from '../../lib/api/telemetry';
 
 
-export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision }) {
+export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision, provenance }) {
   const [showHistory, setShowHistory] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -150,6 +150,15 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="h-full bg-gradient-to-r from-apf-purple/50 to-apf-purple"
                       />
+                   </div>
+                   {/* Law 1: a seeded baseline is not a ballot result, and must not read as one. */}
+                   <div className="flex justify-between text-[9px] font-vt323 uppercase tracking-widest mt-1">
+                     <span className="text-gray-600">
+                       {provenance === 'member-vote' ? 'Member ballot' : 'Founding draft · no ballot yet'}
+                     </span>
+                     <span className="text-gray-700" title="Consensus methodology is published with the Master Strategy Plan.">
+                       Method
+                     </span>
                    </div>
                  </div>
                )}

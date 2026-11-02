@@ -121,7 +121,8 @@ export function Policies() {
             consensus: p.consensus_score,
             sponsor: p.theme,
             status: p.status,
-            lastRevision: p.last_revision
+            lastRevision: p.last_revision,
+            provenance: p.provenance
           }));
           setPolicyData(formatted);
         }
