@@ -13,35 +13,18 @@ export function FleetMuster({ event }) {
   const isCommitted = musterRollDraft.status === 'committed';
   const hasRSVPd = musterRollDraft.rsvps?.includes(event.title);
 
-  // Mock alias generation based on hash for demo purposes if actual names aren't tracked server-side yet
-  const hashString = (str) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return hash;
-  };
-  const getMockAliases = () => {
-     const count = Math.abs(hashString(event.title)) % 5 + 2; // 2 to 6 aliases
-     const bases = ['Ghost', 'Cipher', 'Null', 'Void', 'Neon', 'Chrome', 'Byte'];
-     const aliases = [];
-     for(let i=0; i<count; i++) {
-         aliases.push(`${bases[(Math.abs(hashString(event.title + i))) % bases.length]}_${(Math.abs(hashString(event.title + i * 2))) % 99}`);
-     }
-     if (hasRSVPd && musterRollDraft.alias) aliases.unshift(musterRollDraft.alias);
-     return aliases.slice(0, 5); // show max 5
-  };
-
-  const registeredAliases = getMockAliases();
-
+  // Law 1: no fabricated attendee roll. We can only truthfully show the current
+  // user's own registered signal, because RSVP rows are not publicly readable
+  // (see supabase migration 20261102000000 — event_signals is ownership-scoped).
+  const ownSignal = hasRSVPd && musterRollDraft.alias ? musterRollDraft.alias : null;
 
   return (
     <div className="flex flex-col p-6 border-b border-gray-800 hover:bg-apf-purple/5 transition-colors group">
       <div className="flex flex-col md:flex-row gap-6">
           <div className="md:w-1/4">
             <div className="text-4xl font-black text-apf-purple/40 group-hover:text-apf-purple transition-colors">
-              {event.date.split(' ')[0]}
-              <span className="block text-sm uppercase text-gray-500">{event.date.split(' ')[1]}</span>
+              {(event.date || 'TBD').split(' ')[0]}
+              <span className="block text-sm uppercase text-gray-500">{(event.date || '').split(' ')[1] || 'DATE PENDING'}</span>
             </div>
           </div>
 
@@ -105,14 +88,15 @@ export function FleetMuster({ event }) {
           <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest flex items-center gap-1">
               <SafeIcon name="Radio" className="h-3 w-3" /> Signals Detected:
           </span>
-          <div className="flex flex-wrap gap-2">
-              {registeredAliases.map((alias, i) => (
-                  <span key={i} className={`font-vt323 text-xs px-2 py-0.5 border ${alias === musterRollDraft.alias ? 'border-apf-emerald text-apf-emerald bg-apf-emerald/10' : 'border-gray-700 text-gray-400 bg-gray-900'}`}>
-                      {alias}
+          <div className="flex flex-wrap gap-2 items-center">
+              {ownSignal ? (
+                  <span className="font-vt323 text-xs px-2 py-0.5 border border-apf-emerald text-apf-emerald bg-apf-emerald/10">
+                      {ownSignal}
                   </span>
-              ))}
-              {Math.abs(hashString(event.title)) % 10 > 5 && (
-                  <span className="font-vt323 text-xs text-gray-600 px-2 py-0.5">+{Math.abs(hashString(event.title)) % 15 + 3} more...</span>
+              ) : (
+                  <span className="font-vt323 text-xs text-gray-600">
+                      No public signal roll published for this muster.
+                  </span>
               )}
           </div>
       </div>

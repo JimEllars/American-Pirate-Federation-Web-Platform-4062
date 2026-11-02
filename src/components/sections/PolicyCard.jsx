@@ -15,14 +15,17 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast, isCoreSynced } = useAppStore();
   const account = useActiveAccount();
 
-  const comments = policyComments[code] || [
-    { author: "Navigator Vance", role: "Navigator", text: "Alignment verified. Ready for ratification.", date: "2024-05-01" },
-  ];
+  // Law 1: no seeded reviewer. An un-annotated directive shows an empty review
+  // thread rather than a fabricated endorsement from a fictional Navigator.
+  const comments = policyComments[code] || [];
 
   const hasSignaled = policySignals[code] || false;
   const canSignal = ['Navigator', 'Guild Master'].includes(userRole);
   const canComment = ['Deckhand', 'Navigator', 'Guild Master'].includes(userRole);
-  const currentConsensus = hasSignaled ? Math.min(100, consensus + 2) : consensus; // simulate QV bump
+  // Law 1: signalling a directive must not silently inflate the displayed consensus.
+  // The score shown is the value the Federation publishes; a local signal is recorded
+  // locally and is not a vote tally.
+  const currentConsensus = consensus;
 
   const sanitizedTitle = DOMPurify.sanitize(title);
   const sanitizedSummary = DOMPurify.sanitize(summary);
@@ -137,7 +140,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                {consensus && (
                  <div>
                    <div className="flex justify-between text-[10px] font-vt323 uppercase text-gray-500 mb-1">
-                     <span>Consensus (QV)</span>
+                     <span>Doctrine Baseline</span>
                      <span className="text-apf-purple">{currentConsensus}%</span>
                    </div>
                    <div className="h-1 w-full bg-gray-900 rounded-full overflow-hidden">
@@ -182,6 +185,11 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             className="flex-grow relative z-10 border-t border-gray-800 pt-4 mb-4 flex flex-col h-40"
           >
             <div className="overflow-y-auto space-y-3 mb-2 flex-grow pr-2 custom-scrollbar">
+              {comments.length === 0 && (
+                <div className="text-xs font-vt323 text-gray-600 border border-dashed border-gray-800 p-2 text-center">
+                  No peer review recorded for this directive yet.
+                </div>
+              )}
               {comments.map((comment, i) => (
                 <div key={i} className="bg-black/50 p-2 border-l-2 border-apf-purple">
                   <div className="flex justify-between items-center mb-1">

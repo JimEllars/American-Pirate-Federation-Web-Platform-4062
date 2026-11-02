@@ -23,8 +23,12 @@ export const processQueuedTransaction = async (txPayload, account) => {
           logTransactionDispatched(null, { status: 'QUEUED', command: txPayload.command });
 
           if (!APF_POLICY_CONTRACT) {
-            console.warn('[ SYSTEM: POLICY CONTRACT NOT CONFIGURED - TRANSACTION SIMULATED ]');
-            return Promise.resolve("0xSIMULATED_PROPOSAL_HASH");
+            // Law 1 (Anti-Theater & Ground Truth): never return a fake transaction hash.
+            // A hash that no chain produced is indistinguishable from a real one in the UI
+            // and audit logs, so we fail loudly instead of simulating success.
+            console.warn('[ SYSTEM: POLICY CONTRACT NOT CONFIGURED - TRANSACTION ABORTED ]');
+            logTransactionDispatched(null, { status: 'UNAVAILABLE', command: txPayload.command });
+            throw new Error('Policy contract is not configured. No transaction was submitted.');
           }
 
           logTransactionDispatched(null, { status: 'PROCESSING', command: txPayload.command });
@@ -49,9 +53,10 @@ export const processQueuedTransaction = async (txPayload, account) => {
               logTransactionDispatched(null, { status: 'FAILED', command: txPayload.command, chainId: 42161 });
               throw err;
           }
-        case 'EXECUTE_TREASURY_TRANSFER':
-          console.info('[ SYSTEM: PROCESSOR READY FOR TREASURY ABI INJECTION ]');
-          return Promise.resolve(true);
+        // REMOVED: 'EXECUTE_TREASURY_TRANSFER'. Model output is not a money-movement
+        // channel (Architectural Law 2). Treasury funds live in an Arbitrum One Safe
+        // multisig and can only move via owner-signed execTransaction calls, which this
+        // processor has no business initiating from parsed AI text.
         default:
           console.info('[ SYSTEM: UNKNOWN COMMAND IN PROCESSOR ]');
           return Promise.resolve(true);

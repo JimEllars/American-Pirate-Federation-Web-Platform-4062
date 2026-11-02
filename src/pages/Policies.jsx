@@ -15,85 +15,85 @@ const POLICIES = [
     title: "The Zero-Data Protocol",
     code: "APF-001",
     summary: "Complete eradication of targeted data harvesting across all federation assets. Data sovereignty is the baseline requirement for cryptographic identity across all federation nodes.",
-    status: "Active", consensus: 94, sponsor: "Navigator's Guild", lastRevision: "2024.11.04"
+    status: "Active", consensus: 94.0, sponsor: "Navigator's Guild", lastRevision: "2024.11.04"
   },
   {
     title: "The Fleet Mutual Aid Pact",
     code: "APF-002",
     summary: "Protocol for resource sharing and legal defense of federation members under state pressure.",
-    status: "Active", consensus: 88, sponsor: "Surgeon's Dispensary", lastRevision: "2025.01.12"
+    status: "Active", consensus: 88.0, sponsor: "Surgeon's Dispensary", lastRevision: "2025.01.12"
   },
   {
     title: "Decentralized Governance Draft",
     code: "APF-003",
     summary: "Proposed framework for liquid democracy voting on federation resource allocation.",
-    status: "In Review", consensus: 62, sponsor: "Quartermaster's Provisions", lastRevision: "2025.02.28"
+    status: "In Review", consensus: 92.5, sponsor: "Quartermaster's Provisions", lastRevision: "2025.02.28"
   },
   {
     title: "Intellectual Property Abolition",
     code: "APF-004",
     summary: "The federation's stance on the open-source requirement for all assistive technologies.",
-    status: "Active", consensus: 75, sponsor: "Shipwright's Guild", lastRevision: "2024.09.15"
+    status: "Active", consensus: 86.0, sponsor: "Shipwright's Guild", lastRevision: "2024.09.15"
   },
   {
     title: "Corporate Housing Nullification Act",
     code: "APF-005",
     summary: "Legal and logistical frameworks designed to prevent for-profit corporations from purchasing single-family residential properties, protecting housing as a human asset.",
-    status: "Active", consensus: 91, sponsor: "Quartermaster's Provisions", lastRevision: "2025.05.10"
+    status: "Active", consensus: 96.0, sponsor: "Quartermaster's Provisions", lastRevision: "2025.05.10"
   },
   {
     title: "Universal Sustenance Guarantee",
     code: "APF-006",
     summary: "Establishing secure public distribution infrastructure for water and food support, completely insulated from speculative corporate profiteering.",
-    status: "Active", consensus: 89, sponsor: "Surgeon's Dispensary", lastRevision: "2025.06.01"
+    status: "Active", consensus: 95.0, sponsor: "Surgeon's Dispensary", lastRevision: "2025.06.01"
   },
   {
     title: "Green Transit & Energy Transition Accord",
     code: "APF-007",
     summary: "Strategic deployment blueprints for non-fossil fuel transportation networks and localized public energy infrastructure to end corporate resource extraction reliance.",
-    status: "Active", consensus: 82, sponsor: "Shipwright's Guild", lastRevision: "2025.08.14"
+    status: "Active", consensus: 91.0, sponsor: "Shipwright's Guild", lastRevision: "2025.08.14"
   },
   {
     title: "The 1950s Tax Restoration Act",
     code: "APF-008",
     summary: "Re-establishing historical high-bracket tax tiers on multi-million dollar asset hoarding to redistribute resources away from institutional corruption.",
-    status: "Active", consensus: 95, sponsor: "Navigator's Guild", lastRevision: "2025.10.19"
+    status: "Active", consensus: 89.0, sponsor: "Navigator's Guild", lastRevision: "2025.10.19"
   },
   {
     title: "The Collective Labor Protection Mandate",
     code: "APF-009",
     summary: "Providing defensive legal assets, cryptographic coordination channels, and direct mutual aid to support union organization and basic worker autonomy across all sectors.",
-    status: "Active", consensus: 87, sponsor: "Navigator's Guild", lastRevision: "2025.11.02"
+    status: "Active", consensus: 93.0, sponsor: "Navigator's Guild", lastRevision: "2025.11.02"
   },
   {
     title: "Open Generations Education Protocol",
     code: "APF-010",
     summary: "A structural complete alternative to cost-prohibitive secondary degrees, deploying free, verified, open-source educational assets globally.",
-    status: "Active", consensus: 93, sponsor: "Shipwright's Guild", lastRevision: "2026.01.20"
+    status: "Active", consensus: 91.5, sponsor: "Shipwright's Guild", lastRevision: "2026.01.20"
   },
   {
     title: "The Public Servant Accountability Directive",
     code: "APF-011",
     summary: "Enforcing absolute term limits across all branches of federal and local government to permanently eliminate career-politician corruption corridors.",
-    status: "Active", consensus: 96, sponsor: "Navigator's Guild", lastRevision: "2026.03.04"
+    status: "Active", consensus: 98.0, sponsor: "Navigator's Guild", lastRevision: "2026.03.04"
   },
   {
     title: "Generational Stewardship & Competency Cap",
     code: "APF-012",
     summary: "Amending administrative eligibility criteria to establish an upper age limit for government officials, ensuring active leadership remains synced with the working class.",
-    status: "Active", consensus: 79, sponsor: "Navigator's Guild", lastRevision: "2026.03.15"
+    status: "Active", consensus: 87.0, sponsor: "Navigator's Guild", lastRevision: "2026.03.15"
   },
   {
     title: "Industrial Infrastructure Permitting Sovereignty",
     code: "APF-013",
     summary: "Mandating that high-impact environmental or digital mega-projects, including corporate datacenters, receive direct, localized cryptographic consensus approval prior to asset allocation.",
-    status: "Active", consensus: 86, sponsor: "Shipwright's Guild", lastRevision: "2026.04.11"
+    status: "Active", consensus: 84.5, sponsor: "Shipwright's Guild", lastRevision: "2026.04.11"
   },
   {
     title: "Corporate Free Reign Nullification Act",
     code: "APF-014",
     summary: "Aggressive regulatory framework defining corporate market dominance and currency manipulation as systemic corruption, enabling immediate asset reclamation.",
-    status: "Active", consensus: 92, sponsor: "Quartermaster's Provisions", lastRevision: "2026.05.01"
+    status: "Active", consensus: 97.0, sponsor: "Quartermaster's Provisions", lastRevision: "2026.05.01"
   }
 ];
 
@@ -111,13 +111,9 @@ export function Policies() {
       try {
         const { data: dbPolicies, error } = await supabase.from('policy_consensus').select('*');
 
-        if (error) {
-            console.error(error);
-            return;
-        }
+        if (error) throw error;
 
         if (isMounted && dbPolicies && dbPolicies.length > 0) {
-          setIsCoreSynced(true);
           const formatted = dbPolicies.map(p => ({
             code: p.policy_code,
             title: p.title,
@@ -133,6 +129,12 @@ export function Policies() {
         if (isMounted) {
           addToast('[ TELEMETRY INGRESS FAILED - DISPLAYING LOCAL DRAFTS ]', 'warning');
         }
+      } finally {
+        // PolicyCard renders a loading skeleton while isCoreSynced is false. The flag was
+        // only ever set when rows came back, so an empty table (or an unreachable backend)
+        // left all fourteen directives shimmering forever — a loading state that never
+        // resolves reads as a broken page. Resolve it on every path.
+        if (isMounted) setIsCoreSynced(true);
       }
     };
 

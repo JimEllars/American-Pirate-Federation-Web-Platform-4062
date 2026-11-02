@@ -7,13 +7,15 @@ import { useParallax } from '../../hooks/useParallax';
 import { generateChecksum, logCommLinkSubscription } from '../../lib/api/telemetry';
 import { motion } from 'framer-motion';
 import { useLocation } from 'react-router-dom';
-import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
+import { useActiveAccount, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
+import { arbitrum } from 'thirdweb/chains';
 
 export function Layout({ children }) {
-  const { isCorrectNetwork, setIsCorrectNetwork, setTreasuryDeploymentStatus, telemetryLogs, setIsSigning } = useAppStore();
+  const { isCorrectNetwork, setIsCorrectNetwork, addToast, telemetryLogs, setIsSigning } = useAppStore();
   const location = useLocation();
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
+  const switchChain = useSwitchActiveWalletChain();
   const isMismatched = account && chain && chain.id !== 42161 && chain.id !== 421614;
 
   useEffect(() => {
@@ -113,8 +115,17 @@ export function Layout({ children }) {
     <div className="min-h-screen relative apf-root-container flex flex-col bg-apf-black">
       <NetworkSwitchModal
         isWrongNetwork={Boolean(isMismatched && !isCorrectNetwork)}
-        onSwitchNetwork={() => setIsCorrectNetwork(true)}
-        onDismiss={() => { setIsCorrectNetwork(true); setTreasuryDeploymentStatus('idle'); }}
+        onSwitchNetwork={async () => {
+          // Actually ask the wallet to switch, rather than flipping a local flag and
+          // reporting success while the wallet stays on a different chain.
+          try {
+            await switchChain(arbitrum);
+            setIsCorrectNetwork(true);
+          } catch (e) {
+            addToast('[ NET_OPS: CHAIN SWITCH REJECTED - STAYING ON CURRENT NETWORK ]', 'error');
+          }
+        }}
+        onDismiss={() => setIsCorrectNetwork(true)}
       />
       {/* Scanlines overlay */}
       <div className="scanlines !pointer-events-none" />
