@@ -75,14 +75,18 @@ export function MusterRoll() {
 
   return (
     <div id="join" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-12 relative">
+      <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 sm:p-10 lg:p-12 relative">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
 
         <div className="mb-12 text-center">
-          <h2 className="text-4xl font-vt323 font-black uppercase tracking-widest mb-4">
+          <h2 className="text-3xl sm:text-4xl font-vt323 font-black uppercase tracking-widest mb-4">
             Authorize Connection Sequence
           </h2>
-          <p className="font-vt323 text-apf-purple text-lg uppercase tracking-[0.3em]">
+          {/* The underscore token cannot wrap between characters, so 0.3em tracking at
+              text-lg overflowed a 375px viewport by 62px and gave the whole home page a
+              horizontal scrollbar. Scale the tracking with the breakpoint and allow the
+              token itself to break as a last resort. */}
+          <p className="font-vt323 text-apf-purple text-xs sm:text-lg uppercase tracking-[0.15em] sm:tracking-[0.3em] break-all">
             [ INITIALIZE_CONNECTION_SEQUENCE ]
           </p>
         </div>
