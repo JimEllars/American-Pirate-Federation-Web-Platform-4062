@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="American Pirate Federation sigil">
+  <rect width="64" height="64" rx="12" fill="#050505"/>
+  <g fill="none" stroke="#9400D3" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- ring -->
+    <circle cx="32" cy="13" r="5.5"/>
+    <!-- shaft -->
+    <path d="M32 19.5V49"/>
+    <!-- stock / crossbar -->
+    <path d="M21 27h22"/>
+    <!-- arms and flukes -->
+    <path d="M32 49c-9 0-14-6-14-13"/>
+    <path d="M32 49c9 0 14-6 14-13"/>
+    <path d="M18 36l-3.5 6.5L21 44"/>
+    <path d="M46 36l3.5 6.5L43 44"/>
+  </g>
+  <circle cx="32" cy="13" r="1.6" fill="#00FF66"/>
+</svg>
