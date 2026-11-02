@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
+import { useAppStore } from '../../store/useAppStore';
 
 export function DonateWidget() {
   const [amount, setAmount] = useState(100);
   const [frequency, setFrequency] = useState('monthly');
   const [customAmount, setCustomAmount] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const addToast = useAppStore((state) => state.addToast);
 
   const presets = [100, 50, 25, 10];
 
@@ -14,21 +17,47 @@ export function DonateWidget() {
   };
 
   const handleDonate = async () => {
-    // Basic stub, this logic hooks up to /api/donate
-    const parsedAmount = amount === 'custom' ? parseInt(customAmount, 10) : amount;
-    if (!parsedAmount || parsedAmount < 5) return;
+    if (isSubmitting) return;
 
+    const dollars = amount === 'custom' ? Number(customAmount) : amount;
+    // Server enforces the same $5.00 floor; checking here just avoids a pointless round trip.
+    if (!Number.isFinite(dollars) || dollars < 5) {
+      addToast('[ THE CHEST: MINIMUM CONTRIBUTION IS $5.00 ]', 'error');
+      return;
+    }
+
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/donate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: parsedAmount * 100, frequency })
+        headers: {
+          'Content-Type': 'application/json',
+          // Idempotency so a double-tap cannot open two subscriptions.
+          'Idempotency-Key': `apf-donate-${Date.now()}-${Math.round(dollars * 100)}`
+        },
+        body: JSON.stringify({ amount: Math.round(dollars * 100), frequency })
       });
-      const data = await res.json();
-      console.log('Donation initiated', data);
-      // Stripe redirect would happen here
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok || !data || data.status === 'error') {
+        // Surface the real reason (unconfigured Stripe, rate limit, validation) instead of
+        // failing silently in the console.
+        addToast(`[ THE CHEST: ${(data && data.message) || 'CONTRIBUTION COULD NOT BE STARTED'} ]`, 'error');
+        return;
+      }
+
+      if (!data.checkoutUrl) {
+        addToast('[ THE CHEST: PAYMENT PROCESSOR RETURNED NO CHECKOUT ]', 'error');
+        return;
+      }
+
+      // Card details are entered on Stripe's domain, never in this widget.
+      window.location.assign(data.checkoutUrl);
     } catch (err) {
-      console.error('Donation error', err);
+      addToast('[ THE CHEST: NETWORK FAILURE - CONTRIBUTION NOT STARTED ]', 'error');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,8 +113,10 @@ export function DonateWidget() {
       <button
         className="w-full bg-apf-emerald hover:bg-emerald-400 text-black font-bold uppercase py-3 tracking-widest transition-colors mb-2"
         onClick={handleDonate}
+        disabled={isSubmitting}
+        aria-busy={isSubmitting}
       >
-        Donate
+        {isSubmitting ? 'Opening Secure Checkout…' : (frequency === 'monthly' ? 'Contribute Monthly' : 'Contribute Once')}
       </button>
       <div className="text-[9px] text-gray-500 text-center leading-tight">
         Contributions or gifts to the American Pirate Federation (or APF Action) are not deductible as charitable contributions for federal income tax purposes.
