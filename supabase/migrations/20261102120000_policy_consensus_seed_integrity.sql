@@ -109,9 +109,11 @@ ON CONFLICT (policy_code) DO UPDATE SET
   last_revision   = EXCLUDED.last_revision,
   -- Provenance is only downgraded back to 'founding-draft' for rows that have no ballot.
   -- A protocol that has already been voted on keeps its member-vote provenance.
+  -- The existing row is referenced by bare table name, which is the form documented for
+  -- ON CONFLICT DO UPDATE (the other legal reference being the EXCLUDED pseudo-table).
   provenance      = CASE
-                      WHEN public.policy_consensus.first_ballot_at IS NULL THEN EXCLUDED.provenance
-                      ELSE public.policy_consensus.provenance
+                      WHEN policy_consensus.first_ballot_at IS NULL THEN EXCLUDED.provenance
+                      ELSE policy_consensus.provenance
                     END;
 
 -- -----------------------------------------------------------------------------
