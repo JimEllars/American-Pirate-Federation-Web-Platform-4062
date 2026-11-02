@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { supabase } from '../../lib/api/supabaseClient';
 import { useAppStore } from '../../store/useAppStore';
@@ -7,6 +7,28 @@ export function PassportModal({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('idle'); // idle, sending, success, error
   const { userRole, guildAlignment, musterRollDraft } = useAppStore();
+  const dialogRef = useRef(null);
+
+  // Keyboard + focus handling so the dialog behaves like a dialog (it previously had no
+  // role, no aria-modal, and no Escape handler).
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+
+    const previouslyFocused = document.activeElement;
+    dialogRef.current?.focus();
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+        previouslyFocused.focus();
+      }
+    };
+  }, [isOpen, onClose]);
 
   const handleMagicLink = async (e) => {
     e.preventDefault();
@@ -32,13 +54,20 @@ export function PassportModal({ isOpen, onClose }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-apf-black border border-apf-purple/50 max-w-md w-full relative overflow-hidden p-6 font-vt323">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="passport-title"
+        tabIndex={-1}
+        className="bg-apf-black border border-apf-purple/50 max-w-md w-full relative overflow-hidden p-6 font-vt323 focus:outline-none focus:ring-2 focus:ring-apf-purple/60"
+      >
         <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors">
             <SafeIcon name="X" className="h-6 w-6" />
         </button>
 
-        <h2 className="text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+        <h2 id="passport-title" className="text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
             <SafeIcon name="Shield" className="text-apf-purple h-6 w-6" /> Pirate Passport
         </h2>
 

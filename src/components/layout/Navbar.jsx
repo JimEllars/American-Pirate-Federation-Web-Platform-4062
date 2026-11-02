@@ -6,9 +6,11 @@ import { useActiveWallet, useActiveAccount, useConnect, useDisconnect, useWallet
 import { client as thirdwebClient } from '../../lib/web3/client';
 import { embeddedWallet } from 'thirdweb/wallets';
 import { useAppStore } from '../../store/useAppStore';
+import { PassportModal } from '../auth/PassportModal';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [showPassport, setShowPassport] = useState(false);
   const location = useLocation();
   const address = useActiveAccount()?.address;
   const wallet = useActiveWallet();
@@ -50,6 +52,7 @@ export function Navbar() {
   };
 
   return (
+    <>
     <nav className="fixed w-full z-50 bg-apf-black/90 backdrop-blur-md border-b border-apf-purple/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -92,6 +95,15 @@ export function Navbar() {
                     JOIN THE FLEET
                   </a>
               )}
+
+              {/* Law 4: the Pirate Passport is the primary identity path (Email OTP),
+                  with wallet connection remaining entirely optional. */}
+              <button
+                onClick={() => setShowPassport(true)}
+                className="flex items-center gap-2 px-3 py-2 border border-apf-purple/40 text-apf-purple hover:bg-apf-purple/10 hover:border-apf-purple rounded transition-all font-vt323 tracking-widest text-sm uppercase"
+              >
+                <SafeIcon name="Key" className="h-4 w-4" /> Passport
+              </button>
 
               {activeTxQueue?.length > 0 && (
                 <div className="flex items-center gap-2">
@@ -207,6 +219,13 @@ export function Navbar() {
                   </a>
               )}
 
+              <button
+                onClick={() => { setShowPassport(true); setIsOpen(false); }}
+                className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-purple/40 text-apf-purple rounded font-vt323 tracking-widest text-lg uppercase"
+              >
+                <SafeIcon name="Key" className="h-4 w-4" /> Pirate Passport
+              </button>
+
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
                   disabled
@@ -237,5 +256,9 @@ export function Navbar() {
         </motion.div>
       )}
     </nav>
+
+    {/* Rendered outside <nav> so the fixed overlay is not trapped in the nav's stacking context. */}
+    <PassportModal isOpen={showPassport} onClose={() => setShowPassport(false)} />
+    </>
   );
 }

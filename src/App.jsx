@@ -22,6 +22,8 @@ const LazyIntelligenceHub = React.lazy(() => import('./pages/IntelligenceHub').t
 const LazyTransmissionHub = React.lazy(() => import('./pages/TransmissionHub').then(m => ({ default: m.TransmissionHub })));
 const LazyArmory = React.lazy(() => import('./pages/Armory').then(m => ({ default: m.Armory })));
 const LazyPropose = React.lazy(() => import('./pages/Propose').then(m => ({ default: m.Propose })));
+
+const LazyDonate = React.lazy(() => import('./pages/Donate').then(m => ({ default: m.Donate })));
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 import { logUnhandledRejection } from './lib/api/telemetry';
@@ -106,6 +108,7 @@ function App() {
               <Route path="/podcast" element={<ErrorBoundary><LazyTransmissionHub /></ErrorBoundary>} />
               <Route path="/shop" element={<ErrorBoundary><LazyArmory /></ErrorBoundary>} />
               <Route path="/propose" element={<ErrorBoundary><LazyPropose /></ErrorBoundary>} />
+              <Route path="/donate" element={<ErrorBoundary><LazyDonate /></ErrorBoundary>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

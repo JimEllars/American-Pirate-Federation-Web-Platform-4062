@@ -13,15 +13,33 @@ export const formatFeedForAI = (rawDataArray) => {
     }).join('\n');
 };
 
+/**
+ * Build the prompt from whatever real content we actually have. Deliberately excludes
+ * invented "readiness" scores: the model must not be fed numbers that do not exist.
+ */
+export const buildBriefingPrompt = (payload) => {
+    if (typeof payload === 'string') return payload;
+
+    const posts = Array.isArray(payload?.posts) ? payload.posts : [];
+    if (posts.length === 0) {
+        return 'No intelligence dispatches are currently published. State plainly that there is nothing to brief.';
+    }
+
+    return [
+        'Produce a short tactical briefing for Federation members based only on the dispatches below.',
+        'Attribute claims to the dispatch titles. Do not invent figures.',
+        '',
+        formatFeedForAI(posts)
+    ].join('\n');
+};
+
 export const checkAIHealth = async () => {
     try {
-        const aiEndpoint = import.meta.env.VITE_AI_ENDPOINT;
-        if (!aiEndpoint) return;
-        const response = await fetch(aiEndpoint, { method: 'OPTIONS' });
-        if (response.ok) {
-            console.info('[ AI_ENDPOINT_VERIFIED ]');
-        }
-    } catch (error) { /* empty */ }
+        const response = await fetch(aiConfig.AI_ENDPOINT, { method: 'OPTIONS' });
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
 };
 
 const getCachedTacticalBrief = () => {
@@ -49,20 +67,16 @@ export const useAnalyzeFederationData = (contextPayload) => {
         setIsAnalyzing(true);
         const startTime = Date.now();
         try {
-            const aiEndpoint = import.meta.env.VITE_AI_ENDPOINT;
-            if (!aiEndpoint) {
-                console.warn('[ AI_ENDPOINT NOT CONFIGURED ]');
-                setIsAnalyzing(false);
-                return { isAnalyzing: false, aiResponse: null };
-            }
-
+            // Same-origin edge function. The provider key never reaches the browser.
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // Strict 8s timeout
+            const timeoutId = setTimeout(() => controller.abort(), 25000);
 
-            const response = await fetch(aiEndpoint, {
+            const prompt = buildBriefingPrompt(payload);
+
+            const response = await fetch(aiConfig.AI_ENDPOINT, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ aiContextPayload: payload }),
+                body: JSON.stringify({ prompt }),
                 signal: controller.signal
             });
             clearTimeout(timeoutId);
@@ -102,15 +116,20 @@ export const useAnalyzeFederationData = (contextPayload) => {
 
             setIsAnalyzing(false);
 
+            // Law 1: if the uplink is down we say so. We do not invent a "temporal
+            // disruption in the consensus layer" narrative to fill the silence.
             const cachedBrief = getCachedTacticalBrief();
 
             return {
                 isAnalyzing: false,
-                aiResponse: cachedBrief || {
-                    status: 'fallback',
-                    message: '<span class="text-red-500">[ SYSTEM ERROR: AI CORE OFFLINE - RENDERING CACHED INTELLIGENCE ]</span>\n\nProceed with standard operational procedures. Network telemetry suggests a temporal disruption in the consensus layer.',
-                    timestamp: new Date().toISOString()
-                }
+                error: error.message,
+                aiResponse: cachedBrief
+                    ? { ...cachedBrief, status: 'cached', stale: true }
+                    : {
+                        status: 'unavailable',
+                        message: 'The intelligence uplink is unavailable. No briefing was generated.',
+                        timestamp: new Date().toISOString()
+                    }
             };
         }
     };

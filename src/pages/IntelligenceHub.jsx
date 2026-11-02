@@ -35,6 +35,8 @@ export function IntelligenceHub() {
   const { isAnalyzing: isGlobalAnalyzing, analyzeData, lastSyncTime } = useAnalyzeFederationData(posts);
   const [localAnalyzing, setLocalAnalyzing] = useState(false);
   const [aiAnalysisSuccess, setAiAnalysisSuccess] = useState(false);
+  const [aiBriefing, setAiBriefing] = useState(null);
+  const [aiBriefingError, setAiBriefingError] = useState(null);
 
 
   // AI Background Polling Scaffolding (Phase 70)
@@ -104,15 +106,19 @@ export function IntelligenceHub() {
                       setLocalAnalyzing(true);
                       setAiAnalysisSuccess(false);
                       try {
-                          const aiContextPayload = {
-                              posts,
-                              nodes,
-                              readiness: 94
-                          };
-                          const result = await analyzeData(aiContextPayload);
-                          if (result.aiResponse) {
+                          // Only real content goes into the prompt. The previous payload
+                          // included `readiness: 94`, an invented metric fed to the model.
+                          const result = await analyzeData({ posts });
+                          const response = result?.aiResponse;
+
+                          if (response && response.status !== 'unavailable' && response.status !== 'fallback' && !result.error) {
+                              setAiBriefing(response.message || null);
+                              setAiBriefingError(response.stale ? 'Showing a cached briefing — the uplink is currently unreachable.' : null);
                               setAiAnalysisSuccess(true);
                               setTimeout(() => setAiAnalysisSuccess(false), 3000);
+                          } else {
+                              setAiBriefing(null);
+                              setAiBriefingError(result?.error || response?.message || 'The intelligence uplink is unavailable.');
                           }
                       } catch (err) {
                           // console.error("[ AI_TRANSMISSION_FAILED ]", err);
@@ -130,6 +136,16 @@ export function IntelligenceHub() {
               {lastSyncTime && (
                 <div className="mt-2 text-apf-emerald font-vt323 text-xs tracking-widest uppercase">
                   [ LAST SYNC: {lastSyncTime} ]
+                </div>
+              )}
+              {aiBriefingError && (
+                <div role="status" className="mt-4 border border-red-500/40 bg-red-500/5 p-4 font-vt323 text-sm text-red-400 text-left">
+                  [ UPLINK: {aiBriefingError} ]
+                </div>
+              )}
+              {aiBriefing && (
+                <div className="mt-4 border border-apf-emerald/40 bg-black/60 p-4 font-mono text-sm text-gray-200 text-left whitespace-pre-wrap">
+                  {aiBriefing}
                 </div>
               )}
 
