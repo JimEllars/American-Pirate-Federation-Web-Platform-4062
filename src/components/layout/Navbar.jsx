@@ -64,8 +64,8 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden lg:block w-full">
-            <div className="flex items-center justify-end space-x-6 flex-wrap">
+          <div className="hidden xl:block w-full">
+            <div className="flex items-center justify-end gap-3 flex-nowrap">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -91,7 +91,7 @@ export function Navbar() {
                       </div>
                   </div>
               ) : (
-                  <a href="/#join" className="bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-4 rounded transition-all shadow-[0_0_15px_rgba(113,0,255,0.5)] hover:shadow-[0_0_25px_rgba(113,0,255,0.8)] font-vt323 tracking-widest text-lg">
+                  <a href="/#join" className="bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-3 rounded transition-all shadow-[0_0_15px_rgba(113,0,255,0.5)] hover:shadow-[0_0_25px_rgba(113,0,255,0.8)] font-vt323 tracking-widest text-base whitespace-nowrap">
                     JOIN THE FLEET
                   </a>
               )}
@@ -122,21 +122,21 @@ export function Navbar() {
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
                   disabled
-                  className="bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-4 py-2 rounded font-vt323 tracking-widest text-lg uppercase cursor-not-allowed animate-pulse"
+                  className="flex items-center gap-1.5 bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-3 py-1.5 rounded font-vt323 tracking-widest text-sm uppercase cursor-not-allowed animate-pulse whitespace-nowrap"
                 >
                   [ INITIALIZING ENCRYPTION... ]
                 </button>
               ) : !address ? (
                 <button
                   onClick={handleConnect}
-                  className="bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
+                  className="flex items-center gap-1.5 bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-3 py-1.5 rounded transition-all font-vt323 tracking-widest text-sm uppercase whitespace-nowrap"
                 >
-                  Connect Wallet
+                  Connect
                 </button>
               ) : (
                 <button
                   onClick={() => disconnect(wallet)}
-                  className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
+                  className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300 whitespace-nowrap"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
@@ -148,7 +148,7 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
+          <div className="flex xl:hidden items-center justify-end w-1/2 md:w-auto gap-2">
               {activeTxQueue?.length > 0 && (
                 <div className="flex items-center gap-1.5">
                   <button onClick={handleProcessTx} className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80" title={`${activeTxQueue.length} Pending Tx`}>
@@ -190,7 +190,7 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:hidden bg-apf-black border-b border-apf-purple/20 max-h-[calc(100vh-4rem)] overflow-y-auto"
+          className="xl:hidden bg-apf-black border-b border-apf-purple/20 max-h-[calc(100vh-4rem)] overflow-y-auto"
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => (
