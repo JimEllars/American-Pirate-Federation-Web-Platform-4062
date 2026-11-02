@@ -20,6 +20,22 @@ jobs:
 
       - run: npm ci
 
+      # SOP §3.2 — dependency audit. Critical advisories fail the build; the high-severity
+      # transitive advisories inside the thirdweb/walletconnect tree are documented in
+      # docs/audit-2026-11-02.md and reported here on every run so drift is visible.
+      - name: Dependency audit
+        run: |
+          npm audit --omit=dev --audit-level=critical
+          npm audit --omit=dev || echo "::warning::high-severity advisories present — see docs/audit-2026-11-02.md"
+
+      # SOP §3.1 / Law 5 — no agent patch artefacts may be committed.
+      - name: Repository hygiene
+        run: |
+          if git status --porcelain --ignored | grep -E '(^|/)(patch_.*\.py|\.bundle|\.patch|test-results/|playwright-report/)$'; then
+            echo "::error::Agent patch artefacts or test output are present in the working tree"
+            exit 1
+          fi
+
       # Gateway 1 — static analysis. Must exit 0.
       - name: Lint
         run: npm run lint
@@ -44,6 +60,10 @@ jobs:
             echo "::error::Source maps found in dist/"
             exit 1
           fi
+
+      # Gateway 2 (extended) — initial payload budget, CSP invariants, no compiled secrets.
+      - name: Verify build output
+        run: npm run verify:build
 
       # Gateway 3 — Playwright smoke suite.
       - name: Install Playwright browser

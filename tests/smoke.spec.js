@@ -114,12 +114,66 @@ test('The Chest: 300x300, monthly by default, working ladder, visible disclosure
   await once.click();
   await expect(once).toHaveClass(/border-apf-emerald/);
 
-  // The 501(c)(4) non-deductibility disclosure must be present and not clipped.
-  const disclosure = page.getByText(/not deductible as charitable contributions/i).first();
+  // The 501(c)(4) non-deductibility disclosure must be inside the 300x300 frame, not
+  // merely inside the viewport. The earlier version of this test only compared against
+  // the viewport, so it passed while the text rendered ~42px BELOW the widget's bottom
+  // edge — invisible to every donor. Measure against the widget.
+  const disclosure = widget.getByText(/not deductible as charitable contributions/i).first();
   await expect(disclosure).toBeVisible();
   const dBox = await disclosure.boundingBox();
   expect(dBox.height).toBeGreaterThan(0);
-  expect(dBox.y + dBox.height).toBeLessThanOrEqual(901);
+  expect(dBox.y).toBeGreaterThanOrEqual(box.y - 0.5);
+  expect(dBox.y + dBox.height).toBeLessThanOrEqual(box.y + box.height + 0.5);
+
+  // And the widget itself must not overflow its own fixed height.
+  const overflow = await widget.evaluate((el) => el.scrollHeight - el.clientHeight);
+  expect(overflow, 'widget content overflows its 300px height').toBeLessThanOrEqual(1);
+});
+
+test('brand and social assets are real files, not the SPA fallback', async ({ request }) => {
+  // A missing /favicon.svg or /og-image.jpg is served index.html with HTTP 200 by the
+  // SPA fallback, so status codes prove nothing. Check the bytes.
+  const favicon = await request.get('/favicon.svg');
+  expect(favicon.status()).toBe(200);
+  expect(await favicon.text()).toMatch(/^<svg[\s>]/);
+
+  const og = await request.get('/og-image.png');
+  expect(og.status()).toBe(200);
+  const bytes = await og.body();
+  expect(bytes.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a'); // PNG signature
+
+  const robots = await request.get('/robots.txt');
+  expect(await robots.text()).toMatch(/^User-agent:/);
+});
+
+for (const width of [375, 768, 1440]) {
+  test(`no horizontal overflow at ${width}px on any route`, async ({ page }) => {
+    await page.setViewportSize({ width, height: width === 375 ? 812 : 900 });
+    for (const route of ROUTES) {
+      await page.goto(route.path, { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('#root')).not.toBeEmpty();
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+      );
+      expect(overflow, `horizontal overflow on ${route.path} at ${width}px`).toBeLessThanOrEqual(1);
+    }
+  });
+}
+
+test('mobile navigation drawer opens and closes without overflow', async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  const menuButton = page.locator('nav button').filter({ has: page.locator('svg') }).last();
+  await menuButton.click();
+
+  // The drawer renders the same route list as the desktop bar.
+  await expect(page.getByRole('link', { name: /^donate$/i }).first()).toBeVisible();
+
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  expect(overflow).toBeLessThanOrEqual(1);
 });
 
 test('treasury ledger publishes no invented transactions', async ({ page }) => {

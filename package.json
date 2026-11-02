@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "cf:dev": "wrangler pages dev dist",
     "deploy:cloudflare": "npm run build && wrangler pages deploy dist --project-name american-pirate-federation-web-platform-4062",
+    "verify:build": "node scripts/verify-build.mjs",
+    "verify": "npm run lint && npm run build && npm run verify:build && npm run test:smoke",
     "test:smoke": "playwright test"
   },
   "dependencies": {
