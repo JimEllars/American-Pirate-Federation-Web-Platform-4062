@@ -150,16 +150,55 @@ test('brand and social assets are real files, not the SPA fallback', async ({ re
   expect(await robots.text()).toMatch(/^User-agent:/);
 });
 
+// Measures settled overflow, and names the widest offending element when there is one.
+// A single sample is flaky on a fast runner: a Suspense skeleton or a font swap can widen
+// the document for a frame and settle a moment later (seen once in CI on /intelligence at
+// 375px, 50px, on a commit that had already passed). What the SOP cares about is the
+// settled layout, so poll — and if it never settles, say which element is responsible
+// instead of only reporting a number.
+const measureOverflow = (page) =>
+  page.evaluate(() => {
+    const de = document.documentElement;
+    const overflow = de.scrollWidth - de.clientWidth;
+    if (overflow <= 1) return { overflow, worst: null };
+    let worst = null;
+    for (const el of document.querySelectorAll('body *')) {
+      const rect = el.getBoundingClientRect();
+      if (rect.right <= de.clientWidth + 1) continue;
+      if (!worst || rect.right > worst.right) {
+        worst = {
+          right: Math.round(rect.right),
+          tag: el.tagName.toLowerCase(),
+          cls: String(el.className || '').slice(0, 100)
+        };
+      }
+    }
+    return { overflow, worst };
+  });
+
 for (const width of [375, 768, 1440]) {
   test(`no horizontal overflow at ${width}px on any route`, async ({ page }) => {
     await page.setViewportSize({ width, height: width === 375 ? 812 : 900 });
     for (const route of ROUTES) {
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
       await expect(page.locator('#root')).not.toBeEmpty();
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - document.documentElement.clientWidth
-      );
-      expect(overflow, `horizontal overflow on ${route.path} at ${width}px`).toBeLessThanOrEqual(1);
+
+      let last = { overflow: 0, worst: null };
+      try {
+        await expect
+          .poll(async () => {
+            last = await measureOverflow(page);
+            return last.overflow;
+          }, { timeout: 8000 })
+          .toBeLessThanOrEqual(1);
+      } catch (err) {
+        throw new Error(
+          `horizontal overflow of ${last.overflow}px on ${route.path} at ${width}px` +
+            (last.worst
+              ? ` — widest element: <${last.worst.tag} class="${last.worst.cls}"> at right=${last.worst.right}px`
+              : '')
+        );
+      }
     }
   });
 }
