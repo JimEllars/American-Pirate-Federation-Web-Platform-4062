@@ -39,19 +39,10 @@ export function IntelligenceHub() {
   const [aiBriefingError, setAiBriefingError] = useState(null);
 
 
-  // AI Background Polling Scaffolding (Phase 70)
-  useEffect(() => {
-    const pollInterval = setInterval(() => {
-      if (!document.hidden) {
-        console.info('[ BACKGROUND_SYNC: INITIATING INTEL FETCH ]');
-        // TODO: Wire actual fetch call here
-      }
-    }, 300000); // 5 minutes
-
-    return () => {
-      clearInterval(pollInterval);
-    };
-  }, []);
+  // There is no background polling here. An earlier revision ran a five-minute interval
+  // that logged "[ BACKGROUND_SYNC: INITIATING INTEL FETCH ]" and fetched nothing (a TODO
+  // with a timer attached). The CMS is read on mount and on an explicit AI request; a
+  // scheduler that announces work it does not do is theatre with a CPU cost.
 
   useEffect(() => {
     let isMounted = true;
@@ -270,12 +261,23 @@ export function IntelligenceHub() {
                   <SafeIcon name="Loader" className="animate-spin mr-2 h-8 w-8" />
                   SYNCING ARCHIVES...
                 </div>
-              ) : error || !posts ? (
+              ) : error ? (
                 <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
                   <div className="border border-red-500/50 bg-red-500/10 p-6 rounded text-red-400 font-mono flex items-center gap-3">
                     <SafeIcon name="AlertTriangle" className="h-6 w-6" />
                     <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH ARCHIVES</span>
                   </div>
+                </div>
+              ) : !posts.length ? (
+                // An empty archive is not a failure. The previous condition folded
+                // "nothing published" into "signal interrupted" and printed a red error
+                // for a CMS that was answering perfectly well.
+                <div className="py-12 px-6 text-center bg-black/40 backdrop-blur-md transform-gpu border border-dashed border-gray-800 shadow-2xl transition-all duration-500">
+                  <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ NO DISPATCHES ON FILE ]</div>
+                  <p className="font-sans text-sm text-gray-500 max-w-lg mx-auto">
+                    The Federation newsroom has published nothing yet. This archive stays empty
+                    until it does — it is never filled with sample stories.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
@@ -322,11 +324,10 @@ export function IntelligenceHub() {
                 </div>
               )}
 
-              {!loading && !error && posts && (
-                <div className="mt-12 p-8 text-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500">
-                   <button className="text-apf-purple hover:text-white font-mono text-xs uppercase tracking-widest border border-apf-purple/50 px-6 py-3 min-h-[44px] hover:bg-apf-purple/10 transition-colors">
-                     Load Older Transmissions
-                   </button>
+              {!loading && !error && posts && posts.length > 0 && (
+                <div className="mt-12 p-8 text-center font-vt323 text-xs uppercase tracking-widest text-gray-500">
+                   The archive lists the dispatches the CMS has published; the previous control
+                   here read &ldquo;Load Older Transmissions&rdquo; and loaded nothing.
                 </div>
               )}
           </section>
