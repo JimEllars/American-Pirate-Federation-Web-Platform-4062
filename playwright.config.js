@@ -23,10 +23,17 @@ export default defineConfig({
     video: 'off'
   },
   webServer: {
-    command: 'npm run preview -- --port 4173 --strictPort',
+    // --host 127.0.0.1 is load-bearing: without it `vite preview` binds to whatever
+    // `localhost` resolves to first, and on the GitHub Actions runner that is ::1 while the
+    // probe below is 127.0.0.1. The server came up and Playwright never saw it, so the smoke
+    // gate failed with "Timed out waiting 120000ms from config.webServer" on the first CI run
+    // of this suite (2026-11-03). Binding the probe address explicitly removes the variable.
+    command: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
     url: 'http://127.0.0.1:4173',
-    reuseExistingServer: true,
-    timeout: 120000
+    reuseExistingServer: !process.env.CI,
+    timeout: 120000,
+    stdout: 'pipe',
+    stderr: 'pipe'
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }]
 });
