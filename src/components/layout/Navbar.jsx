@@ -47,7 +47,11 @@ export function Navbar() {
     { name: 'Pay Ratio Explorer', path: '/pay-ratio' }
   ];
 
-  const handleProcessTx = () => {};
+  // The queue has no processor. `handleProcessTx` used to be an empty function behind a
+  // pulsing, hoverable "[ N PENDING TX ]" button, so a member who submitted a draft saw a
+  // permanent alert that promised an action nobody could take. Nothing in this build
+  // broadcasts a transaction (the write path is the Safe-treasury task, audit F16), so the
+  // indicator is now a status readout that says what the queue actually is: local drafts.
   const handlePurgeQueue = () => clearTxQueue();
 
   const getGuildIcon = () => {
@@ -140,12 +144,15 @@ export function Navbar() {
 
               {activeTxQueue?.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <button onClick={handleProcessTx} className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80">
-                    <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                    <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                      [ {activeTxQueue.length} PENDING TX ]
+                  <span
+                    className="flex items-center gap-2 px-3 py-1.5 border border-amber-500/40 bg-black/50 rounded"
+                    title="Drafts saved in this browser. No transaction has been broadcast."
+                  >
+                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="font-vt323 text-sm text-amber-400 uppercase tracking-wider leading-none">
+                      [ {activeTxQueue.length} LOCAL DRAFT ]
                     </span>
-                  </button>
+                  </span>
                   <button onClick={handlePurgeQueue} className="text-xs text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all px-2 py-1 ml-2">
                     [ PURGE ]
                   </button>
@@ -184,15 +191,18 @@ export function Navbar() {
           <div className="flex xl:hidden items-center justify-end w-1/2 md:w-auto gap-2">
               {activeTxQueue?.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <button onClick={handleProcessTx} className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80" title={`${activeTxQueue.length} Pending Tx`}>
-                    <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                    <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none hidden sm:inline-block">
-                      [ {activeTxQueue.length} PENDING TX ]
+                  <span
+                    className="flex items-center gap-1.5 px-2 py-1.5 border border-amber-500/40 bg-black/50 rounded"
+                    title={`${activeTxQueue.length} draft(s) saved in this browser. Nothing has been broadcast.`}
+                  >
+                    <div className="w-2 h-2 flex-shrink-0 rounded-full bg-amber-500" />
+                    <span className="font-vt323 text-xs text-amber-400 uppercase tracking-wider leading-none hidden sm:inline-block">
+                      [ {activeTxQueue.length} LOCAL DRAFT ]
                     </span>
-                    <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none sm:hidden">
-                      [{activeTxQueue.length} TX]
+                    <span className="font-vt323 text-xs text-amber-400 uppercase tracking-wider leading-none sm:hidden">
+                      [{activeTxQueue.length} DRAFT]
                     </span>
-                  </button>
+                  </span>
                   <button onClick={handlePurgeQueue} className="text-xs text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all px-2 py-1 ml-2" title="Purge Queue">
                     [ X ]
                   </button>
