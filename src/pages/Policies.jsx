@@ -8,101 +8,19 @@ import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { supabase } from '../lib/api/supabaseClient';
+import { reconcilePolicyRows, summarizeDivergences, DOCTRINE_VERSION } from '../lib/doctrine/policies';
 
-
-const POLICIES = [
-  {
-    title: "The Zero-Data Protocol",
-    code: "APF-001",
-    summary: "Complete eradication of targeted data harvesting across all federation assets. Data sovereignty is the baseline requirement for cryptographic identity across all federation nodes.",
-    status: "Active", consensus: 94.0, sponsor: "Navigator's Guild", lastRevision: "2024.11.04"
-  },
-  {
-    title: "The Fleet Mutual Aid Pact",
-    code: "APF-002",
-    summary: "Protocol for resource sharing and legal defense of federation members under state pressure.",
-    status: "Active", consensus: 88.0, sponsor: "Surgeon's Dispensary", lastRevision: "2025.01.12"
-  },
-  {
-    title: "Decentralized Governance Draft",
-    code: "APF-003",
-    summary: "Proposed framework for liquid democracy voting on federation resource allocation.",
-    status: "In Review", consensus: 92.5, sponsor: "Quartermaster's Provisions", lastRevision: "2025.02.28"
-  },
-  {
-    title: "Intellectual Property Abolition",
-    code: "APF-004",
-    summary: "The federation's stance on the open-source requirement for all assistive technologies.",
-    status: "Active", consensus: 86.0, sponsor: "Shipwright's Guild", lastRevision: "2024.09.15"
-  },
-  {
-    title: "Corporate Housing Nullification Act",
-    code: "APF-005",
-    summary: "Legal and logistical frameworks designed to prevent for-profit corporations from purchasing single-family residential properties, protecting housing as a human asset.",
-    status: "Active", consensus: 96.0, sponsor: "Quartermaster's Provisions", lastRevision: "2025.05.10"
-  },
-  {
-    title: "Universal Sustenance Guarantee",
-    code: "APF-006",
-    summary: "Establishing secure public distribution infrastructure for water and food support, completely insulated from speculative corporate profiteering.",
-    status: "Active", consensus: 95.0, sponsor: "Surgeon's Dispensary", lastRevision: "2025.06.01"
-  },
-  {
-    title: "Green Transit & Energy Transition Accord",
-    code: "APF-007",
-    summary: "Strategic deployment blueprints for non-fossil fuel transportation networks and localized public energy infrastructure to end corporate resource extraction reliance.",
-    status: "Active", consensus: 91.0, sponsor: "Shipwright's Guild", lastRevision: "2025.08.14"
-  },
-  {
-    title: "The 1950s Tax Restoration Act",
-    code: "APF-008",
-    summary: "Re-establishing historical high-bracket tax tiers on multi-million dollar asset hoarding to redistribute resources away from institutional corruption.",
-    status: "Active", consensus: 89.0, sponsor: "Navigator's Guild", lastRevision: "2025.10.19"
-  },
-  {
-    title: "The Collective Labor Protection Mandate",
-    code: "APF-009",
-    summary: "Providing defensive legal assets, cryptographic coordination channels, and direct mutual aid to support union organization and basic worker autonomy across all sectors.",
-    status: "Active", consensus: 93.0, sponsor: "Navigator's Guild", lastRevision: "2025.11.02"
-  },
-  {
-    title: "Open Generations Education Protocol",
-    code: "APF-010",
-    summary: "A structural complete alternative to cost-prohibitive secondary degrees, deploying free, verified, open-source educational assets globally.",
-    status: "Active", consensus: 91.5, sponsor: "Shipwright's Guild", lastRevision: "2026.01.20"
-  },
-  {
-    title: "The Public Servant Accountability Directive",
-    code: "APF-011",
-    summary: "Enforcing absolute term limits across all branches of federal and local government to permanently eliminate career-politician corruption corridors.",
-    status: "Active", consensus: 98.0, sponsor: "Navigator's Guild", lastRevision: "2026.03.04"
-  },
-  {
-    title: "Generational Stewardship & Competency Cap",
-    code: "APF-012",
-    summary: "Amending administrative eligibility criteria to establish an upper age limit for government officials, ensuring active leadership remains synced with the working class.",
-    status: "Active", consensus: 87.0, sponsor: "Navigator's Guild", lastRevision: "2026.03.15"
-  },
-  {
-    title: "Industrial Infrastructure Permitting Sovereignty",
-    code: "APF-013",
-    summary: "Mandating that high-impact environmental or digital mega-projects, including corporate datacenters, receive direct, localized cryptographic consensus approval prior to asset allocation.",
-    status: "Active", consensus: 84.5, sponsor: "Shipwright's Guild", lastRevision: "2026.04.11"
-  },
-  {
-    title: "Corporate Free Reign Nullification Act",
-    code: "APF-014",
-    summary: "Aggressive regulatory framework defining corporate market dominance and currency manipulation as systemic corruption, enabling immediate asset reclamation.",
-    status: "Active", consensus: 97.0, sponsor: "Quartermaster's Provisions", lastRevision: "2026.05.01"
-  }
-];
 
 export function Policies() {
   const navigate = useNavigate();
   const { proposedAmendments, addToast, setIsCoreSynced } = useAppStore();
   const { fetchActiveProposals, fetchPolicyConsensus } = useAXiMHydration();
   const [activeDrafts, setActiveDrafts] = useState(proposedAmendments || []);
-  const [policyData, setPolicyData] = useState(POLICIES);
+  // Doctrine first, not network first. The live table used to be able to rename every
+  // protocol on this page; `reconcilePolicyRows` makes the table a corroborating source and
+  // reports disagreement instead of publishing it (see src/lib/doctrine/policies.js).
+  const [policyData, setPolicyData] = useState(() => reconcilePolicyRows(null));
+  const [divergence, setDivergence] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -113,22 +31,22 @@ export function Policies() {
 
         if (error) throw error;
 
-        if (isMounted && dbPolicies && dbPolicies.length > 0) {
-          const formatted = dbPolicies.map(p => ({
-            code: p.policy_code,
-            title: p.title,
-            summary: p.summary,
-            consensus: p.consensus_score,
-            sponsor: p.theme,
-            status: p.status,
-            lastRevision: p.last_revision,
-            provenance: p.provenance
-          }));
-          setPolicyData(formatted);
+        if (isMounted) {
+          const reconciled = reconcilePolicyRows(dbPolicies);
+          setPolicyData(reconciled);
+          if (reconciled.divergences.length > 0) {
+            setDivergence(summarizeDivergences(reconciled.divergences));
+            addToast(
+              `[ CONSENSUS TABLE DIVERGES FROM DOCTRINE: ${reconciled.divergences.length} FIELD(S) ]`,
+              'warning'
+            );
+          } else {
+            setDivergence(null);
+          }
         }
       } catch (err) {
         if (isMounted) {
-          addToast('[ TELEMETRY INGRESS FAILED - DISPLAYING LOCAL DRAFTS ]', 'warning');
+          addToast('[ TELEMETRY INGRESS FAILED - DISPLAYING DOCTRINE OF RECORD ]', 'warning');
         }
       } finally {
         // PolicyCard renders a loading skeleton while isCoreSynced is false. The flag was
@@ -160,9 +78,38 @@ export function Policies() {
             </p>
           </div>
 
+          {divergence && (
+            <div
+              role="status"
+              className="mb-8 border border-amber-500/40 bg-amber-500/5 p-4 font-vt323 text-sm text-amber-200"
+            >
+              <div className="uppercase tracking-widest text-amber-400 mb-1">
+                [ CONSENSUS TABLE DIVERGES FROM DOCTRINE ]
+              </div>
+              <p className="font-sans text-gray-300 leading-relaxed">
+                {divergence.count} field{divergence.count === 1 ? '' : 's'} across{' '}
+                {divergence.codes.length} protocol{divergence.codes.length === 1 ? '' : 's'} in the live
+                <code className="mx-1 text-amber-300">policy_consensus</code> table disagree with the
+                doctrine of record ({divergence.fields.join(', ')}). This page publishes the doctrine
+                (version {DOCTRINE_VERSION}) and withholds the disagreeing values. Operator action:
+                apply <code className="text-amber-300">supabase/migrations/20261102120000_policy_consensus_seed_integrity.sql</code>.
+              </p>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {policyData.map((policy) => (
-              <PolicyCard key={policy.code} {...policy} />
+            {policyData.policies.map((policy) => (
+              <PolicyCard
+                key={policy.code}
+                code={policy.code}
+                title={policy.title}
+                summary={policy.summary}
+                status={policy.status}
+                consensus={policy.consensus}
+                sponsor={policy.theme}
+                lastRevision={policy.lastRevision}
+                provenance={policy.provenance}
+              />
             ))}
           </div>
 
