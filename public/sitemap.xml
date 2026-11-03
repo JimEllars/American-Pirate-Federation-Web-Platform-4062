@@ -12,4 +12,8 @@
   <url><loc>https://pirateusa.org/podcast</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
   <url><loc>https://pirateusa.org/shop</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
   <url><loc>https://pirateusa.org/propose</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pirateusa.org/governance</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://pirateusa.org/calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://pirateusa.org/ledger</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pirateusa.org/pay-ratio</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
 </urlset>

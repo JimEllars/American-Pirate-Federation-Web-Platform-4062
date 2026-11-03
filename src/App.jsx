@@ -24,6 +24,8 @@ const LazyArmory = React.lazy(() => import('./pages/Armory').then(m => ({ defaul
 const LazyPropose = React.lazy(() => import('./pages/Propose').then(m => ({ default: m.Propose })));
 
 const LazyDonate = React.lazy(() => import('./pages/Donate').then(m => ({ default: m.Donate })));
+const LazyCalculator = React.lazy(() => import('./pages/Calculator').then(m => ({ default: m.Calculator })));
+const LazyLedger = React.lazy(() => import('./pages/Ledger').then(m => ({ default: m.Ledger })));
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 import { logUnhandledRejection } from './lib/api/telemetry';
@@ -109,6 +111,14 @@ function App() {
               <Route path="/shop" element={<ErrorBoundary><LazyArmory /></ErrorBoundary>} />
               <Route path="/propose" element={<ErrorBoundary><LazyPropose /></ErrorBoundary>} />
               <Route path="/donate" element={<ErrorBoundary><LazyDonate /></ErrorBoundary>} />
+              {/* SOP Playbook D: the Great Balance Calculator and the Pay Ratio Explorer are
+                  named deliverables. /pay-ratio renders the ledger with that panel selected. */}
+              <Route path="/calculator" element={<ErrorBoundary><LazyCalculator /></ErrorBoundary>} />
+              <Route path="/ledger" element={<ErrorBoundary><LazyLedger key="ledger" /></ErrorBoundary>} />
+              <Route path="/pay-ratio" element={<ErrorBoundary><LazyLedger key="pay-ratio" initialTab="pay-ratio" /></ErrorBoundary>} />
+              {/* Governance and the proposal floor are the same surface. /propose is the
+                  actionable URL the navigation uses; /governance is the SOP's name for it. */}
+              <Route path="/governance" element={<ErrorBoundary><LazyPropose key="governance" /></ErrorBoundary>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AnimatePresence>

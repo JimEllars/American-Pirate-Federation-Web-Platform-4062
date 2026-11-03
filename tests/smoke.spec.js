@@ -17,7 +17,11 @@ const ROUTES = [
   { path: '/podcast', heading: /transmission/i },
   { path: '/shop', heading: /armory/i },
   { path: '/donate', heading: /fund the fleet/i },
-  { path: '/propose', heading: /direct democracy|propose/i }
+  { path: '/propose', heading: /proposition portal|propose|clearance/i },
+  { path: '/governance', heading: /proposition portal|propose|clearance/i },
+  { path: '/calculator', heading: /great balance/i },
+  { path: '/ledger', heading: /the ledger/i },
+  { path: '/pay-ratio', heading: /the ledger/i }
 ];
 
 // The ErrorBoundary fallback copy. Its presence means a component threw during render.
@@ -193,4 +197,117 @@ test('treasury ledger publishes no invented transactions', async ({ page }) => {
   expect(body).not.toMatch(/bafybei/i);
   expect(body).not.toMatch(/LIVE SIMULATION/i);
   expect(body).not.toMatch(/Labor Union Support Node|Education Grants Pool/i);
+});
+
+// ---------------------------------------------------------------------------
+// SOP Playbook D — the two growth instruments named in the playbook, and the
+// governance route. These were 404s on 2026-11-02 (audit F12).
+// ---------------------------------------------------------------------------
+
+test('the Great Balance Calculator computes Article XIV arithmetic exactly', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/calculator', { waitUntil: 'domcontentloaded' });
+
+  const monthly = page.getByTestId('gb-monthly');
+  const annual = page.getByTestId('gb-annual');
+
+  // Default: $32,000 single, no dependents. 33% of the $8,000 gap = $2,640/yr = $220/mo.
+  await expect(monthly).toHaveText('$220');
+  await expect(annual).toHaveText('$2,640');
+
+  // Edge case: $0 income, married, two dependents.
+  //   0.33 × ($60,000 − 0) = $19,800  +  2 × $4,800 = $9,600  →  $29,400/yr = $2,450/mo
+  await page.locator('#gb-income').fill('0');
+  await page.getByRole('button', { name: /^married/i }).click();
+  const addChild = page.getByRole('button', { name: /add one dependent/i });
+  await addChild.click();
+  await addChild.click();
+  await expect(monthly).toHaveText('$2,450');
+  await expect(annual).toHaveText('$29,400');
+
+  // Edge case: above the floor with no dependents pays nothing, and says so rather than
+  // rendering a blank or a negative.
+  await page.getByRole('button', { name: /^individual/i }).click();
+  await page.locator('#gb-income').fill('10000000');
+  await expect(monthly).toHaveText('$0');
+  await expect(page.locator('body')).toContainText(/pays nothing/i);
+
+  // Negative input is read as zero, not as a refund. (Clear the two dependents first so
+  // the assertion is the adult floor alone: 0.33 × $40,000 = $13,200/yr = $1,100/mo.)
+  const removeChild = page.getByRole('button', { name: /remove one dependent/i });
+  await removeChild.click();
+  await removeChild.click();
+  await page.locator('#gb-income').fill('-5000');
+  await expect(page.locator('body')).toContainText(/negative income is read as \$0/i);
+  await expect(monthly).toHaveText('$1,100');
+});
+
+test('the ledger publishes no invented settlements or pay ratios', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/ledger', { waitUntil: 'domcontentloaded' });
+
+  await expect(page.getByRole('tab', { name: /treasury/i })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('body')).toContainText(/no settlements recorded/i);
+  // Law 2: the frontend must not offer a way to move treasury funds. Assert on controls,
+  // not on prose — the panel's own copy says there is no transfer control.
+  await expect(page.getByRole('button', { name: /withdraw|transfer|send|approve/i })).toHaveCount(0);
+  await expect(page.getByRole('link', { name: /withdraw|transfer|send|approve/i })).toHaveCount(0);
+
+  await page.getByRole('tab', { name: /pay ratio/i }).click();
+  await expect(page.locator('body')).toContainText(/no verified filings ingested/i);
+
+  // The explorer routes the reader to the filing rather than estimating a ratio.
+  const edgar = page.getByRole('link', { name: /open on sec edgar/i });
+  await expect(edgar).toBeVisible();
+  expect(await edgar.getAttribute('href')).toMatch(/^https:\/\/www\.sec\.gov\/edgar\/search\//);
+
+  // /pay-ratio is the same surface, opened on that panel.
+  await page.goto('/pay-ratio', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('tab', { name: /pay ratio/i })).toHaveAttribute('aria-selected', 'true');
+});
+
+test('/policies publishes the doctrine of record, not a foreign platform', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/policies', { waitUntil: 'domcontentloaded' });
+
+  // Doctrine titles (supabase/migrations/20261102120000_*). The live table held a different
+  // organisation's policy set on 2026-11-02; the page must not render those titles.
+  // auto-waiting assertions, not innerText: the page mounts behind Suspense.
+  const body = page.locator('body');
+  await expect(body).toContainText('The Zero-Data Protocol');
+  await expect(body).toContainText('Generational Stewardship & Competency Cap');
+  await expect(body).not.toContainText('Direct Democracy Architecture');
+  await expect(body).not.toContainText('Net Neutrality Restoration');
+});
+
+for (const width of [1280, 1440, 1920]) {
+  test(`desktop navigation stays on one row at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+    const nav = page.locator('nav').first();
+    const box = await nav.boundingBox();
+    // The bar is h-16 (64px). A wrapped link row makes it taller and pushes the wallet
+    // control below the header (audit F18).
+    expect(Math.round(box.height), `navigation wrapped at ${width}px`).toBeLessThanOrEqual(68);
+
+    // And every control must sit inside the bar, not underneath it.
+    for (const label of ['Intel', 'Transmissions', 'Directives', 'Fleet Muster', 'Armory', 'Governance', 'Donate', 'Tools', 'Passport']) {
+      const control = nav.getByText(label, { exact: true }).first();
+      await expect(control, `${label} missing from the desktop bar`).toBeVisible();
+      const cbox = await control.boundingBox();
+      expect(cbox.y + cbox.height, `${label} renders below the header at ${width}px`).toBeLessThanOrEqual(64.5);
+    }
+  });
+}
+
+test('the Tools menu reaches the Playbook D instruments', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  await page.getByText('Tools', { exact: true }).first().click();
+  const calculator = page.getByRole('link', { name: /balance calculator/i }).first();
+  await expect(calculator).toBeVisible();
+  await calculator.click();
+  await expect(page.locator('body')).toContainText(/great balance/i);
 });

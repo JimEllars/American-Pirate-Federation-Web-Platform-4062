@@ -6,7 +6,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
 import { generateChecksum, logCommLinkSubscription } from '../../lib/api/telemetry';
 import { motion } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useActiveAccount, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
 import { arbitrum } from 'thirdweb/chains';
 
@@ -198,6 +198,13 @@ export function Layout({ children }) {
             <button type="submit" disabled={isSubmitting} className="bg-apf-purple hover:bg-apf-purpleLight text-white px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors disabled:opacity-50">INITIALIZE</button>
           </form>
         </div>
+        {/* SOP Playbook D tools, reachable without opening the drawer. */}
+        <nav aria-label="Fleet instruments" className="max-w-3xl mx-auto mb-6 flex flex-wrap justify-center gap-x-5 gap-y-2 px-4">
+          <Link to="/calculator" className="hover:text-apf-emerald uppercase tracking-widest">Great Balance Calculator</Link>
+          <Link to="/ledger" className="hover:text-apf-emerald uppercase tracking-widest">Treasury Ledger</Link>
+          <Link to="/pay-ratio" className="hover:text-apf-emerald uppercase tracking-widest">Pay Ratio Explorer</Link>
+          <Link to="/governance" className="hover:text-apf-emerald uppercase tracking-widest">Governance</Link>
+        </nav>
         <p>SECURE NODE ESTABLISHED. APF © {new Date().getFullYear()}</p>
       </footer>
     </div>

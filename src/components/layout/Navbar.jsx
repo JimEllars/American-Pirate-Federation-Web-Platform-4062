@@ -34,8 +34,17 @@ export function Navbar() {
     { name: 'Directives', path: '/policies' },
     { name: 'Fleet Muster', path: '/events' },
     { name: 'Armory', path: '/shop' },
-    { name: 'Direct Democracy', path: '/propose' },
+    { name: 'Governance', path: '/governance' },
     { name: 'Donate', path: '/donate' }
+  ];
+
+  // SOP Playbook D tools. They live behind one control because the desktop bar has a hard
+  // one-row budget at 1280 px (see audit F18) — nine top-level links do not fit, and a
+  // wrapped row renders the wallet control underneath the 64 px header.
+  const toolLinks = [
+    { name: 'Balance Calculator', path: '/calculator' },
+    { name: 'Treasury Ledger', path: '/ledger' },
+    { name: 'Pay Ratio Explorer', path: '/pay-ratio' }
   ];
 
   const handleProcessTx = () => {};
@@ -65,7 +74,7 @@ export function Navbar() {
           </div>
 
           <div className="hidden xl:block w-full">
-            <div className="flex items-center justify-end gap-3 flex-nowrap">
+            <div className="flex items-center justify-end gap-2 flex-nowrap">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -74,11 +83,35 @@ export function Navbar() {
                     location.pathname === link.path
                       ? 'text-apf-purple'
                       : 'text-gray-300 hover:text-white'
-                  } px-3 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap`}
+                  } px-2.5 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap`}
                 >
                   {link.name}
                 </Link>
               ))}
+
+              <details className="relative">
+                <summary
+                  className={`${
+                    toolLinks.some((tool) => tool.path === location.pathname)
+                      ? 'text-apf-purple'
+                      : 'text-gray-300 hover:text-white'
+                  } list-none [&::-webkit-details-marker]:hidden cursor-pointer px-2.5 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap select-none`}
+                >
+                  Tools
+                </summary>
+                <div className="absolute right-0 mt-2 w-60 bg-apf-black border border-apf-purple/30 shadow-[0_0_25px_rgba(148,0,255,0.35)] py-1 z-50">
+                  {toolLinks.map((tool) => (
+                    <Link
+                      key={tool.path}
+                      to={tool.path}
+                      onClick={(e) => e.currentTarget.closest('details')?.removeAttribute('open')}
+                      className="block px-4 py-2 text-sm font-vt323 uppercase tracking-widest text-gray-300 hover:text-white hover:bg-apf-purple/10 transition-colors"
+                    >
+                      {tool.name}
+                    </Link>
+                  ))}
+                </div>
+              </details>
 
               {musterRollDraft.walletAddress ? (
                   <div className="flex items-center gap-3 px-4 py-1.5 border border-apf-purple/30 bg-black/50 rounded group hover:border-apf-purple transition-colors cursor-default">
@@ -203,6 +236,22 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
+
+            <div className="pt-2 mt-2 border-t border-gray-800">
+              <span className="block px-3 text-[10px] uppercase tracking-widest text-gray-600 font-vt323">
+                Tools
+              </span>
+              {toolLinks.map((tool) => (
+                <Link
+                  key={tool.path}
+                  to={tool.path}
+                  className="text-gray-400 hover:text-apf-emerald block px-3 py-2 rounded-md text-base font-vt323 font-medium uppercase"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {tool.name}
+                </Link>
+              ))}
+            </div>
              {musterRollDraft.walletAddress ? (
                   <div className="flex items-center gap-3 px-3 py-2 mt-4 border-t border-apf-purple/30">
                       <SafeIcon name={getGuildIcon()} className="h-5 w-5 text-apf-purple" />
