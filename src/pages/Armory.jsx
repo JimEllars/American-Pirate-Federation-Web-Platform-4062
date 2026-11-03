@@ -6,11 +6,9 @@ import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useActiveAccount, useActiveWalletConnectionStatus, useActiveWalletChain } from "thirdweb/react";
-import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
-import Web3ConnectButton from '../components/web3/Web3ConnectButton';
-import { logRequisition } from '../lib/api/telemetry';
+import { SwitchNetworkButton } from '../components/web3/SwitchNetworkButton';
+import { logRequisition, logSignatureRejection } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection } from '../lib/api/telemetry';
 import ArmoryCategoryBar from '../components/ui/ArmoryCategoryBar';
 
 
@@ -20,8 +18,10 @@ export function Armory() {
   const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
   const chain = useActiveWalletChain();
-  const isMismatched = chain?.id !== 42161;
-  const switchChain = () => {};
+  // Arbitrum One, or Sepolia 421614 when the platform is pointed at the test chain — the
+  // same pair `Layout` treats as in-network. This used to be `const switchChain = () => {}`,
+  // so the gate below had no working exit.
+  const isMismatched = Boolean(chain?.id) && chain.id !== 42161 && chain.id !== 421614;
   const [procuring, setProcuring] = useState(null);
   const [activeCategory, setActiveCategory] = useState('ALL');
   const categories = ['ALL', 'HARDWARE', 'APPAREL', 'TECH'];
@@ -114,12 +114,7 @@ export function Armory() {
                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
                   [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
                 </div>
-                <button
-                  onClick={() => switchChain(42161)}
-                  className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md"
-                >
-                  Switch to Arbitrum One
-                </button>
+                <SwitchNetworkButton />
               </div>
             </div>
           </div>
