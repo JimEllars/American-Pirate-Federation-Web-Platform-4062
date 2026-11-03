@@ -5,16 +5,12 @@ import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useActiveAccount, useActiveWalletConnectionStatus, useActiveWalletChain } from "thirdweb/react";
-import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
-import Web3ConnectButton from '../components/web3/Web3ConnectButton';
-import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'isomorphic-dompurify';
 import { logSignatureRejection, logTransactionDispatched, logGasException } from '../lib/api/telemetry';
 import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 
 export function Propose() {
   const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning, enqueueTx } = useAppStore();
-  const navigate = useNavigate();
   const account = useActiveAccount();
   const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
@@ -105,8 +101,6 @@ export function Propose() {
     }
   };
 
-  if (!isAuthorized) {
-
   if (connectionStatus === 'connected' && isMismatched) {
     return (
       <Layout>
@@ -137,25 +131,6 @@ export function Propose() {
   }
 
 
-      return (
-          <Layout>
-              <PageTransition>
-                  <div className="max-w-3xl mx-auto px-4 py-32 text-center">
-                      <SafeIcon name="Lock" className="mx-auto h-16 w-16 text-red-500 mb-6" />
-                      <h1 className="text-4xl font-black uppercase tracking-tighter text-white mb-4">Clearance Required</h1>
-                      <p className="text-gray-400 font-vt323 text-lg border border-red-500/30 bg-red-500/10 p-6 inline-block">
-                          Access Denied. Only Navigators and Guild Masters may submit formal protocol revisions to the Federation.
-                      </p>
-                      <button onClick={() => navigate('/policies')} className="mt-8 block mx-auto text-apf-purple hover:text-white font-vt323 uppercase tracking-widest underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
-                          aria-label="Return to Policies">
-                          Return to Policies
-                      </button>
-                  </div>
-              </PageTransition>
-          </Layout>
-      );
-  }
-
   return (
     <Layout>
       <SEO title="Propose Revision | Policies" description="Submit a new protocol draft to the Federation." />
@@ -172,6 +147,25 @@ export function Propose() {
                 Draft a new amendment or protocol revision for the Federation. All submissions enter a peer-review queue.
               </p>
           </div>
+
+          {/* Law 4 / audit F19: the drafting surface is public reading. Clearance gates the
+              submission, not the page — the earlier full-page "ACCESS DENIED" hid the entire
+              governance route from every visitor who had not yet earned Navigator rank. */}
+          {!isAuthorized && (
+            <div
+              role="status"
+              className="mb-6 border border-amber-500/40 bg-amber-500/5 p-4 font-vt323 text-sm text-amber-200"
+            >
+              <div className="flex items-center gap-2 uppercase tracking-widest text-amber-400 mb-1">
+                <SafeIcon name="Lock" className="h-4 w-4" /> Reading clearance: public · Submitting clearance: Navigator
+              </div>
+              <p className="font-sans text-gray-300 leading-relaxed">
+                You can read and draft here. Submitting a formal revision requires Navigator rank,
+                which is granted once your muster entry is committed. Drafts are kept in this
+                browser until then.
+              </p>
+            </div>
+          )}
 
           <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative flex-grow">
                             <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
@@ -245,13 +239,14 @@ export function Propose() {
                       </div>
                       <button
                           type="submit"
-                          disabled={submitting || isSigning || isMining || formState.summary.length === 0 || formState.summary.length > 2048}
+                          disabled={!isAuthorized || submitting || isSigning || isMining || formState.summary.length === 0 || formState.summary.length > 2048}
+                          title={!isAuthorized ? 'Navigator clearance required to submit' : undefined}
                           aria-label="Submit to Queue"
                           className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
                               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
                           }`}
                       >
-                          {submitting ? '[ AWAITING SIGNATURE... ]' : 'Submit to Queue'}
+                          {!isAuthorized ? 'Navigator Clearance Required' : submitting ? '[ AWAITING SIGNATURE... ]' : 'Submit to Queue'}
                       </button>
                   </div>
               </form>
