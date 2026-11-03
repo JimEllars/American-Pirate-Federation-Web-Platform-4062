@@ -350,3 +350,64 @@ test('the Tools menu reaches the Playbook D instruments', async ({ page }) => {
   await calculator.click();
   await expect(page.locator('body')).toContainText(/great balance/i);
 });
+
+// ---------------------------------------------------------------------------
+// The Signal (/podcast) — a transport control must not conjure a broadcast.
+//
+// Until this pass, clicking any dispatch set `isPlaying` and the player rendered
+// "BROADCASTING_LIVE" over an animated equaliser whether or not an audio file existed.
+// No dispatch published through the headless CMS carries one, and `transmissions` is
+// empty, so every visitor who pressed play was told a broadcast was live while hearing
+// silence (audit F30).
+// ---------------------------------------------------------------------------
+
+test('/podcast never claims a live broadcast without an audio source', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/podcast', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+  await expect(page.getByText(/assembly records/i).first()).toBeVisible();
+
+  const cards = page.locator('[data-testid="assembly-record"]');
+  await expect
+    .poll(async () => (await cards.count()) > 0 || (await body.innerText()).includes('NO ASSEMBLY RECORDS PUBLISHED'), {
+      timeout: 15000
+    })
+    .toBe(true);
+
+  const count = await cards.count();
+
+  if (count === 0) {
+    // Nothing published, or the CMS is unreachable from the runner. Either way the page
+    // must not report a broadcast, and it must not claim a live signal.
+    await expect(body).not.toContainText('BROADCASTING_LIVE');
+    return;
+  }
+
+  const first = cards.first();
+  const hasAudio = (await first.getAttribute('data-audio')) === 'true';
+  await first.click();
+
+  if (hasAudio) {
+    await expect(body).not.toContainText('NO AUDIO PUBLISHED');
+    return;
+  }
+
+  // A written dispatch: the player opens the transcript and says there is no recording.
+  await expect(body).toContainText('NO AUDIO PUBLISHED');
+  await expect(body).not.toContainText('BROADCASTING_LIVE');
+  await expect(body).not.toContainText('TRANSMITTING');
+
+  // And the transport itself must be disabled rather than inviting a click that does
+  // nothing audible.
+  await expect(page.getByRole('button', { name: /no recording available/i })).toBeDisabled();
+});
+
+test('/intelligence offers no control that loads nothing', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/intelligence', { waitUntil: 'domcontentloaded' });
+
+  // The archive ends where the CMS ends. The previous "Load Older Transmissions" button
+  // had no handler at all (audit F32).
+  await expect(page.getByRole('button', { name: /load older transmissions/i })).toHaveCount(0);
+});
