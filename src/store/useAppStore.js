@@ -17,7 +17,11 @@ export const useAppStore = create(
       policySignals: {}, // Track signaled policies { policyCode: true }
       policyComments: {}, // Track comments { policyCode: [{ author, role, text, date }] }
       proposedAmendments: [], // [{ id, title, summary, alignment, sponsor, date }]
-      reputationPoints: 100, // Mock reputation
+      // Starts at zero because no civic action has been taken yet. This is a local ledger of
+      // actions taken in this browser (zustand `persist`), not a Federation record — the
+      // earlier seeded value of 100 handed every first-time visitor reputation points they
+      // had never earned and priced /shop against them (Architectural Law 1).
+      reputationPoints: 0,
       reputationHistory: [], // [{ action, amount, date }]
       toasts: [],
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]

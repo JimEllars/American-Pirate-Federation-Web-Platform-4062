@@ -161,12 +161,15 @@ export function Armory() {
                  <span className="text-gray-300 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
                      Reputation: <SafeIcon name="Info" className="h-3 w-3" />
                  </span>
-                 <span className="text-apf-purpleLight font-bold">{reputationPoints} PTS</span>
+                 <span className="text-apf-purpleLight font-bold" title="Local ledger for this browser — not a Federation record">
+                   {reputationPoints} PTS
+                 </span>
 
                  {/* Reputation Log Dropdown */}
                  {showRepLog && (
                      <div className="absolute top-full right-0 mt-2 w-64 bg-black border border-gray-800 shadow-2xl p-4 z-50 max-h-48 overflow-y-auto custom-scrollbar">
                          <div className="text-gray-200 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
+                         <div className="text-[10px] text-gray-500 mb-2 leading-snug">Local to this browser. Not a Federation record.</div>
                          {reputationHistory && reputationHistory.length > 0 ? (
                              <ul className="space-y-2">
                                  {reputationHistory.map((log, idx) => (
