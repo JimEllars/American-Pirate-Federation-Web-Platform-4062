@@ -10,7 +10,6 @@ import { PassportModal } from '../auth/PassportModal';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showPassport, setShowPassport] = useState(false);
   const location = useLocation();
   const address = useActiveAccount()?.address;
   const wallet = useActiveWallet();
@@ -18,7 +17,21 @@ export function Navbar() {
 
   const { connect } = useConnect({ client: thirdwebClient });
   const { disconnect } = useDisconnect();
-  const { musterRollDraft, guildAlignment, activeTxQueue, enqueueTx, dequeueTx, clearTxQueue } = useAppStore();
+  // Identity comes from the Passport (the Supabase session and the member row it owns), not
+  // from a connected wallet. Audit F38: the badge used to show a guild label derived from
+  // `localStorage` as soon as a wallet was connected.
+  const {
+    passport,
+    guildAlignment,
+    activeTxQueue,
+    enqueueTx,
+    dequeueTx,
+    clearTxQueue,
+    isPassportOpen,
+    openPassport,
+    closePassport
+  } = useAppStore();
+  const member = passport.member;
 
   const handleConnect = async () => {
     try {
@@ -117,13 +130,13 @@ export function Navbar() {
                 </div>
               </details>
 
-              {musterRollDraft.walletAddress ? (
-                  <div className="flex items-center gap-3 px-4 py-1.5 border border-apf-purple/30 bg-black/50 rounded group hover:border-apf-purple transition-colors cursor-default">
+              {member ? (
+                  <div className="flex items-center gap-3 px-4 py-1.5 border border-apf-purple/30 bg-black/50 rounded group hover:border-apf-purple transition-colors cursor-default" title={`Filed on the muster roll · ${member.role}`}>
                       <SafeIcon name={getGuildIcon()} className="h-4 w-4 text-apf-purple" />
                       <div className="flex flex-col">
                           <span className="font-vt323 text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1">{guildAlignment}</span>
                           <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none truncate max-w-[100px]">
-                              {musterRollDraft.walletAddress.substring(0, 6)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 4)}
+                              {member.alias}
                           </span>
                       </div>
                   </div>
@@ -136,7 +149,7 @@ export function Navbar() {
               {/* Law 4: the Pirate Passport is the primary identity path (Email OTP),
                   with wallet connection remaining entirely optional. */}
               <button
-                onClick={() => setShowPassport(true)}
+                onClick={openPassport}
                 className="flex items-center gap-2 px-3 py-2 border border-apf-purple/40 text-apf-purple hover:bg-apf-purple/10 hover:border-apf-purple rounded transition-all font-vt323 tracking-widest text-sm uppercase"
               >
                 <SafeIcon name="Key" className="h-4 w-4" /> Passport
@@ -262,13 +275,13 @@ export function Navbar() {
                 </Link>
               ))}
             </div>
-             {musterRollDraft.walletAddress ? (
+             {member ? (
                   <div className="flex items-center gap-3 px-3 py-2 mt-4 border-t border-apf-purple/30">
                       <SafeIcon name={getGuildIcon()} className="h-5 w-5 text-apf-purple" />
                       <div className="flex flex-col min-w-0">
                           <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest truncate">{guildAlignment}</span>
                           <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider truncate">
-                              {musterRollDraft.walletAddress.substring(0, 8)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 6)}
+                              {member.alias}
                           </span>
                       </div>
                   </div>
@@ -279,7 +292,7 @@ export function Navbar() {
               )}
 
               <button
-                onClick={() => { setShowPassport(true); setIsOpen(false); }}
+                onClick={() => { openPassport(); setIsOpen(false); }}
                 className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-purple/40 text-apf-purple rounded font-vt323 tracking-widest text-lg uppercase"
               >
                 <SafeIcon name="Key" className="h-4 w-4" /> Pirate Passport
@@ -317,7 +330,7 @@ export function Navbar() {
     </nav>
 
     {/* Rendered outside <nav> so the fixed overlay is not trapped in the nav's stacking context. */}
-    <PassportModal isOpen={showPassport} onClose={() => setShowPassport(false)} />
+    <PassportModal isOpen={isPassportOpen} onClose={closePassport} />
     </>
   );
 }

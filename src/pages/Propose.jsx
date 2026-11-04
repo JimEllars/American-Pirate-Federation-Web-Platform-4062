@@ -9,7 +9,8 @@ import { SwitchNetworkButton } from '../components/web3/SwitchNetworkButton';
 import DOMPurify from 'isomorphic-dompurify';
 
 export function Propose() {
-  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning, enqueueTx } = useAppStore();
+  const { userRole, passport, openPassport, addProposedAmendment, addToast, isSigning, enqueueTx } = useAppStore();
+  const member = passport.member;
   const account = useActiveAccount();
   const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
@@ -69,7 +70,7 @@ export function Propose() {
       title: DOMPurify.sanitize(formState.title),
       summary: DOMPurify.sanitize(formState.summary),
       alignment: DOMPurify.sanitize(formState.alignment),
-      sponsor: DOMPurify.sanitize(musterRollDraft.alias || 'Unknown Sovereign')
+      sponsor: DOMPurify.sanitize(member?.alias || 'Unknown Sovereign')
     };
 
     try {
@@ -154,10 +155,21 @@ export function Propose() {
                 <SafeIcon name="Lock" className="h-4 w-4" /> Reading clearance: public · Submitting clearance: Navigator
               </div>
               <p className="font-sans text-gray-300 leading-relaxed">
-                You can read and draft here. Submitting a formal revision requires Navigator rank,
-                which is granted once your muster entry is committed. Drafts are kept in this
-                browser until then.
+                You can read and draft here. Submitting requires Navigator clearance, which the
+                Federation assigns on your muster record — it cannot be earned or raised in this
+                browser. {member
+                  ? 'Your record is filed; the draft below stays local until clearance is granted.'
+                  : 'File a muster entry with your Pirate Passport first.'}
               </p>
+              {!member && (
+                <button
+                  type="button"
+                  onClick={openPassport}
+                  className="mt-3 px-4 py-2 border border-amber-400/60 text-amber-200 hover:bg-amber-400/10 transition-colors uppercase tracking-widest text-xs font-vt323"
+                >
+                  Open Pirate Passport
+                </button>
+              )}
             </div>
           )}
 
@@ -218,7 +230,7 @@ export function Propose() {
 
                   <div className="pt-8 border-t border-gray-800 flex items-center justify-between">
                       <div className="font-vt323 text-gray-500 text-sm">
-                          Sponsor: <span className="text-white uppercase">{musterRollDraft.alias || 'Unknown'}</span>
+                          Sponsor: <span className="text-white uppercase">{member?.alias || 'Not filed'}</span>
                       </div>
                       <button
                           type="submit"

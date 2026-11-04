@@ -13,7 +13,8 @@ import ArmoryCategoryBar from '../components/ui/ArmoryCategoryBar';
 
 
 export function Armory() {
-  const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
+  const { userRole, passport, openPassport, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
+  const member = passport.member;
   const account = useActiveAccount();
   const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
@@ -54,14 +55,19 @@ export function Armory() {
     return () => { isMounted = false; };
   }, [fetchArmoryInventory]);
 
+  /**
+   * Clearance is the rank on the member record (audit F39), and a requisition is signed by
+   * the connected wallet — so both are required. The local draft's `status`/`walletAddress`
+   * used to stand in for the Federation's record here, which meant a visitor who had typed
+   * an alias into this browser could unlock restricted provisions.
+   */
   const isEligible = (req) => {
     if (req === 'Unverified') return true;
-    const isCommitted = musterRollDraft.status === 'committed';
-    const hasWallet = musterRollDraft.walletAddress?.toLowerCase() === address?.toLowerCase();
+    if (!member || !address) return false;
 
-    if (req === 'Deckhand' && hasWallet && ['Deckhand', 'Navigator', 'Guild Master'].includes(userRole)) return true;
-    if (req === 'Navigator' && hasWallet && isCommitted && ['Navigator', 'Guild Master'].includes(userRole)) return true;
-    if (req === 'Guild Master' && hasWallet && isCommitted && userRole === 'Guild Master') return true;
+    if (req === 'Deckhand') return ['Deckhand', 'Navigator', 'Guild Master'].includes(member.role);
+    if (req === 'Navigator') return ['Navigator', 'Guild Master'].includes(member.role);
+    if (req === 'Guild Master') return member.role === 'Guild Master';
 
     return false;
   };
@@ -147,8 +153,8 @@ export function Armory() {
             <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
                <div className="text-gray-300 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
-                 <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-                 <span className={musterRollDraft.walletAddress ? 'text-white' : 'text-gray-200'}>
+                 <div className={`h-2 w-2 rounded-full ${member ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                 <span className={member ? 'text-white' : 'text-gray-200'} title={member ? 'Filed on the muster roll' : 'No member record — file one in the muster form'}>
                    {userRole}
                  </span>
                </div>
@@ -180,8 +186,14 @@ export function Armory() {
                      </div>
                  )}
                </div>
-               {!musterRollDraft.walletAddress && (
-                 <div className="mt-2 text-xs text-apf-purple">Authorize Entry Protocol to upgrade clearance</div>
+               {!member && (
+                 <button
+                   type="button"
+                   onClick={openPassport}
+                   className="mt-2 text-xs text-apf-purple underline underline-offset-4 hover:text-white text-left"
+                 >
+                   No member record — open a Pirate Passport
+                 </button>
                )}
             </div>
           </div>

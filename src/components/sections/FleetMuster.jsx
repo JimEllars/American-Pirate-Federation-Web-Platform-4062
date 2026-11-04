@@ -1,16 +1,14 @@
-import React from 'react';
-import { useActiveAccount } from "thirdweb/react";
+import React, { useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
-import { logEventSignal } from '../../lib/api/telemetry';
-import { logSignatureRejection } from '../../lib/api/telemetry';
+import { registerEventSignal } from '../../lib/api/eventSignals';
 
 
 export function FleetMuster({ event }) {
-  const { musterRollDraft, registerSignal, isSigning, setIsSigning, addToast } = useAppStore();
-  const account = useActiveAccount();
-  const address = account?.address;
-  const isCommitted = musterRollDraft.status === 'committed';
+  const { passport, musterRollDraft, registerSignal, addToast } = useAppStore();
+  const [registering, setRegistering] = useState(false);
+  const member = passport.member;
+  const isEnrolled = Boolean(member);
   const hasRSVPd = musterRollDraft.rsvps?.includes(event.title);
 
   // Law 1: no fabricated attendee roll. We can only truthfully show the current
@@ -44,41 +42,45 @@ export function FleetMuster({ event }) {
           </div>
 
           <div className="md:w-1/4 flex items-center justify-end">
+            {/* A signal is a row in `event_signals` owned by the signed-in member — no
+                wallet, no signature ritual, no claim on the visitor's behalf. */}
             <button
               onClick={async () => {
-                if (!isCommitted || hasRSVPd || isSigning) return;
+                if (hasRSVPd || registering) return;
 
+                if (!member) {
+                  addToast('[ SIGNAL: FILE A MUSTER ENTRY BEFORE REGISTERING ]', 'warning');
+                  return;
+                }
+
+                setRegistering(true);
                 try {
-                  setIsSigning(true);
-                  if (!account || !address) {
-                    addToast("[ ENCRYPTION FAILED: WALLET DISCONNECTED ]", "error");
-                    return;
-                  }
-
-                  const signature = await account.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
+                  const { alreadyRegistered } = await registerEventSignal({
+                    eventId: event.id,
+                    memberId: member.id
+                  });
                   registerSignal(event.title);
-                  logEventSignal();
-                  addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");
+                  addToast(
+                    alreadyRegistered
+                      ? '[ SIGNAL ALREADY ON THE FLEET MUSTER ]'
+                      : '[ SIGNAL REGISTERED ON THE FLEET MUSTER ]',
+                    'success'
+                  );
                 } catch (error) {
-                  if (error.code === 4001 || error.message.includes('user rejected')) {
-                     logSignatureRejection('/dashboard');
-                     addToast("[ SIGNAL AUTHORIZATION REJECTED ]", "error");
-                  } else {
-                     addToast("[ SIGNAL AUTHORIZATION FAILED ]", "error");
-                  }
+                  addToast(`[ SIGNAL FAILED: ${(error?.message || 'THE MUSTER REJECTED IT').toUpperCase()} ]`, 'error');
                 } finally {
-                  setIsSigning(false);
+                  setRegistering(false);
                 }
               }}
-              disabled={isSigning}
+              disabled={registering}
               className={`px-6 py-2 border font-mono text-xs uppercase transition-all tracking-widest ${
                 hasRSVPd
                   ? 'bg-apf-purple text-white border-apf-purple cursor-default'
-                  : isCommitted
-                    ? (isSigning ? 'border-gray-500 text-gray-500 cursor-wait bg-black/50' : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white')
+                  : isEnrolled
+                    ? (registering ? 'border-gray-500 text-gray-500 cursor-wait bg-black/50' : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white')
                     : 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
               }`}>
-              {isSigning ? 'Encrypting Signal...' : (hasRSVPd ? 'Signal Registered' : (isCommitted ? 'Register Signal' : 'Clearance Reqd'))}
+              {registering ? 'Filing Signal…' : (hasRSVPd ? 'Signal Registered' : (isEnrolled ? 'Register Signal' : 'Muster Entry Reqd'))}
             </button>
           </div>
       </div>

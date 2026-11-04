@@ -36,6 +36,7 @@ import { useAppStore } from './store/useAppStore';
 function App() {
   const addToast = useAppStore((state) => state.addToast);
   const removeToast = useAppStore((state) => state.removeToast);
+  const refreshPassport = useAppStore((state) => state.refreshPassport);
   const [offlineToastId, setOfflineToastId] = React.useState(null);
 
   React.useEffect(() => {
@@ -79,21 +80,24 @@ function App() {
   }, []);
 
   React.useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === 'TOKEN_REFRESHED' || event === 'SIGNED_IN') {
-          // Silently handle session refresh without UI interruption
-          console.info(`[ SYSTEM ALERT: SUPABASE SESSION EVENT DETECTED: ${event} ]`);
-        }
+    // Boot the Pirate Passport once, then keep it in step with the Supabase session.
+    // Audit F38: the app used to subscribe to auth events only to log them, so an OTP
+    // sign-in changed the session and nothing else — the next modal open showed the
+    // sign-in form again, and "Clearance" came from localStorage instead of the account.
+    refreshPassport();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        refreshPassport();
       }
-    );
+    });
 
     return () => {
       if (authListener?.subscription) {
         authListener.subscription.unsubscribe();
       }
     };
-  }, []);
+  }, [refreshPassport]);
 
   return (
     <ErrorBoundary>

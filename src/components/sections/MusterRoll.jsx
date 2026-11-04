@@ -1,75 +1,121 @@
-import React, { useEffect } from 'react';
-import { useActiveAccount, useActiveWalletConnectionStatus } from "thirdweb/react";
+import React, { useState } from 'react';
+import { useActiveAccount } from "thirdweb/react";
 import { useAppStore } from '../../store/useAppStore';
-import { PassportModal } from '../auth/PassportModal';
 import SafeIcon from '../../common/SafeIcon';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSovereignEntry, logTransactionDispatched } from '../../lib/api/telemetry';
-import { logSignatureRejection } from '../../lib/api/telemetry';
-import { useSubmitMusterSignature } from '../../hooks/useAPFWrite';
+import { enrollMember, guildForSkills } from '../../lib/api/members';
+
+/**
+ * The muster roll — where a visitor becomes a member.
+ *
+ * Audit F37: this form used to be the site's primary conversion surface and it enrolled
+ * nobody. It blocked itself behind a connected wallet ("Law 4 says wallet linking is
+ * optional" — it was mandatory), collected a personal signature, sent a transaction to the
+ * treasury Safe calling `submitMusterSignature(bytes)` — a function no deployed contract
+ * implements — and wrote an alias to `localStorage`. The `members` table was never touched,
+ * yet the member was told `[ MUSTER_SIGNATURE_SUCCESSFUL ]` and silently promoted to
+ * Navigator (audit F39).
+ *
+ * What happens now:
+ *   - A Pirate Passport (Email OTP) is the identity. Without one the form asks for one
+ *     rather than pretending to file anything.
+ *   - Filing writes the signed-in member's own `members` row (RLS: `auth.uid() = id`).
+ *   - A wallet is optional. When one is connected it is offered as an optional link, and
+ *     only stored after the wallet signs proof of control. Declining the signature files
+ *     the record without a wallet.
+ *   - Rank and guild come back from the database. This browser does not assign them.
+ */
 
 export function MusterRoll() {
-  const { musterRollDraft, updateMusterRoll, addToast, isSigning, setIsSigning } = useAppStore();
+  const {
+    musterRollDraft,
+    updateMusterRoll,
+    addToast,
+    passport,
+    refreshPassport,
+    openPassport
+  } = useAppStore();
   const account = useActiveAccount();
   const address = account?.address;
-  const connectionStatus = useActiveWalletConnectionStatus();
-  const { mutateAsync, isLoading } = useSubmitMusterSignature();
-  console.info("[ MUSTER_HOOK_STAGED ]", { isLoading });
 
-  useEffect(() => {
-    if (address && musterRollDraft.walletAddress?.toLowerCase() !== address?.toLowerCase()) {
-      updateMusterRoll({ walletAddress: address });
-    } else if (!address && musterRollDraft.walletAddress) {
-      updateMusterRoll({ walletAddress: '' });
-    }
-  }, [address, musterRollDraft.walletAddress, updateMusterRoll]);
+  const [filing, setFiling] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const isSignedIn = Boolean(passport.session?.user);
+  const member = passport.member;
+  const showRecord = Boolean(member) && !editing;
 
+  const alias = musterRollDraft.alias;
+  const skills = musterRollDraft.skills;
+  const draftGuild = guildForSkills(skills);
+
+  const linkWallet = async () => {
+    if (!account) return null;
+    // Proof of control, not storage of the signature: the signature is checked here and
+    // discarded, and only the address is written to the row.
+    await account.signMessage({
+      message: `Link this wallet to an American Pirate Federation Pirate Passport:\n${address}`
+    });
+    return address;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!address) return;
-    updateMusterRoll({ status: 'queued' });
 
-    const sanitizedData = {
-      alias: DOMPurify.sanitize(musterRollDraft.alias),
-      comms: DOMPurify.sanitize(musterRollDraft.comms),
-      skills: DOMPurify.sanitize(musterRollDraft.skills),
-      walletAddress: DOMPurify.sanitize(musterRollDraft.walletAddress)
-    };
-    // Removed console.info for production
+    if (!isSignedIn) {
+      openPassport();
+      addToast('[ PASSPORT: ESTABLISH AN IDENTITY BEFORE FILING A RECORD ]', 'warning');
+      return;
+    }
+
+    const sanitizedAlias = DOMPurify.sanitize(alias).trim();
+    if (!sanitizedAlias) {
+      addToast('[ MUSTER: AN ALIAS IS REQUIRED ]', 'error');
+      return;
+    }
+
+    setFiling(true);
+    updateMusterRoll({ walletAddress: address || '' });
+
+    let walletAddress = null;
+    let walletNote = null;
+
+    if (account) {
+      try {
+        walletAddress = await linkWallet();
+      } catch (err) {
+        // A refused signature is not a failure to enrol — the wallet is optional.
+        walletNote = 'wallet-not-linked';
+      }
+    }
 
     try {
-      let signature = null;
-      if (account) {
-        setIsSigning(true);
-        try {
-          signature = await account.signMessage("Authorize Sovereign Entry to American Pirate Federation.");
-        } finally {
-          setIsSigning(false);
-        }
-      }
+      const { member: filed, walletRejected } = await enrollMember({
+        userId: passport.session.user.id,
+        email: passport.session.user.email,
+        alias: sanitizedAlias,
+        skills: DOMPurify.sanitize(skills),
+        walletAddress
+      });
 
-      let txHash = null;
-      if (signature) {
-          logSovereignEntry();
-          const tx = await mutateAsync({ args: [signature] });
-          if (tx && tx.receipt) {
-              txHash = tx.receipt.transactionHash;
-              logTransactionDispatched(txHash, "Muster Signature");
-          }
-      }
+      await refreshPassport();
+      updateMusterRoll({ status: 'enrolled' });
+      setEditing(false);
 
-      updateMusterRoll({ status: 'committed' });
-      addToast('[ MUSTER_SIGNATURE_SUCCESSFUL ]', 'success');
-    } catch (err) {
-      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
-        logSignatureRejection('/dashboard');
-        updateMusterRoll({ status: 'idle' });
-        addToast('[ SIGNATURE REJECTED - CLEARANCE DENIED ]', 'error');
+      if (walletRejected) {
+        addToast('[ MUSTER: RECORD FILED — THAT WALLET IS ALREADY LINKED TO ANOTHER PASSPORT ]', 'warning');
+      } else if (walletNote === 'wallet-not-linked') {
+        addToast('[ MUSTER: RECORD FILED — WALLET NOT LINKED (SIGNATURE DECLINED) ]', 'success');
       } else {
-        updateMusterRoll({ status: 'error' });
-        addToast('[ SIGNATURE FAILED ]', 'error');
+        addToast(
+          `[ MUSTER: RECORD FILED — ${(filed?.role || 'Deckhand').toUpperCase()} ON THE ROLL ]`,
+          'success'
+        );
       }
+    } catch (err) {
+      addToast(`[ MUSTER: ${(err?.message || 'THE RECORD COULD NOT BE FILED').toUpperCase()} ]`, 'error');
+      updateMusterRoll({ status: 'error' });
+    } finally {
+      setFiling(false);
     }
   };
 
@@ -91,43 +137,77 @@ export function MusterRoll() {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-
-          <div className="space-y-4 mb-8 relative">
-            {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
-              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
-                <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase animate-pulse">
-                  [ INITIALIZING ENCRYPTION... ]
-                </p>
+        {showRecord ? (
+          /* ---------- Filed: the Federation's record, read back ---------- */
+          <div className="space-y-6">
+            <div className="border border-apf-emerald/40 bg-apf-emerald/5 p-6 font-vt323">
+              <div className="text-apf-emerald uppercase tracking-widest text-sm mb-4">
+                [ ON THE MUSTER ROLL ]
               </div>
-            ) : !address && (
-              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/10">
-                <p className="font-vt323 text-apf-purple text-center tracking-widest uppercase">
-                  [ ENCRYPTION KEY REQUIRED. CONNECT WALLET TO AUTHORIZE CONNECTION SEQUENCE. ]
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                <div>
+                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Alias</dt>
+                  <dd className="text-white text-lg uppercase">{member.alias}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Clearance</dt>
+                  <dd className="text-apf-emerald text-lg uppercase">{member.role}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Guild</dt>
+                  <dd className="text-apf-purple text-lg uppercase">{member.guild}</dd>
+                </div>
+                <div>
+                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Signal endpoint</dt>
+                  <dd className="text-white text-base break-all">{member.email}</dd>
+                </div>
+                <div className="sm:col-span-2">
+                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Linked wallet</dt>
+                  <dd className="text-white text-base break-all font-mono">
+                    {member.wallet_address || 'None linked — optional by design.'}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+            <p className="font-vt323 text-xs text-gray-500 uppercase leading-relaxed">
+              Clearance is assigned by the Federation and read from your record. This browser
+              cannot raise it. To amend the entry, edit the fields below and file again — the
+              existing record is updated, not duplicated.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                updateMusterRoll({ alias: member.alias, status: 'idle' });
+                setEditing(true);
+              }}
+              className="w-full font-vt323 font-bold py-3 px-8 border border-apf-purple/40 text-apf-purple hover:bg-apf-purple/10 transition-all uppercase tracking-widest"
+            >
+              Amend this entry
+            </button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {!isSignedIn && (
+              <div
+                role="status"
+                className="border border-amber-500/40 bg-amber-500/5 p-4 font-vt323 text-sm text-amber-200"
+              >
+                <div className="uppercase tracking-widest text-amber-400 mb-1 flex items-center gap-2">
+                  <SafeIcon name="Lock" className="h-4 w-4" /> A Pirate Passport is required
+                </div>
+                <p className="font-sans text-gray-300 leading-relaxed">
+                  Your record is filed against your Passport, not against a wallet. Sign in
+                  with an email one-time code — no wallet, no gas, no address required.
                 </p>
+                <button
+                  type="button"
+                  onClick={openPassport}
+                  className="mt-3 px-4 py-2 border border-amber-400/60 text-amber-200 hover:bg-amber-400/10 transition-colors uppercase tracking-widest text-xs"
+                >
+                  Establish Passport
+                </button>
               </div>
             )}
-            <div className="space-y-2">
-              <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="walletAddress">
-                Primary Sovereign Identifier
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  id="walletAddress"
-                  type="text"
-                  readOnly
-                  disabled
-                  value={musterRollDraft.walletAddress || ''}
-                  className="w-full bg-black border-b border-gray-800 p-3 text-white opacity-70 font-vt323 text-lg transition-colors cursor-not-allowed"
-                  placeholder="0x..."
-                />
-                <SafeIcon name="Key" className="text-apf-emerald" />
-              </div>
-            </div>
-            <p className="font-vt323 text-xs text-gray-500 uppercase">Article VII: Data Ownership. Authorize Entry Protocol to claim sovereign identity.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
             <div className="space-y-2">
               <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="alias">
@@ -137,7 +217,8 @@ export function MusterRoll() {
                 id="alias"
                 type="text"
                 required
-                value={musterRollDraft.alias}
+                maxLength={64}
+                value={alias}
                 onChange={(e) => updateMusterRoll({ alias: e.target.value })}
                 className="w-full bg-black border-b border-gray-800 p-3 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors"
                 placeholder="Ex: Ghost_Vessel"
@@ -145,53 +226,60 @@ export function MusterRoll() {
             </div>
 
             <div className="space-y-2">
-              <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="comms">
+              <span className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block">
                 Signal_Endpoint
-              </label>
-              <input
-                id="comms"
-                type="text"
-                required
-                value={musterRollDraft.comms}
-                onChange={(e) => updateMusterRoll({ comms: e.target.value })}
-                className="w-full bg-black border-b border-gray-800 p-3 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors"
-                placeholder="SIGNAL_ENDPOINT"
-              />
+              </span>
+              <div className="w-full bg-black border-b border-gray-800 p-3 text-white opacity-70 font-vt323 text-lg break-all">
+                {passport.session?.user?.email || '[ PASSPORT REQUIRED ]'}
+              </div>
+              <p className="font-vt323 text-xs text-gray-500 uppercase">
+                Your Passport address. The Federation writes to this and nothing else.
+              </p>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="skills">
-              Primary_Skillset
-            </label>
-            <textarea
-              id="skills"
-              rows={3}
-              value={musterRollDraft.skills}
-              onChange={(e) => updateMusterRoll({ skills: e.target.value })}
-              className="w-full bg-black border border-gray-800 p-4 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors resize-none"
-              placeholder="Code, Logistics, Agitprop, Healthcare..."
-            />
-          </div>
+            <div className="space-y-2">
+              <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="skills">
+                Primary_Skillset
+              </label>
+              <textarea
+                id="skills"
+                rows={3}
+                maxLength={280}
+                value={skills}
+                onChange={(e) => updateMusterRoll({ skills: e.target.value })}
+                className="w-full bg-black border border-gray-800 p-4 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors resize-none"
+                placeholder="Code, Logistics, Agitprop, Healthcare..."
+              />
+              <p className="font-vt323 text-xs text-gray-500 uppercase">
+                Guild on filing: <span className="text-apf-purple">{draftGuild}</span>
+              </p>
+            </div>
 
-          <button
-            type="submit"
-            disabled={!address || isSigning}
-            className={`w-full font-vt323 font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl ${
-              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
-              address
-                ? 'bg-apf-purple hover:bg-white hover:text-apf-black text-white shadow-[0_0_20px_rgba(148,0,255,0.3)]'
-                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
-            }`}
-          >
-            <SafeIcon name="UploadCloud" />
-            {address ? (musterRollDraft.status === 'queued' ? '[ AWAITING WALLET SIGNATURE... ]' : '[ SIGN PAYLOAD & AUTHORIZE ENTRY ]') : 'Authorize Entry Protocol'}
-          </button>
+            <div className="space-y-2">
+              <span className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block">
+                Wallet_link <span className="text-gray-600">(optional)</span>
+              </span>
+              <div className="w-full bg-black border-b border-gray-800 p-3 text-white opacity-70 font-vt323 text-lg break-all">
+                {address || 'No wallet connected — the record files without one.'}
+              </div>
+              <p className="font-vt323 text-xs text-gray-500 uppercase">
+                A connected wallet is linked only after it signs proof of control. Declining
+                the signature files the record with no wallet attached.
+              </p>
+            </div>
 
-
-
-
-        </form>
+            <button
+              type="submit"
+              disabled={filing || !alias.trim()}
+              className={`w-full font-vt323 font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl disabled:opacity-50 disabled:cursor-not-allowed ${
+                filing ? 'bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white shadow-[0_0_20px_rgba(148,0,255,0.3)]'
+              }`}
+            >
+              <SafeIcon name="UploadCloud" />
+              {filing ? '[ FILING RECORD... ]' : '[ FILE RECORD ON THE MUSTER ROLL ]'}
+            </button>
+          </form>
+        )}
       </div>
     </div>
   );
