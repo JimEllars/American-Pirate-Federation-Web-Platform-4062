@@ -2,18 +2,17 @@ import React, { useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
-import { useActiveAccount } from 'thirdweb/react';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection } from '../../lib/api/telemetry';
 
 
-export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision, provenance }) {
+export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision, provenance, reference }) {
   const [showHistory, setShowHistory] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
 
-  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast, isCoreSynced } = useAppStore();
-  const account = useActiveAccount();
+  // `userRole` mirrors the member row on the muster roll (audit F39). It is read, never
+  // written here: this card cannot promote anybody.
+  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, addToast, isCoreSynced } = useAppStore();
 
   // Law 1: no seeded reviewer. An un-annotated directive shows an empty review
   // thread rather than a fabricated endorsement from a fictional Navigator.
@@ -30,25 +29,22 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   const sanitizedTitle = DOMPurify.sanitize(title);
   const sanitizedSummary = DOMPurify.sanitize(summary);
 
-  const handleAuthorize = async () => {
-    if (!canSignal || isSigning) return;
-    setIsSigning(true);
-    try {
-      if (account) {
-        await account.signMessage({ message: "Authorize APF Directive Consensus: " + code });
-      }
-      signalPolicy(code);
-      addToast('[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]', 'success');
-    } catch (err) {
-      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
-        logSignatureRejection('/policies');
-        addToast('[ SIGNATURE REJECTED - CONSENSUS DENIED ]', 'error');
-      } else {
-        addToast('[ SIGNATURE FAILED - CONSENSUS DENIED ]', 'error');
-      }
-    } finally {
-      setIsSigning(false);
-    }
+  /**
+   * Audit F40: this used to collect a wallet signature for the directive and then throw it
+   * away before toasting "[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]". Nothing was
+   * secured and nothing was recorded outside this browser, so the signature ritual is gone
+   * and the toast says what actually happened. Consensus scores stay the published
+   * baseline — a local signal is not a vote and never moves the number on this card.
+   */
+  const handleAuthorize = () => {
+    if (!canSignal) return;
+    signalPolicy(code);
+    addToast(
+      policySignals[code]
+        ? '[ SIGNAL WITHDRAWN FROM THIS BROWSER ]'
+        : '[ SIGNAL RECORDED IN THIS BROWSER — NOT A FEDERATION BALLOT ]',
+      'success'
+    );
   };
 
   const handleAddComment = () => {
@@ -231,17 +227,19 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between mt-auto pt-2 relative z-10 border-t border-gray-800/50">
-        <button className="flex items-center gap-2 text-xs font-vt323 text-apf-purple hover:text-white transition-colors uppercase tracking-widest">
-          Review Protocol <SafeIcon name="ChevronRight" />
-        </button>
+      <div className="flex items-center justify-between gap-3 mt-auto pt-2 relative z-10 border-t border-gray-800/50">
+        {/* Audit F41: this slot held a "Review Protocol ›" button with no handler on all
+            fourteen cards. There is no per-protocol page to open — the doctrine entry is the
+            protocol — so the slot now carries the constitutional reference it is anchored to. */}
+        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-vt323 text-gray-500 uppercase tracking-widest">
+          <SafeIcon name="Anchor" className="h-3 w-3 text-apf-purple/60" />
+          {reference ? `Anchored: ${reference}` : 'Anchored: Federation charter'}
+        </span>
 
         {canSignal && (
           <button
             onClick={handleAuthorize}
-            disabled={isSigning}
             className={`relative overflow-hidden px-4 py-2 text-xs font-vt323 uppercase tracking-widest transition-all border ${
-              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
               hasSignaled
                 ? 'bg-apf-purple/20 border-apf-emerald text-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.3)]'
                 : 'border-gray-800 text-gray-500 hover:border-apf-purple/40 hover:text-apf-purple'
