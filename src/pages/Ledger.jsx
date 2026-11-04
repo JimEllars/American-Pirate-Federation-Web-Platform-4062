@@ -28,7 +28,7 @@ const edgarSearchUrl = (query) =>
 
 export function Ledger({ initialTab = 'treasury' }) {
   const [tab, setTab] = useState(TABS.some((t) => t.id === initialTab) ? initialTab : 'treasury');
-  const { treasuryBalance, isLoadingBalance, isConfigured } = useAPFContract();
+  const { treasuryBalance, treasurySymbol, isLoadingBalance, isConfigured } = useAPFContract();
 
   const [settlements, setSettlements] = useState([]);
   const [settlementsLoading, setSettlementsLoading] = useState(true);
@@ -147,13 +147,16 @@ export function Ledger({ initialTab = 'treasury' }) {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500 uppercase text-xs tracking-widest">Contract balance</dt>
+                    <dt className="text-gray-500 uppercase text-xs tracking-widest">Native balance</dt>
                     <dd className="text-white">
-                      {isLoadingBalance
-                        ? '[ READING CHAIN… ]'
-                        : isConfigured
-                          ? String(treasuryBalance)
-                          : '0.00'}
+                      {/* Read straight from the Safe address; never defaulted to zero. */}
+                      {!isConfigured
+                        ? 'Not published'
+                        : isLoadingBalance
+                          ? '[ READING CHAIN… ]'
+                          : treasuryBalance === null || treasuryBalance === undefined
+                            ? 'Unavailable'
+                            : `${treasuryBalance} ${treasurySymbol || ''}`.trim()}
                     </dd>
                   </div>
                   <div>

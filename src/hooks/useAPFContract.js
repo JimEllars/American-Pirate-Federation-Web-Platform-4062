@@ -1,77 +1,95 @@
 import { logRPCException } from '../lib/api/telemetry';
 import { useEffect, useState } from 'react';
-import { getContract } from "thirdweb";
-import { useReadContract, useActiveWalletChain } from "thirdweb/react";
+import { getWalletBalance } from 'thirdweb/wallets';
+import { useActiveWalletChain } from 'thirdweb/react';
 import { client } from "../lib/web3/client";
 import { arbitrum, arbitrumSepolia } from "thirdweb/chains";
 import { isValidContractAddress } from "../lib/web3/contracts";
 
-// A syntactically valid sink address. thirdweb's `useReadContract` dereferences
-// `contract.chain` during render and throws when `contract` is null:
-//
-//   TypeError: can't access property "chain", a.contract is null
-//
-// That took the whole homepage into the ErrorBoundary whenever VITE_APF_TREASURY_ADDRESS
-// was unset — which is the default state of a fresh checkout and of any deployment where
-// the Safe is not live yet. `queryOptions.enabled` is evaluated later, so it cannot
-// prevent the crash. Giving the hook a non-null contract and disabling the query keeps
-// hook order static and issues no RPC call.
-const UNCONFIGURED_ADDRESS = '0x0000000000000000000000000000000000000001';
+/**
+ * The treasury is an Arbitrum One Safe multisig. A Safe holds native ETH (and ERC-20s) at
+ * its address; it does not implement a `getBalance()` view function.
+ *
+ * Audit F43: this hook used to call `useReadContract(contract, "function getBalance() view
+ * returns (uint256)")` against the Safe address. That selector does not exist on a Safe
+ * proxy, so the call reverted on every load and the hook's defensive fallback rendered
+ * "0.00 ETH" — a balance the treasury may well not have had, presented as a reading. The
+ * panel now asks the chain for the address's native balance directly, and when the address
+ * is unset it says the balance is not published instead of inventing a zero.
+ *
+ * No wallet connection is required: this is a public RPC read of a public address.
+ */
+
+const UNCONFIGURED = 'unconfigured';
 
 export function useAPFContract() {
   const contractAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
   const configuredChain = import.meta.env.VITE_ACTIVE_CHAIN === "sepolia" ? arbitrumSepolia : arbitrum;
   const activeChain = useActiveWalletChain();
 
-  // Use connected chain if available and supported, else fallback to configured chain (public RPC)
+  // Read on the connected chain when the wallet is already sitting on one of the two chains
+  // this deployment supports; otherwise read the configured chain.
   const chain = (activeChain && (activeChain.id === arbitrum.id || activeChain.id === arbitrumSepolia.id))
       ? activeChain
       : configuredChain;
 
+  const chainId = chain.id;
+  const chainName = chain.name || `chain ${chainId}`;
   const isConfigured = isValidContractAddress(contractAddress);
 
-  const contract = getContract({
-    client,
-    chain,
-    address: isConfigured ? contractAddress : UNCONFIGURED_ADDRESS,
-  });
-
-  const { data: rawBalance, isLoading, isError, error } = useReadContract({
-    contract,
-    method: "function getBalance() view returns (uint256)",
-    params: [],
-    queryOptions: { enabled: isConfigured }
-  });
-
-  const [hasTimedOut, setHasTimedOut] = useState(false);
+  const [state, setState] = useState({ status: 'idle', displayValue: null, symbol: null, error: null });
 
   useEffect(() => {
-    let timeout;
-    if (isLoading && !hasTimedOut) {
-      timeout = setTimeout(() => {
-        setHasTimedOut(true);
-        logRPCException("Arbitrum One", "RPC Timeout Exceeded Threshold");
-      }, 6000);
+    if (!isConfigured) {
+      setState({ status: UNCONFIGURED, displayValue: null, symbol: null, error: null });
+      return;
     }
-    return () => clearTimeout(timeout);
-  }, [isLoading, hasTimedOut]);
 
-  useEffect(() => {
-    if (isError) {
-      logRPCException("Arbitrum One", error?.message || "Unknown RPC Error");
-    }
-  }, [isError, error]);
+    let cancelled = false;
+    setState((prev) => ({ ...prev, status: 'loading', error: null }));
 
-  const resolvedBalance = (!isConfigured || hasTimedOut || isError) ? "0.00" : rawBalance;
-  const defensiveBalance = (resolvedBalance === null || resolvedBalance === undefined || Number.isNaN(Number(resolvedBalance))) ? "0.00" : resolvedBalance;
-  const effectiveLoading = isConfigured && isLoading && !hasTimedOut && !isError;
+    const timeout = setTimeout(() => {
+      if (!cancelled) {
+        setState({ status: 'timeout', displayValue: null, symbol: null, error: 'RPC timeout' });
+        logRPCException(chainName, 'Treasury balance read exceeded 6s');
+      }
+    }, 6000);
+
+    getWalletBalance({ client, chain, address: contractAddress })
+      .then((balance) => {
+        if (cancelled) return;
+        clearTimeout(timeout);
+        setState({
+          status: 'ready',
+          displayValue: balance?.displayValue ?? null,
+          symbol: balance?.symbol ?? null,
+          error: null
+        });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        clearTimeout(timeout);
+        setState({ status: 'error', displayValue: null, symbol: null, error: err?.message || 'RPC read failed' });
+        logRPCException(chainName, err?.message || 'Unknown RPC Error');
+      });
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeout);
+    };
+  }, [isConfigured, contractAddress, chainId, chainName]);
+
+  const hasReading = state.status === 'ready' && state.displayValue !== null;
 
   return {
-    contract: isConfigured ? contract : null,
-    treasuryBalance: defensiveBalance,
-    isLoadingBalance: effectiveLoading,
-    isError: isConfigured && isError,
-    isConfigured
+    treasuryBalance: hasReading ? state.displayValue : null,
+    treasurySymbol: hasReading ? state.symbol : null,
+    isLoadingBalance: isConfigured && (state.status === 'idle' || state.status === 'loading'),
+    isError: state.status === 'error' || state.status === 'timeout',
+    isConfigured,
+    // Kept for callers that still import it; nothing reads a contract ABI for the treasury
+    // balance any more (see the file header).
+    contract: null
   };
 }
 

@@ -1,4 +1,3 @@
-import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
 import { ContributeButton } from '../web3/ContributeButton';
 import SafeIcon from '../../common/SafeIcon';
@@ -41,7 +40,7 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { treasuryBalance, isLoadingBalance, isConfigured } = useAPFContract();
+  const { treasuryBalance, treasurySymbol, isLoadingBalance, isConfigured } = useAPFContract();
   const { addToast, isCoreSynced, setIsCoreSynced } = useAppStore();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
 
@@ -101,20 +100,16 @@ export function TheTreasury() {
               <p className="font-vt323 text-apf-purple mt-2 tracking-widest">[ DECENTRALIZED_RESOURCE_ALLOCATION ]</p>
               <div className="mt-4 inline-block border border-apf-emerald bg-apf-emerald/10 px-4 py-2">
                 <span className="font-vt323 text-sm text-gray-400 uppercase tracking-widest block">Vault Balance:</span>
+                {/* Audit F43: this used to print "0.00 ETH" whenever the read failed, which
+                    for a Safe address was always — the panel called a getBalance() view the
+                    Safe does not implement. The reading is now the address's real native
+                    balance, and an absent reading says so. */}
                 <span className="font-mono text-2xl text-apf-emerald font-bold">
                   {(() => {
-                    if (!isConfigured) return '[ NOT CONFIGURED ]';
-                    if (isLoadingBalance) return '[ SYNCING RPC... ]';
-                    if (treasuryBalance === undefined || treasuryBalance === null) return '0.00 ETH';
-                    if (typeof treasuryBalance === 'string') {
-                      return treasuryBalance.includes('ETH') ? treasuryBalance : `${treasuryBalance} ETH`;
-                    }
-                    try {
-                      const formatted = ethers.utils.formatEther(treasuryBalance);
-                      return `${formatted} ETH`;
-                    } catch (e) {
-                      return '0.00 ETH';
-                    }
+                    if (!isConfigured) return '[ TREASURY ADDRESS NOT PUBLISHED ]';
+                    if (isLoadingBalance) return '[ READING CHAIN... ]';
+                    if (treasuryBalance === null || treasuryBalance === undefined) return '[ BALANCE UNAVAILABLE ]';
+                    return `${treasuryBalance} ${treasurySymbol || ''}`.trim();
                   })()}
                 </span>
               </div>
