@@ -118,7 +118,7 @@ export function IntelligenceHub() {
                 className={`px-6 py-3 min-h-[44px] border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
                 disabled={localAnalyzing}
               >
-                {localAnalyzing ? '[ TRANSMITTING SECURE CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
+                {localAnalyzing ? '[ TRANSMITTING CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
               </button>
               {lastSyncTime && (
                 <div className="mt-2 text-apf-emerald font-vt323 text-xs tracking-widest uppercase">

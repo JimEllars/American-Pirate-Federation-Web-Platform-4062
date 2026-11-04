@@ -11,6 +11,26 @@ const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
 
 const TELEMETRY_ENDPOINT = '/api/telemetry';
 
+/**
+ * Whether this build can transmit at all. The shell renders the ingress line from this
+ * plus `ingressStatus`, never from a static string.
+ */
+export const isTelemetryConfigured = !isMockEnv;
+
+/**
+ * Record what the network actually said. Before this existed the shell printed
+ * "[ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]" on every page regardless of whether a single
+ * byte had been sent — and `functions/api/telemetry.js` has no durable sink, so even a
+ * 200 means "validated and edge-logged", which is what the copy now says.
+ */
+const reportIngress = (state, { count = 0, http = null } = {}) => {
+  try {
+    useAppStore.getState().setIngressStatus({ state, count, http, at: Date.now() });
+  } catch (error) {
+    /* store unavailable (static preview) — nothing to report to */
+  }
+};
+
 export const generateChecksum = async (payloadString) => {
   let checksum = '';
   if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -117,15 +137,18 @@ export const flushTelemetryQueue = async () => {
 
         if (response.ok) {
             localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+            reportIngress('accepted', { count: batch.length, http: response.status });
             console.info('[ TELEMETRY BATCH FLUSHED SUCCESSFULLY ]');
         } else if (response.status >= 500 || response.status === 429) {
             throw new Error(`Server returned ${response.status}`);
         } else {
             // Bad request or similar, drop the batch to avoid infinite loop
             localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+            reportIngress('rejected', { count: batch.length, http: response.status });
         }
     } catch (error) {
         console.warn('[ TELEMETRY FLUSH FAILED - WILL RETRY ]', error.message);
+        reportIngress('unreachable', { count: batch.length });
 
         // Update retry counts and schedule next flush
         const updatedQueue = queue.map(item => ({ ...item, retryCount: (item.retryCount || 0) + 1 }));
@@ -166,10 +189,14 @@ const processBatch = async () => {
         if (response.status >= 500 || response.status === 429) {
             throw new Error(`Server returned ${response.status}`);
         } else if (!response.ok) {
+            reportIngress('rejected', { count: batchToProcess.length, http: response.status });
             console.warn(`[ TELEMETRY DROPPED: ${response.status} ]`);
+        } else {
+            reportIngress('accepted', { count: batchToProcess.length, http: response.status });
         }
     } catch (error) {
         console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT - QUEUEING ]', error.message);
+        reportIngress('unreachable', { count: batchToProcess.length });
         for (const payload of batchToProcess) {
             queuePayload(TELEMETRY_ENDPOINT, payload);
         }

@@ -4,14 +4,14 @@ import { ContributeButton } from '../web3/ContributeButton';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
 import { useParallax } from '../../hooks/useParallax';
-import { generateChecksum, logCommLinkSubscription } from '../../lib/api/telemetry';
+import { generateChecksum, logCommLinkSubscription, isTelemetryConfigured } from '../../lib/api/telemetry';
 import { motion } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { useActiveAccount, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
 import { arbitrum } from 'thirdweb/chains';
 
 export function Layout({ children }) {
-  const { isCorrectNetwork, setIsCorrectNetwork, addToast, telemetryLogs, setIsSigning } = useAppStore();
+  const { isCorrectNetwork, setIsCorrectNetwork, addToast, telemetryLogs, setIsSigning, ingressStatus } = useAppStore();
   const location = useLocation();
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
@@ -111,6 +111,31 @@ export function Layout({ children }) {
     }
   };
 
+  /*
+   * Both lines below used to be constants.
+   *
+   * "[ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]" was printed on every page whether or not the
+   * client had ever sent anything, and "SECURE NODE ESTABLISHED." asserted a security
+   * state nothing had checked. `functions/api/telemetry.js` has no durable sink, so even
+   * a 200 means "validated and edge-logged", never "stored" — the copy says that now.
+   */
+  const ingressLine = (() => {
+    if (!isTelemetryConfigured) return '[ INGRESS: DISABLED — NO PROJECT CONFIGURED ]';
+    switch (ingressStatus?.state) {
+      case 'accepted':
+        return `[ INGRESS: EDGE ACCEPTED ${ingressStatus.count} EVENT(S) // NO SINK ]`;
+      case 'rejected':
+        return `[ INGRESS: EDGE REJECTED HTTP ${ingressStatus.http} ]`;
+      case 'unreachable':
+        return `[ INGRESS: EDGE UNREACHABLE // ${queueDepth} QUEUED ]`;
+      default:
+        return '[ INGRESS: NO TRANSMISSION THIS SESSION ]';
+    }
+  })();
+
+  // `isSecureContext` is a browser-provided fact, not a claim we are making up.
+  const isSecureContext = typeof window !== 'undefined' && window.isSecureContext;
+
   return (
     <div className="min-h-screen relative apf-root-container flex flex-col bg-apf-black">
       <NetworkSwitchModal
@@ -173,7 +198,7 @@ export function Layout({ children }) {
             [ QUEUE_DEPTH: {queueDepth}_PENDING_PACKETS ]
           </div>
           <div className="font-vt323 border-t border-[#10B981]/30 pt-1 mt-1 text-apf-emerald">
-            [ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]
+            {ingressLine}
           </div>
         </div>
       </div>
@@ -205,7 +230,9 @@ export function Layout({ children }) {
           <Link to="/pay-ratio" className="hover:text-apf-emerald uppercase tracking-widest">Pay Ratio Explorer</Link>
           <Link to="/governance" className="hover:text-apf-emerald uppercase tracking-widest">Governance</Link>
         </nav>
-        <p>SECURE NODE ESTABLISHED. APF © {new Date().getFullYear()}</p>
+        <p>
+          {isSecureContext ? '[ CONTEXT: SECURE ]' : '[ CONTEXT: NOT SECURE ]'} APF © {new Date().getFullYear()}
+        </p>
       </footer>
     </div>
   );

@@ -57,9 +57,6 @@ guildAlignment: 'Unaligned',
       setLastSyncTime: (time) => set({ lastSyncTime: time }),
       aiContextPayload: null,
       setAiContextPayload: (payload) => set({ aiContextPayload: payload }),
-      pendingAiAction: null,
-      setPendingAiAction: (action) => set({ pendingAiAction: action }),
-      clearPendingAiAction: () => set({ pendingAiAction: null }),
       aiDecryptedResponse: null,
       setAiDecryptedResponse: (response) => set({ aiDecryptedResponse: response }),
       activeTxQueue: [],
@@ -68,6 +65,14 @@ guildAlignment: 'Unaligned',
       clearTxQueue: () => set({ activeTxQueue: [] }),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
+
+      // What the client actually observed when it last POSTed to /api/telemetry.
+      // The shell used to render "[ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]" unconditionally,
+      // asserting an edge state it never probed. This is the observed outcome instead:
+      //   state: 'idle' | 'accepted' | 'rejected' | 'unreachable'
+      // Not persisted — a reading from a previous session is not a reading.
+      ingressStatus: { state: 'idle', count: 0, http: null, at: null },
+      setIngressStatus: (status) => set({ ingressStatus: status }),
 
       addToast: (message, type = 'info', persistent = false) => {
         const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Date.now().toString(36);

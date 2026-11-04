@@ -177,7 +177,7 @@ export function Navbar() {
                   disabled
                   className="flex items-center gap-1.5 bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-3 py-1.5 rounded font-vt323 tracking-widest text-sm uppercase cursor-not-allowed animate-pulse whitespace-nowrap"
                 >
-                  [ INITIALIZING ENCRYPTION... ]
+                  [ CONNECTING WALLET... ]
                 </button>
               ) : !address ? (
                 <button
@@ -303,7 +303,7 @@ export function Navbar() {
                   disabled
                   className="block mt-4 w-full text-center bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-4 py-2 rounded font-vt323 tracking-widest text-lg uppercase cursor-not-allowed animate-pulse"
                 >
-                  [ INITIALIZING ENCRYPTION... ]
+                  [ CONNECTING WALLET... ]
                 </button>
               ) : !address ? (
                 <button

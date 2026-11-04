@@ -471,3 +471,33 @@ test('/policies offers no dead "Review Protocol" control', async ({ page }) => {
   await expect(page.getByRole('button', { name: /review protocol/i })).toHaveCount(0);
   await expect(page.locator('body')).toContainText(/anchored:/i);
 });
+
+// ---------------------------------------------------------------------------
+// The shell — no claim about the edge or the transport that nothing observed.
+// ---------------------------------------------------------------------------
+
+test('the shell reports only ingress and context states it actually observed', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  const body = page.locator('body');
+
+  // F46: "[ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]" was a literal, printed on every page
+  // whether or not a byte had been sent. It must be gone, and whatever replaces it must
+  // be one of the states the client can genuinely be in.
+  await expect(body).not.toContainText('CLOUDFLARE_EDGE_ACTIVE');
+  await expect(body).toContainText(
+    /\[ INGRESS: (DISABLED|NO TRANSMISSION THIS SESSION|EDGE ACCEPTED|EDGE REJECTED|EDGE UNREACHABLE)/
+  );
+
+  // "SECURE NODE ESTABLISHED." asserted a transport state nothing had checked.
+  await expect(body).not.toContainText('SECURE NODE ESTABLISHED');
+  await expect(body).toContainText(/\[ CONTEXT: (SECURE|NOT SECURE) \]/);
+});
+
+test('no control claims encryption is being initialised', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  // Connecting a wallet initialises no encryption. The pending state now says what it is.
+  await expect(page.locator('body')).not.toContainText(/INITIALIZING ENCRYPTION/i);
+});
