@@ -411,3 +411,63 @@ test('/intelligence offers no control that loads nothing', async ({ page }) => {
   // had no handler at all (audit F32).
   await expect(page.getByRole('button', { name: /load older transmissions/i })).toHaveCount(0);
 });
+
+// ---------------------------------------------------------------------------
+// The muster roll — enrollment writes a member record or says it cannot.
+//
+// Until this pass the home page's "Authorize Entry Protocol" form was the site's primary
+// conversion surface and it enrolled nobody: it refused to open without a connected wallet,
+// sent a transaction to the treasury Safe calling a function no contract implements, wrote
+// an alias to localStorage, and reported "[ MUSTER_SIGNATURE_SUCCESSFUL ]" (audit F37).
+// ---------------------------------------------------------------------------
+
+test('the muster form is not wallet-gated and does not claim enrollment it cannot perform', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/#join', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+
+  // Law 4: the record is filed against a Passport, so a wallet-less visitor must be able
+  // to reach the form. It used to sit under an "[ ENCRYPTION KEY REQUIRED ]" overlay.
+  const submit = page.getByRole('button', { name: /file record on the muster roll/i });
+  await expect(submit).toBeVisible();
+  await expect(body).not.toContainText(/ENCRYPTION KEY REQUIRED/i);
+
+  // Anonymous visitor: the page must say what is missing rather than file anything.
+  await expect(body).toContainText(/a pirate passport is required/i);
+
+  await page.getByLabel(/alias_callsign/i).fill('TEST_VESSEL');
+  await submit.click();
+
+  // The Passport dialog opens; no success is announced.
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(body).not.toContainText(/MUSTER_SIGNATURE_SUCCESSFUL/i);
+  await expect(body).not.toContainText('[ ON THE MUSTER ROLL ]');
+});
+
+test('the passport dialog reports the session, never a locally invented clearance', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+
+  await page.getByRole('button', { name: /^passport$/i }).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+
+  // Anonymous: the dialog offers the Email OTP form and makes no claim about rank.
+  await expect(dialog.getByLabel(/email address for the one-time access code/i)).toBeVisible();
+  await expect(dialog).not.toContainText(/clearance:/i);
+  await expect(dialog).not.toContainText(/guild:/i);
+});
+
+// ---------------------------------------------------------------------------
+// /policies — no control that opens nothing, and no claim that a signature secured a signal.
+// ---------------------------------------------------------------------------
+
+test('/policies offers no dead "Review Protocol" control', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/policies', { waitUntil: 'domcontentloaded' });
+
+  // All fourteen cards carried a "Review Protocol ›" button with no handler (audit F41).
+  await expect(page.getByRole('button', { name: /review protocol/i })).toHaveCount(0);
+  await expect(page.locator('body')).toContainText(/anchored:/i);
+});
