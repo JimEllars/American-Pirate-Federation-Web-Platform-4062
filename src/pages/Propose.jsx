@@ -241,7 +241,7 @@ export function Propose() {
                               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
                           }`}
                       >
-                          {!isAuthorized ? 'Navigator Clearance Required' : submitting ? '[ AWAITING SIGNATURE... ]' : 'Submit to Queue'}
+                          {!isAuthorized ? 'Navigator Clearance Required' : submitting ? '[ RECORDING DRAFT... ]' : 'Submit to Queue'}
                       </button>
                   </div>
               </form>

@@ -362,15 +362,6 @@ export const logGasException = async () => {
   } catch (error) { /* empty */ }
 };
 
-export const logOperatorConnected = async (walletAddress) => {
-  try {
-    const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` : '0x...';
-    useAppStore.getState().addTelemetryLog(`[ NET_OPS: SECURE CONNECTION ESTABLISHED // ${shortAddress} ]`);
-  } catch (error) {
-    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-  }
-};
-
 export const logUnhandledRejection = async (reason) => {
   try {
     const payload = {

@@ -40,7 +40,8 @@ function App() {
 
   React.useEffect(() => {
     const handleOffline = () => {
-      const id = addToast('[ CRITICAL: SECURE CONNECTION LOST - AWAITING SIGNAL ]', 'critical', true);
+      // `navigator.onLine` reports a lost network interface, not a lost TLS session.
+      const id = addToast('[ CRITICAL: NETWORK CONNECTION LOST - AWAITING SIGNAL ]', 'critical', true);
       setOfflineToastId(id);
     };
 
