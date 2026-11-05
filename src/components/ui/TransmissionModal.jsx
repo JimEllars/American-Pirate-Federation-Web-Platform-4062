@@ -40,14 +40,16 @@ export default function TransmissionModal({ isOpen, onClose, post }) {
         {/* Header */}
         <div className="border-b border-apf-emerald/50 p-4 flex justify-between items-center bg-[#10B981]/10">
           <div>
-            <div className="text-apf-emerald text-xs mb-1">SECURE TRANSMISSION [{formattedDate}]</div>
+            <div className="text-apf-emerald text-xs mb-1">
+              {post.classification ? `${post.classification} TRANSMISSION` : 'PUBLIC DISPATCH'} [{formattedDate}]
+            </div>
             <h2 className="text-apf-purple text-xl uppercase tracking-wider font-bold">{cleanTitle}</h2>
           </div>
           <button
             onClick={onClose}
             className="text-apf-emerald hover:text-apf-purple transition-colors border border-transparent hover:border-apf-purple px-3 py-1 text-sm uppercase"
           >
-            [ CLOSE DECRYPT ]
+            [ CLOSE RECORD ]
           </button>
         </div>
 

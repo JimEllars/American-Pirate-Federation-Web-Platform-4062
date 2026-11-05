@@ -11,6 +11,26 @@ const isMockEnv = !import.meta.env.VITE_SUPABASE_URL ||
 
 const TELEMETRY_ENDPOINT = '/api/telemetry';
 
+/**
+ * Whether this build can transmit at all. The shell renders the ingress line from this
+ * plus `ingressStatus`, never from a static string.
+ */
+export const isTelemetryConfigured = !isMockEnv;
+
+/**
+ * Record what the network actually said. Before this existed the shell printed
+ * "[ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]" on every page regardless of whether a single
+ * byte had been sent — and `functions/api/telemetry.js` has no durable sink, so even a
+ * 200 means "validated and edge-logged", which is what the copy now says.
+ */
+const reportIngress = (state, { count = 0, http = null } = {}) => {
+  try {
+    useAppStore.getState().setIngressStatus({ state, count, http, at: Date.now() });
+  } catch (error) {
+    /* store unavailable (static preview) — nothing to report to */
+  }
+};
+
 export const generateChecksum = async (payloadString) => {
   let checksum = '';
   if (typeof crypto !== 'undefined' && crypto.subtle) {
@@ -117,15 +137,18 @@ export const flushTelemetryQueue = async () => {
 
         if (response.ok) {
             localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+            reportIngress('accepted', { count: batch.length, http: response.status });
             console.info('[ TELEMETRY BATCH FLUSHED SUCCESSFULLY ]');
         } else if (response.status >= 500 || response.status === 429) {
             throw new Error(`Server returned ${response.status}`);
         } else {
             // Bad request or similar, drop the batch to avoid infinite loop
             localStorage.setItem(QUEUE_KEY, JSON.stringify([]));
+            reportIngress('rejected', { count: batch.length, http: response.status });
         }
     } catch (error) {
         console.warn('[ TELEMETRY FLUSH FAILED - WILL RETRY ]', error.message);
+        reportIngress('unreachable', { count: batch.length });
 
         // Update retry counts and schedule next flush
         const updatedQueue = queue.map(item => ({ ...item, retryCount: (item.retryCount || 0) + 1 }));
@@ -166,10 +189,14 @@ const processBatch = async () => {
         if (response.status >= 500 || response.status === 429) {
             throw new Error(`Server returned ${response.status}`);
         } else if (!response.ok) {
+            reportIngress('rejected', { count: batchToProcess.length, http: response.status });
             console.warn(`[ TELEMETRY DROPPED: ${response.status} ]`);
+        } else {
+            reportIngress('accepted', { count: batchToProcess.length, http: response.status });
         }
     } catch (error) {
         console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT - QUEUEING ]', error.message);
+        reportIngress('unreachable', { count: batchToProcess.length });
         for (const payload of batchToProcess) {
             queuePayload(TELEMETRY_ENDPOINT, payload);
         }
@@ -207,72 +234,47 @@ if (typeof window !== 'undefined') {
     });
 }
 
-const queueInsert = async (table, payload, successMsg) => {
-    // Treat Supabase inserts similarly - queue via edge telemetry if it fails
-    if (isMockEnv) return;
-
-    try {
-        const { error } = await supabase.from(table).insert(payload);
-        if (error) throw error;
-        if (successMsg) console.info(successMsg);
-    } catch (error) {
-        console.warn('[ SUPABASE INSERT FAILED - FALLING BACK TO EDGE TELEMETRY QUEUE ]', error.message);
-        const strictPayload = {
-            event: 'supabase_insert_fallback',
-            timestamp: Date.now(),
-            metadata: { table, payload }
-        };
-        queuePayload(TELEMETRY_ENDPOINT, strictPayload);
-    }
-}
-
-export const logTreasuryDeployment = async (vaultAddress, deployerAddress) => {
+/*
+ * Member-owned writes.
+ *
+ * Each of these used to insert a wallet-shaped payload into a table whose actual columns
+ * are `member_id UUID REFERENCES members(id)`:
+ *
+ *   logSovereignEntry -> table `muster_roll`, which does not exist in any migration
+ *   logRequisition    -> `requisitions.wallet_address` / `.cost_pts` (real: member_id, item_id)
+ *   logEventSignal    -> `event_signals.wallet_address` / `.event_title` (real: event_id, member_id)
+ *
+ * Every call failed with PGRST204/42P01, was swallowed, and the row was then forwarded to
+ * the edge log. Three write paths were therefore dead while the UI reported success.
+ *
+ * A row can only be written when there is an authenticated Passport session, because
+ * `members.id` is a foreign key to `auth.users`. These flows are wallet-only, so there is
+ * no session to attribute the row to. Rather than perform a write guaranteed to fail, the
+ * helpers record the action locally and return an explicit result. Persisting these
+ * server-side is tracked in docs/audit-2026-11-02.md — it needs a Passport session in the
+ * wallet flows, not another column name.
+ */
+const recordLocalOnly = (label) => {
   try {
-    const payload = {
-      meta: {
-        source: 'APF-Phase29',
-        event_type: 'contract.write.initiated',
-        timestamp: new Date().toISOString()
-      },
-      telemetry: {
-        target_contract: vaultAddress,
-        wallet_address: deployerAddress,
-        chain_id: 42161,
-        session_status: 'active',
-        deployment_timestamp: "2026-06-07T10:47:08-05:00",
-
-        network_layer: "Arbitrum One (Chain ID: 42161)"
-      }
-    };
-    sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
-  } catch (error) { /* empty */ }
+    useAppStore.getState().addTelemetryLog(label);
+  } catch (error) {
+    /* store unavailable (SSR/static preview) — nothing to record */
+  }
+  return { stored: false, reason: 'no-passport-session' };
 };
 
-export const logSovereignEntry = async (walletAddress, alias, signature) => {
-  try {
-    const payload = { wallet_address: walletAddress, alias: alias, signature: signature, network: "Arbitrum One" };
-    queueInsert('muster_roll', payload, '[ UPLINK SUCCESS ] Sovereign Entry Queued.');
-  } catch (error) {
-    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-  }
+export const logSovereignEntry = async () => {
+  // The signed muster draft stays in local state (zustand persist).
+  return recordLocalOnly('[ NET_OPS: MUSTER DRAFT SEALED LOCALLY ]');
 };
 
-export const logRequisition = async (walletAddress, itemID, cost) => {
-  try {
-    const payload = { wallet_address: walletAddress, item_id: itemID, cost_pts: cost, network: "Arbitrum One" };
-    queueInsert('requisitions', payload, '[ UPLINK SUCCESS ] Requisition Queued.');
-  } catch (error) {
-    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-  }
+export const logRequisition = async () => {
+  // Requisitions are settled in local reputation points; no card or crypto movement.
+  return recordLocalOnly('[ NET_OPS: REQUISITION RECORDED LOCALLY ]');
 };
 
-export const logEventSignal = async (walletAddress, eventTitle, signature) => {
-  try {
-    const payload = { wallet_address: walletAddress, event_title: eventTitle, signature: signature, network: "Arbitrum One" };
-    queueInsert('event_signals', payload, '[ UPLINK SUCCESS ] Event Signal Queued.');
-  } catch (error) {
-    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-  }
+export const logEventSignal = async () => {
+  return recordLocalOnly('[ NET_OPS: EVENT SIGNAL RECORDED LOCALLY ]');
 };
 
 export const logNetworkTransition = async (targetChainId, successStatus) => {
@@ -338,7 +340,7 @@ export const logTransactionDispatched = async (txHash, context) => {
   }
 };
 
-export const logGasException = async (walletAddress) => {
+export const logGasException = async () => {
   try {
     const payload = {
       meta: {
@@ -347,7 +349,9 @@ export const logGasException = async (walletAddress) => {
         timestamp: new Date().toISOString()
       },
       telemetry: {
-        wallet_address: walletAddress,
+        // A wallet address is a persistent cross-site identifier. "Insufficient gas" is a
+        // useful aggregate signal on its own; attaching the address would turn an
+        // operational metric into a trackable member record (APF-001, Article VII).
         chain_id: 42161,
         session_status: 'active'
       }
@@ -356,15 +360,6 @@ export const logGasException = async (walletAddress) => {
     sendOrQueueTelemetry(TELEMETRY_ENDPOINT, payload);
     useAppStore.getState().addTelemetryLog('[ NET_OPS: INSUFFICIENT GAS DETECTED ]');
   } catch (error) { /* empty */ }
-};
-
-export const logOperatorConnected = async (walletAddress) => {
-  try {
-    const shortAddress = walletAddress ? `${walletAddress.substring(0, 6)}...${walletAddress.substring(walletAddress.length - 4)}` : '0x...';
-    useAppStore.getState().addTelemetryLog(`[ NET_OPS: SECURE CONNECTION ESTABLISHED // ${shortAddress} ]`);
-  } catch (error) {
-    console.warn('[ TELEMETRY_BLOCKED_BY_CLIENT ]', error);
-  }
 };
 
 export const logUnhandledRejection = async (reason) => {
@@ -400,16 +395,12 @@ export const logCheckoutException = async (reason) => {
   } catch (error) { /* empty */ }
 };
 
-export const logCommLinkSubscription = async (email) => {
+export const logCommLinkSubscription = async () => {
   try {
-    const payload = {
-      meta: {
-        source: 'APF-Comm-Link',
-        event_type: 'subscription.initiated',
-        timestamp: new Date().toISOString()
-      },
-      email: email
-    };
+    // Deliberately no email in the payload: the address is handed to /api/subscribe and
+    // nowhere else. An earlier revision built a payload containing the raw address; it was
+    // never transmitted, but leaving it one refactor away from the queue is not a security
+    // posture, it is a latent leak.
     useAppStore.getState().addTelemetryLog('[ NET_OPS: COMM LINK SUBSCRIPTION STAGED ]');
   } catch (error) { /* empty */ }
 };

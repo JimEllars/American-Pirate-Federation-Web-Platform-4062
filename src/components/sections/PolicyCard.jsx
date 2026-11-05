@@ -2,50 +2,50 @@ import React, { useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
-import { useActiveAccount } from 'thirdweb/react';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection } from '../../lib/api/telemetry';
 
 
-export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision }) {
+export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision, provenance, reference }) {
   const [showHistory, setShowHistory] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
 
-  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, isSigning, setIsSigning, addToast, isCoreSynced } = useAppStore();
-  const account = useActiveAccount();
+  // `userRole` mirrors the member row on the muster roll (audit F39). It is read, never
+  // written here: this card cannot promote anybody.
+  const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, addToast, isCoreSynced } = useAppStore();
 
-  const comments = policyComments[code] || [
-    { author: "Navigator Vance", role: "Navigator", text: "Alignment verified. Ready for ratification.", date: "2024-05-01" },
-  ];
+  // Law 1: no seeded reviewer, and no public review thread. `policyComments` lives in this
+  // browser's persisted store and is written by nobody else — so it must never be labelled
+  // "peer review" or "commentary", which reads as a Federation record. It is a note pad.
+  const comments = policyComments[code] || [];
 
   const hasSignaled = policySignals[code] || false;
   const canSignal = ['Navigator', 'Guild Master'].includes(userRole);
   const canComment = ['Deckhand', 'Navigator', 'Guild Master'].includes(userRole);
-  const currentConsensus = hasSignaled ? Math.min(100, consensus + 2) : consensus; // simulate QV bump
+  // Law 1: signalling a directive must not silently inflate the displayed consensus.
+  // The score shown is the value the Federation publishes; a local signal is recorded
+  // locally and is not a vote tally.
+  const currentConsensus = consensus;
 
   const sanitizedTitle = DOMPurify.sanitize(title);
   const sanitizedSummary = DOMPurify.sanitize(summary);
 
-  const handleAuthorize = async () => {
-    if (!canSignal || isSigning) return;
-    setIsSigning(true);
-    try {
-      if (account) {
-        await account.signMessage({ message: "Authorize APF Directive Consensus: " + code });
-      }
-      signalPolicy(code);
-      addToast('[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]', 'success');
-    } catch (err) {
-      if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
-        logSignatureRejection('/policies');
-        addToast('[ SIGNATURE REJECTED - CONSENSUS DENIED ]', 'error');
-      } else {
-        addToast('[ SIGNATURE FAILED - CONSENSUS DENIED ]', 'error');
-      }
-    } finally {
-      setIsSigning(false);
-    }
+  /**
+   * Audit F40: this used to collect a wallet signature for the directive and then throw it
+   * away before toasting "[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]". Nothing was
+   * secured and nothing was recorded outside this browser, so the signature ritual is gone
+   * and the toast says what actually happened. Consensus scores stay the published
+   * baseline — a local signal is not a vote and never moves the number on this card.
+   */
+  const handleAuthorize = () => {
+    if (!canSignal) return;
+    signalPolicy(code);
+    addToast(
+      policySignals[code]
+        ? '[ SIGNAL WITHDRAWN FROM THIS BROWSER ]'
+        : '[ SIGNAL RECORDED IN THIS BROWSER — NOT A FEDERATION BALLOT ]',
+      'success'
+    );
   };
 
   const handleAddComment = () => {
@@ -88,7 +88,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 mix-blend-screen opacity-10 md:opacity-15"
         >
           <div className="border-4 border-apf-emerald text-apf-emerald font-vt323 text-4xl font-black p-4 uppercase tracking-[0.3em] whitespace-nowrap">
-            Authorized
+            Local Signal
           </div>
         </motion.div>
       )}
@@ -109,7 +109,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             onClick={() => { setShowComments(!showComments); setShowHistory(false); }}
             className={`text-xs font-vt323 hover:text-apf-purple transition-colors uppercase tracking-widest ${showComments ? 'text-apf-purple' : 'text-gray-500'}`}
           >
-            Commentary ({comments.length})
+            Notes ({comments.length})
           </button>
           <button
             onClick={() => { setShowHistory(!showHistory); setShowComments(false); }}
@@ -137,7 +137,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                {consensus && (
                  <div>
                    <div className="flex justify-between text-[10px] font-vt323 uppercase text-gray-500 mb-1">
-                     <span>Consensus (QV)</span>
+                     <span>Doctrine Baseline</span>
                      <span className="text-apf-purple">{currentConsensus}%</span>
                    </div>
                    <div className="h-1 w-full bg-gray-900 rounded-full overflow-hidden">
@@ -147,6 +147,15 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="h-full bg-gradient-to-r from-apf-purple/50 to-apf-purple"
                       />
+                   </div>
+                   {/* Law 1: a seeded baseline is not a ballot result, and must not read as one. */}
+                   <div className="flex justify-between text-[9px] font-vt323 uppercase tracking-widest mt-1">
+                     <span className="text-gray-600">
+                       {provenance === 'member-vote' ? 'Member ballot' : 'Founding draft · no ballot yet'}
+                     </span>
+                     <span className="text-gray-700" title="Consensus methodology is published with the Master Strategy Plan.">
+                       Method
+                     </span>
                    </div>
                  </div>
                )}
@@ -182,6 +191,12 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             className="flex-grow relative z-10 border-t border-gray-800 pt-4 mb-4 flex flex-col h-40"
           >
             <div className="overflow-y-auto space-y-3 mb-2 flex-grow pr-2 custom-scrollbar">
+              {comments.length === 0 && (
+                <div className="text-xs font-vt323 text-gray-600 border border-dashed border-gray-800 p-2 text-center">
+                  No notes on this device. Notes are saved in this browser only — they are not
+                  peer review and the Federation never receives them.
+                </div>
+              )}
               {comments.map((comment, i) => (
                 <div key={i} className="bg-black/50 p-2 border-l-2 border-apf-purple">
                   <div className="flex justify-between items-center mb-1">
@@ -198,7 +213,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add peer review..."
+                  placeholder="Add a note (saved in this browser)"
                   className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple focus:ring-1 focus:ring-apf-purple font-vt323"
                 />
                 <button type="submit" className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
@@ -214,24 +229,26 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between mt-auto pt-2 relative z-10 border-t border-gray-800/50">
-        <button className="flex items-center gap-2 text-xs font-vt323 text-apf-purple hover:text-white transition-colors uppercase tracking-widest">
-          Review Protocol <SafeIcon name="ChevronRight" />
-        </button>
+      <div className="flex items-center justify-between gap-3 mt-auto pt-2 relative z-10 border-t border-gray-800/50">
+        {/* Audit F41: this slot held a "Review Protocol ›" button with no handler on all
+            fourteen cards. There is no per-protocol page to open — the doctrine entry is the
+            protocol — so the slot now carries the constitutional reference it is anchored to. */}
+        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-vt323 text-gray-500 uppercase tracking-widest">
+          <SafeIcon name="Anchor" className="h-3 w-3 text-apf-purple/60" />
+          {reference ? `Anchored: ${reference}` : 'Anchored: Federation charter'}
+        </span>
 
         {canSignal && (
           <button
             onClick={handleAuthorize}
-            disabled={isSigning}
             className={`relative overflow-hidden px-4 py-2 text-xs font-vt323 uppercase tracking-widest transition-all border ${
-              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' :
               hasSignaled
                 ? 'bg-apf-purple/20 border-apf-emerald text-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.3)]'
                 : 'border-gray-800 text-gray-500 hover:border-apf-purple/40 hover:text-apf-purple'
             }`}
           >
             <span className="relative z-10 flex items-center gap-2">
-              {hasSignaled ? <><SafeIcon name="Check" /> DIRECTIVE AUTHORIZED</> : 'AUTHORIZE DIRECTIVE'}
+              {hasSignaled ? <><SafeIcon name="Check" /> SIGNALED IN THIS BROWSER</> : 'SIGNAL SUPPORT'}
             </span>
           </button>
         )}

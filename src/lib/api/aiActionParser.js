@@ -53,8 +53,15 @@ export const parseAICommand = (aiResponseString) => {
 
           const type = typeof parsedCommand.type === 'string' ? DOMPurify.sanitize(parsedCommand.type) : 'unknown';
 
-          // Strict validation on type to prevent execution of arbitrary command types
-          const allowedTypes = ['DRAFT_POLICY', 'QUERY_TREASURY', 'MUSTER_FLEET', 'raw', 'EXECUTE_TREASURY_TRANSFER'];
+          // Strict validation on type to prevent execution of arbitrary command types.
+          //
+          // SECURITY (Architectural Law 2: Sidecar Model Separation): financial actions
+          // are deliberately NOT expressible here. Model output is attack surface — it is
+          // fed by scraped WordPress content and third-party feeds, so a parsed
+          // 'EXECUTE_TREASURY_TRANSFER' type was an indirect prompt-injection path straight
+          // to the treasury. Treasury movement must remain a discrete, user-initiated,
+          // server-validated call (Safe multisig signatures), never a parsed text command.
+          const allowedTypes = ['DRAFT_POLICY', 'QUERY_TREASURY', 'MUSTER_FLEET', 'raw'];
           if (!allowedTypes.includes(type)) {
               console.warn(`[ AI PARSER ] Rejected unauthorized action type: ${type}`);
               return { hasAction: false };

@@ -1,20 +1,12 @@
-import { ethers } from 'ethers';
 import React, { useState, useEffect } from 'react';
 import { ContributeButton } from '../web3/ContributeButton';
 import SafeIcon from '../../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePirateIntel } from '../../hooks/usePirateIntel';
 import { useAXiMHydration } from '../../hooks/useAXiMHydration';
-import { GasWarningCard } from '../web3/GasWarningCard';
-import { VaultDeployed } from '../web3/VaultDeployed';
-import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
-import { useActiveAccount, useActiveWalletChain, useWalletBalance } from "thirdweb/react";
-import { client } from "../../lib/web3/client";
 import DOMPurify from 'isomorphic-dompurify';
-import { initializeSafeTreasury } from '../../lib/web3/deploySafeVault';
-import { useAPFContract, useIsVaultAdmin } from '../../hooks/useAPFContract';
-import { logTreasuryDeployment } from '../../lib/api/telemetry';
+import { useAPFContract } from '../../hooks/useAPFContract';
 
 const GUILDS = [
   {
@@ -48,71 +40,17 @@ const GUILDS = [
 ];
 
 export function TheTreasury() {
-  const { treasuryBalance, isLoadingBalance } = useAPFContract();
-  const { isAdmin, isLoading: isCheckingAdmin } = useIsVaultAdmin();
-  const { setDeployedVaultAddress, treasuryDeploymentStatus, setTreasuryDeploymentStatus, addToast, isSigning, setIsSigning, isCoreSynced, setIsCoreSynced } = useAppStore();
-  const account = useActiveAccount();
-  const address = account?.address;
-  const { data: balanceData, isLoading: isBalanceLoading } = useWalletBalance({ client, chain: useActiveWalletChain(), address: useActiveAccount()?.address });
-  const chain = useActiveWalletChain();
-  const isMismatched = chain?.id !== 42161;
-  const switchChain = () => {};
-  const signer = useActiveAccount();
+  const { treasuryBalance, treasurySymbol, isLoadingBalance, isConfigured } = useAPFContract();
+  const { addToast, isCoreSynced, setIsCoreSynced } = useAppStore();
   const [activeTab, setActiveTab] = useState('guilds'); // 'guilds' or 'ledger'
-  const [showNetworkModal, setShowNetworkModal] = useState(false);
-  const [showGasWarning, setShowGasWarning] = useState(false);
-  const [triggerError, setTriggerError] = useState(false);
 
-  const [treasuryError, setTreasuryError] = useState(null);
-
-  const handleDeployVault = async () => {
-    if (isMismatched) {
-      setShowNetworkModal(true);
-      return;
-    }
-    if (!balanceData || parseFloat(balanceData.displayValue) < 0.002) {
-      setShowGasWarning(true);
-      return;
-    }
-
-    setShowGasWarning(false);
-    setTreasuryError(null);
-    setTreasuryDeploymentStatus('deploying');
-
-    try {
-      setIsSigning(true);
-      const mockAddress = await initializeSafeTreasury(address, signer);
-      setDeployedVaultAddress(mockAddress);
-      setTreasuryDeploymentStatus('success');
-      logTreasuryDeployment(mockAddress, address);
-      setIsSigning(false);
-    } catch (e) {
-      setIsSigning(false);
-      if (e.code === 4001 || (e.message && e.message.toLowerCase().includes('user rejected'))) {
-        setTreasuryError('[ ENCRYPTION SIGNATURE REJECTED BY USER ]');
-        addToast('[ ENCRYPTION SIGNATURE REJECTED BY USER ]', 'error');
-        setTreasuryDeploymentStatus('idle');
-      } else {
-        setTreasuryError(e.message || 'TRANSACTION REJECTED');
-        addToast('[ DEPLOYMENT FAILED: ' + (e.message || 'TRANSACTION REJECTED') + ' ]', 'error');
-        setTreasuryDeploymentStatus('error');
-      }
-    }
-  };
   const [activeGuild, setActiveGuild] = useState(GUILDS[0]);
-  const [isAuditing, setIsAuditing] = useState(false);
-  const { data: guides, loading, error } = usePirateIntel('posts?categories=3'); // Mocking 'guides' category
+  const { data: guides, loading, error } = usePirateIntel('posts?categories=3');
 
-  // Mock Ledger Data
+  // Ledger state starts empty by design. Rows appear only when Supabase returns them
+  // (Architectural Law 1: Anti-Theater & Ground Truth). No seeded fixtures.
   const { fetchLiveLedger, loading: ledgerLoading } = useAXiMHydration();
-  const [ledger, setLedger] = useState([
-      { txId: "0x3e4...b92", date: new Date(Date.now() - 4800000).toISOString().split('T')[0], amount: "50,000 USDC", target: "Labor Union Support Node", alignment: "Article XV", status: "Settled" },
-      { txId: "0x1a2...c34", date: new Date(Date.now() - 7200000).toISOString().split('T')[0], amount: "25,000 USDC", target: "Education Grants Pool", alignment: "Article XVI", status: "Settled" },
-  ]);
-
-  if (triggerError) {
-    throw new Error("Simulated APF System Integrity Failure for Testing");
-  }
+  const [ledger, setLedger] = useState([]);
 
   useEffect(() => {
     let isMounted = true;
@@ -122,11 +60,13 @@ export function TheTreasury() {
         const data = await fetchLiveLedger();
         setIsCoreSynced(true);
         if (isMounted) {
-          setLedger(data);
+          setLedger(Array.isArray(data) ? data : []);
         }
       } catch (err) {
         if (isMounted) {
-          addToast('[ TELEMETRY INGRESS FAILED - DISPLAYING CACHED LEDGER ]', 'warning');
+          setIsCoreSynced(true);
+          setLedger([]);
+          addToast('[ TELEMETRY INGRESS FAILED - LEDGER UNAVAILABLE ]', 'warning');
         }
       }
     };
@@ -136,42 +76,40 @@ export function TheTreasury() {
     return () => {
       isMounted = false;
     };
-  }, [fetchLiveLedger, addToast]);
+  }, [fetchLiveLedger, addToast, setIsCoreSynced]);
+
+  const treasuryAddress = import.meta.env.VITE_APF_TREASURY_ADDRESS;
+  const hasTreasuryAddress =
+    Boolean(treasuryAddress) &&
+    treasuryAddress !== '0x0000000000000000000000000000000000000000';
+  const explorerUrl = hasTreasuryAddress ? `https://arbiscan.io/address/${treasuryAddress}` : null;
 
   return (
     <>
-      <NetworkSwitchModal isWrongNetwork={showNetworkModal} onSwitchNetwork={async () => { try { await switchChain(42161); setShowNetworkModal(false); } catch(e) { console.warn('[Network Switch Rejected]:', e); } }} onDismiss={() => { setShowNetworkModal(false); setTreasuryDeploymentStatus('idle'); }} />
     <section className="py-24 bg-apf-black neon-grid relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
-          {showGasWarning && <GasWarningCard ethBalance={balanceData ? parseFloat(balanceData.displayValue) : 0} onDismiss={() => { setShowGasWarning(false); setTreasuryDeploymentStatus('idle'); }} />}
-
         </div>
 
         {/* Navigation / Header */}
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-800 pb-4">
            <div>
               <h2
-                 className="text-4xl font-black uppercase tracking-tighter text-white cursor-pointer"
-                 onDoubleClick={() => setTriggerError(true)}
-                 title="Double click to test Error Boundary"
+                 className="text-4xl font-black uppercase tracking-tighter text-white"
               >Federation Assets</h2>
               <p className="font-vt323 text-apf-purple mt-2 tracking-widest">[ DECENTRALIZED_RESOURCE_ALLOCATION ]</p>
               <div className="mt-4 inline-block border border-apf-emerald bg-apf-emerald/10 px-4 py-2">
                 <span className="font-vt323 text-sm text-gray-400 uppercase tracking-widest block">Vault Balance:</span>
+                {/* Audit F43: this used to print "0.00 ETH" whenever the read failed, which
+                    for a Safe address was always — the panel called a getBalance() view the
+                    Safe does not implement. The reading is now the address's real native
+                    balance, and an absent reading says so. */}
                 <span className="font-mono text-2xl text-apf-emerald font-bold">
                   {(() => {
-                    if (isLoadingBalance) return '[ SYNCING RPC... ]';
-                    if (treasuryBalance === undefined || treasuryBalance === null) return '0.00 ETH';
-                    if (typeof treasuryBalance === 'string') {
-                      return treasuryBalance.includes('ETH') ? treasuryBalance : `${treasuryBalance} ETH`;
-                    }
-                    try {
-                      const formatted = ethers.utils.formatEther(treasuryBalance);
-                      return `${formatted} ETH`;
-                    } catch (e) {
-                      return '0.00 ETH';
-                    }
+                    if (!isConfigured) return '[ TREASURY ADDRESS NOT PUBLISHED ]';
+                    if (isLoadingBalance) return '[ READING CHAIN... ]';
+                    if (treasuryBalance === null || treasuryBalance === undefined) return '[ BALANCE UNAVAILABLE ]';
+                    return `${treasuryBalance} ${treasurySymbol || ''}`.trim();
                   })()}
                 </span>
               </div>
@@ -248,7 +186,7 @@ export function TheTreasury() {
                     </p>
 
                     <div className="mt-8 pt-8 border-t border-white/10">
-                      <h4 className="font-vt323 text-lg text-white mb-4 uppercase tracking-widest">[ DECRYPTED_BLUEPRINTS ]</h4>
+                      <h4 className="font-vt323 text-lg text-white mb-4 uppercase tracking-widest">[ GUILD BLUEPRINTS — PUBLIC RECORD ]</h4>
                       {loading && <p className="font-vt323 text-gray-500 animate-pulse">Synchronizing Fleet Assets...</p>}
                       {error && <p className="font-vt323 text-red-500">SIGNAL INTERRUPTED: {error}</p>}
                       {!loading && !error && guides && guides.length > 0 && (
@@ -300,78 +238,49 @@ export function TheTreasury() {
                  <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
                    <div>
                      <h3 className="text-2xl font-bold uppercase text-white">Treasury Transparency</h3>
-                     <p className="font-vt323 text-gray-500 text-sm">Real-time ledger of federation resource allocation.</p>
+                     <p className="font-vt323 text-gray-500 text-sm">
+                       Ledger entries below are read directly from the Federation&rsquo;s Supabase ledger table. Nothing here is simulated.
+                       {ledger.length === 0 && ' No on-chain settlements have been recorded yet.'}
+                     </p>
                    </div>
-                   <button
-                     onClick={() => setIsAuditing(!isAuditing)}
-                     className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-vt323 text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
-                     aria-label={isAuditing ? "Close Audit View" : "Verify Audit via IPFS"}
-                   >
-                     <SafeIcon name="Download" className="h-4 w-4" /> {isAuditing ? 'Close Audit View' : 'Verify Audit (IPFS)'}
-                   </button>
+                   {explorerUrl ? (
+                     <a
+                       href={explorerUrl}
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-vt323 text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
+                       aria-label="Verify the APF Safe multisig on Arbiscan"
+                     >
+                       <SafeIcon name="ExternalLink" className="h-4 w-4" /> Verify on Arbiscan
+                     </a>
+                   ) : (
+                     <span
+                       className="flex items-center gap-2 border border-gray-800 text-gray-600 px-4 py-2 font-vt323 text-xs uppercase cursor-not-allowed"
+                       title="No treasury address is configured, so there is nothing to verify on-chain yet."
+                     >
+                       <SafeIcon name="Lock" className="h-4 w-4" /> No Safe deployed
+                     </span>
+                   )}
                  </div>
 
-                 {isAuditing && (
-                   <motion.div
-                     initial={{ opacity: 0, height: 0 }}
-                     animate={{ opacity: 1, height: 'auto' }}
-                     className="bg-black border border-apf-purple/50 p-6 mb-8 font-vt323 text-xs overflow-hidden flex flex-col md:flex-row gap-8"
-                   >
-                     <div className="flex-1 overflow-x-auto">
-                       <div className="mb-2 text-white">IPFS Hash: bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi</div>
-                       <pre className="text-apf-purple">
-{JSON.stringify({
-  "@context": "apf-ledger",
-  "contract": "0xAPF...Treasury",
-  "lastSync": new Date().toISOString(),
-  "merkleRoot": "0x" + 0.5.toString(16).substring(2),
-  "verification": "SUCCESS",
-  "status": "Immutable"
-}, null, 2)}
-                       </pre>
-                     </div>
-                     <div className="flex-1 border-l border-apf-purple/30 pl-8">
-                       <div className="mb-4 text-white uppercase tracking-widest">[ COMMUNITY IMPACT METRICS ]</div>
-                       <div className="h-32 flex items-end gap-2">
-                         {Array.from({ length: 12 }).map((_, i) => (
-                           <motion.div
-                             key={i}
-                             initial={{ height: 0 }}
-                             animate={{ height: `${0.5 * 80 + 20}%` }}
-                             transition={{ duration: 0.5, delay: i * 0.05 }}
-                             className="flex-1 bg-apf-emerald/50 border border-apf-emerald hover:bg-apf-emerald transition-colors relative group"
-                           >
-                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-black border border-apf-emerald text-apf-emerald px-2 py-1 opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 !pointer-events-none">
-                               Impact: +{Math.floor(0.5 * 50 + 10)}%
-                             </div>
-                           </motion.div>
-                         ))}
-                       </div>
-                       <div className="mt-2 text-apf-emerald opacity-70">LIVE SIMULATION // METRICS VERIFIED</div>
-                       <div className="mt-4 border-t border-gray-800 pt-4 flex justify-between text-gray-400">
-                         <div>
-                           <div className="text-white text-lg font-bold text-apf-purple">40%</div>
-                           <div className="text-[10px] uppercase">Community Aid</div>
-                         </div>
-                         <div>
-                           <div className="text-white text-lg font-bold text-apf-emerald">35%</div>
-                           <div className="text-[10px] uppercase">Infrastructure</div>
-                         </div>
-                         <div>
-                           <div className="text-white text-lg font-bold text-blue-400">25%</div>
-                           <div className="text-[10px] uppercase">Legal Defense</div>
-                         </div>
-                       </div>
-                     </div>
-                   </motion.div>
-                 )}
+                 {/* Honest audit state. There is no published IPFS audit yet, so we say so
+                     rather than rendering a hash and a "verification: SUCCESS" banner. */}
+                 <div className="bg-black border border-white/10 p-5 mb-8 font-vt323 text-xs">
+                   <div className="text-white uppercase tracking-widest mb-2">[ AUDIT STATUS ]</div>
+                   <p className="text-gray-400 leading-relaxed">
+                     {explorerUrl
+                       ? 'Treasury balances and transfers are verifiable directly against the Arbiscan explorer link above. A signed, IPFS-pinned allocation report has not been published yet; when it is, its CID and Merkle root will be listed here.'
+                       : 'The APF Arbitrum Safe multisig is not deployed yet, so there is no audit to publish. This panel will populate with a signed report CID once the Treasury is live.'}
+                   </p>
+                 </div>
 
-
-                 {/* Contribute Section Mapping */}
+{/* Contribute Section Mapping */}
                  <div className="col-span-1 lg:col-span-3 mb-8 w-full border border-apf-purple/30 bg-black/50 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div>
                       <h4 className="text-white font-vt323 text-xl uppercase tracking-widest mb-1">Federation Funding</h4>
-                      <p className="text-gray-400 font-vt323 text-sm">Direct treasury contribution. Funds are routed instantly to the multisig vault.</p>
+                      <p className="text-gray-400 font-vt323 text-sm">
+                        Card contributions route to APF Action (501(c)(4)) and are not tax-deductible. Crypto contributions settle on Arbitrum One.
+                      </p>
                     </div>
                     <div className="w-full md:w-auto">
                        <ContributeButton className="w-full md:w-48" />
@@ -397,6 +306,15 @@ export function TheTreasury() {
                                [ SYNCING DECENTRALIZED LEDGER... ]
                              </td>
                            </tr>
+                        ) : ledger.length === 0 ? (
+                           <tr>
+                             <td colSpan="6" className="py-16 text-center">
+                               <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ LEDGER SYNCHRONIZED — NO ENTRIES ]</div>
+                               <p className="font-vt323 text-gray-500 text-sm max-w-md mx-auto">
+                                 The Federation has not recorded any settled treasury allocations yet. Rows appear only when the Federation publishes a settled transaction to its ledger.
+                               </p>
+                             </td>
+                           </tr>
                         ) : (
                           ledger.map((tx, idx) => (
                             <tr key={idx} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
@@ -420,7 +338,7 @@ export function TheTreasury() {
                  </div>
 
 
-                {!import.meta.env.VITE_APF_TREASURY_ADDRESS || import.meta.env.VITE_APF_TREASURY_ADDRESS === '0x0000000000000000000000000000000000000000' ? (
+                {!hasTreasuryAddress ? (
                   <div className="mt-8 border border-apf-purple/40 bg-black/60 p-6 text-center">
                     <span className="font-vt323 text-apf-purple text-xl block mb-2">[ STATUS: SAFE RATIFICATION PENDING ]</span>
                     <p className="font-vt323 text-gray-300 text-base max-w-xl mx-auto">
@@ -430,12 +348,7 @@ export function TheTreasury() {
                 ) : null}
 
                  <div className="mt-6 text-center font-vt323 text-sm">
-                   {isAdmin ? (
-                     <span className="text-apf-emerald">[ ADMIN PROTOCOL VERIFIED ]</span>
-                   ) : (
-                     <span className="text-red-500">[ ADMIN PROTOCOL REQUIRED: SYSTEM LOCKED ]</span>
-                   )}
-                   <div className="text-gray-500 mt-2">[ FULFILLING_ARTICLE_II: RADICAL_TRANSPARENCY ]</div>
+                   <div className="text-gray-500">[ FULFILLING_ARTICLE_II: RADICAL_TRANSPARENCY ]</div>
                  </div>
               </div>
             </motion.div>

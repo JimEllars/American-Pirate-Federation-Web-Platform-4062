@@ -2,20 +2,82 @@ name: APF Platform CI
 
 on:
   push:
-    branches: [ main, feature/* ]
+    branches: [main, 'feature/*', 'fix/*', 'chore/*']
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
+
       - run: npm ci
-      - run: npm run lint
-      - run: npm run build
+
+      # SOP §3.2 — dependency audit. Critical advisories fail the build; the high-severity
+      # transitive advisories inside the thirdweb/walletconnect tree are documented in
+      # docs/audit-2026-11-02.md and reported here on every run so drift is visible.
+      - name: Dependency audit
+        run: |
+          npm audit --omit=dev --audit-level=critical
+          npm audit --omit=dev || echo "::warning::high-severity advisories present — see docs/audit-2026-11-02.md"
+
+      # SOP §3.1 / Law 5 — no agent patch artefacts may be committed.
+      - name: Repository hygiene
+        run: |
+          if git status --porcelain --ignored | grep -E '(^|/)(patch_.*\.py|\.bundle|\.patch|test-results/|playwright-report/)$'; then
+            echo "::error::Agent patch artefacts or test output are present in the working tree"
+            exit 1
+          fi
+
+      # Gateway 1 — static analysis. Must exit 0.
+      - name: Lint
+        run: npm run lint
+
+      # Gateway 4 — secret scan. Fails the build on a committed credential.
+      - name: Secret scan
+        run: |
+          set -e
+          if grep -rnE "sk_live_|sk_test_|EMAILIT_API_KEY=|AI_API_SECRET=|SUPABASE_SERVICE_ROLE_KEY=|ghp_[A-Za-z0-9]{20,}" src/ functions/ public/ ; then
+            echo "::error::Potential secret committed to client code"
+            exit 1
+          fi
+          echo "No secrets found in src/, functions/, public/"
+
+      # Gateway 2 — production build (sourcemaps hard-off in vite.config.js).
+      - name: Build
+        run: npm run build
+
+      - name: Verify no sourcemaps shipped
+        run: |
+          if find dist -name '*.map' | grep -q .; then
+            echo "::error::Source maps found in dist/"
+            exit 1
+          fi
+
+      # Gateway 2 (extended) — initial payload budget, CSP invariants, no compiled secrets.
+      - name: Verify build output
+        run: npm run verify:build
+
+      # Gateway 3 — Playwright smoke suite.
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Smoke tests
+        run: npm run test:smoke
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

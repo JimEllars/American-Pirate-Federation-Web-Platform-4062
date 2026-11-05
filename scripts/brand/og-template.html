@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face { font-family: 'VT323'; src: local('VT323'); }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        width: 1200px; height: 630px; background: #050505; color: #FAFAFA;
+        font-family: 'VT323', 'DejaVu Sans Mono', monospace; overflow: hidden;
+        position: relative;
+      }
+      .grid {
+        position: absolute; inset: 0;
+        background-image:
+          linear-gradient(to right, rgba(148,0,211,0.16) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(148,0,211,0.16) 1px, transparent 1px);
+        background-size: 48px 48px;
+      }
+      .glow {
+        position: absolute; width: 720px; height: 720px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(148,0,211,0.35) 0%, transparent 62%);
+        top: -280px; right: -200px;
+      }
+      .glow2 {
+        position: absolute; width: 520px; height: 520px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(0,255,102,0.14) 0%, transparent 65%);
+        bottom: -240px; left: -140px;
+      }
+      .frame { position: absolute; inset: 34px; border: 2px solid rgba(148,0,211,0.55); }
+      .inner { position: relative; padding: 66px 76px 58px; height: 100%; display: flex; flex-direction: column; }
+      .top { display: flex; align-items: center; gap: 18px; margin-bottom: 30px; }
+      .mark { width: 64px; height: 64px; }
+      .kicker { font-size: 24px; letter-spacing: 0.42em; color: #00FF66; text-transform: uppercase; }
+      h1 { font-size: 64px; line-height: 1.0; letter-spacing: -0.02em; text-transform: uppercase; font-weight: 700; }
+      h1 .accent { color: #9400D3; }
+      p { margin-top: 22px; font-size: 23px; line-height: 1.4; color: #A1A1AA; max-width: 900px; font-family: 'DejaVu Sans Mono', monospace; letter-spacing: 0.02em; }
+      .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; }
+      .url { font-size: 27px; letter-spacing: 0.2em; color: #FAFAFA; }
+      .url span { color: #9400D3; }
+      .badges { display: flex; gap: 9px; font-size: 17px; letter-spacing: 0.16em; text-transform: uppercase; }
+      .badge { border: 1px solid rgba(148,0,211,0.6); padding: 7px 12px; color: #C4B5FD; }
+      .badge.solid { background: #9400D3; color: #050505; border-color: #9400D3; }
+      .bar { position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(90deg,#9400D3,#00FF66); }
+      .scan { position: absolute; inset: 0; background: repeating-linear-gradient(to bottom, rgba(255,255,255,0.03) 0 1px, transparent 1px 4px); }
+    </style>
+  </head>
+  <body>
+    <div class="grid"></div>
+    <div class="glow"></div>
+    <div class="glow2"></div>
+    <div class="scan"></div>
+    <div class="frame"></div>
+    <div class="inner">
+      <div class="top">
+        <svg class="mark" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <g fill="none" stroke="#9400D3" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="32" cy="13" r="5.5"/>
+            <path d="M32 19.5V49"/>
+            <path d="M21 27h22"/>
+            <path d="M32 49c-9 0-14-6-14-13"/>
+            <path d="M32 49c9 0 14-6 14-13"/>
+            <path d="M18 36l-3.5 6.5L21 44"/>
+            <path d="M46 36l3.5 6.5L43 44"/>
+          </g>
+        </svg>
+        <div class="kicker">American Pirate Federation</div>
+      </div>
+      <h1>Sovereignty is not given.<br /><span class="accent">It is coded.</span></h1>
+      <p>Data sovereignty, economic reform, and mutual aid — governed in the open by a 20-article Pirate Code.</p>
+      <div class="foot">
+        <div class="url">PIRATE<span>USA</span>.ORG</div>
+        <div class="badges">
+          <div class="badge">AGPL-3.0</div>
+          <div class="badge">On-chain treasury</div>
+          <div class="badge solid">Read the Code</div>
+        </div>
+      </div>
+    </div>
+    <div class="bar"></div>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# Nothing behind the edge API is crawlable; those are POST-only endpoints.
+Disallow: /api/
+
+Sitemap: https://pirateusa.org/sitemap.xml

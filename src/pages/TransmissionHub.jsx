@@ -8,6 +8,51 @@ import { usePirateIntel } from '../hooks/usePirateIntel';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import DOMPurify from 'isomorphic-dompurify';
 
+/**
+ * The Signal — `/podcast`.
+ *
+ * Architectural Law 1 applies to transport controls as much as to numbers. This page used
+ * to set `isPlaying` on any card click and then render "BROADCASTING_LIVE" over an animated
+ * 40-bar equaliser, whether or not an audio file existed — and for every dispatch published
+ * through the headless CMS, none does (WP posts carry no audio field, and `transmissions`
+ * is empty). A visitor pressed play, watched a visualiser move, heard silence, and was told
+ * a broadcast was live. That is the same theatre the ticker and readiness index were
+ * removed for.
+ *
+ * The rules now:
+ *   - a dispatch is playable only when it has a resolvable audio source;
+ *   - with no source, the card opens the transcript and the player says NO AUDIO PUBLISHED;
+ *   - the equaliser animates only while an audio element actually holds a source;
+ *   - every metadata field rendered comes from the row, never from a default string.
+ */
+
+/**
+ * Resolve a real audio source for an episode, from either backend.
+ *
+ * The Supabase row mapper returns `audioUrl` (from the `transmissions.audio_url` column);
+ * this page previously read `episode.audio_url`, so a transmission with a recording would
+ * still have played nothing. WordPress exposes a recording, when one exists, as the
+ * `audio_url` custom field. Anything else — a bare post — has no audio at all.
+ */
+const audioSourceFor = (episode) => {
+  if (!episode) return null;
+  const candidates = [
+    episode.audioUrl,
+    episode.audio_url,
+    episode.custom_fields?.audio_url?.[0],
+    episode.custom_fields?.audioUrl?.[0]
+  ];
+  const found = candidates.find((value) => typeof value === 'string' && value.trim() !== '');
+  return found ? found.trim() : null;
+};
+
+const formatPublished = (value) => {
+  if (!value) return null;
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return null;
+  return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' });
+};
+
 export function TransmissionHub() {
   const { data: wpEpisodes, loading: wpLoading, error: wpError } = usePirateIntel('posts?_embed&per_page=5');
   const { fetchSecureTransmissions } = useAXiMHydration();
@@ -17,6 +62,7 @@ export function TransmissionHub() {
   const [isGlitching, setIsGlitching] = useState(false);
   const [secureTransmissions, setSecureTransmissions] = useState([]);
   const [transmissionsLoading, setTransmissionsLoading] = useState(true);
+  const [playbackNotice, setPlaybackNotice] = useState(null);
 
   const audioRef = useRef(null);
   const glitchTimeoutRef = useRef(null);
@@ -62,66 +108,89 @@ export function TransmissionHub() {
     };
   }, []);
 
+  const activeAudio = audioSourceFor(activeEpisode);
+
   const togglePlay = (episode) => {
+    const source = audioSourceFor(episode);
+
+    // No recording exists. Open the dispatch, say so, and leave the transport stopped.
+    if (!source) {
+      setPlaybackNotice('[ NO AUDIO PUBLISHED FOR THIS DISPATCH — THE TRANSCRIPT BELOW IS THE RECORD ]');
+      setActiveEpisode(episode);
+      setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.removeAttribute('src');
+      }
+      return;
+    }
+
+    setPlaybackNotice(null);
+
     if (activeEpisode?.id === episode.id) {
       const newIsPlaying = !isPlaying;
       setIsPlaying(newIsPlaying);
-      if (newIsPlaying && audioRef.current && activeEpisode?.audio_url) {
-        audioRef.current.play().catch(() => {
-          // Fallback to visualizer-only simulation mode
+      if (newIsPlaying) {
+        audioRef.current?.play().catch(() => {
+          setIsPlaying(false);
+          setPlaybackNotice('[ PLAYBACK BLOCKED BY THIS BROWSER — PRESS PLAY AGAIN TO RETRY ]');
         });
-      } else if (!newIsPlaying && audioRef.current) {
-        audioRef.current.pause();
+      } else {
+        audioRef.current?.pause();
       }
     } else {
       setIsGlitching(true);
       glitchTimeoutRef.current = setTimeout(() => {
         setActiveEpisode(episode);
-        setIsPlaying(true);
         setIsGlitching(false);
-        if (audioRef.current && episode?.audio_url) {
-          audioRef.current.src = episode.audio_url || '';
-          audioRef.current.play().catch(() => {
-            // Fallback to visualizer-only simulation mode
-          });
+        if (audioRef.current) {
+          audioRef.current.src = source;
+          audioRef.current
+            .play()
+            .then(() => setIsPlaying(true))
+            .catch(() => {
+              // The element holds a real source but the browser refused to start it.
+              // Do not leave the UI asserting a broadcast that is not happening.
+              setIsPlaying(false);
+              setPlaybackNotice('[ PLAYBACK BLOCKED BY THIS BROWSER — PRESS PLAY AGAIN TO RETRY ]');
+            });
+        } else {
+          setIsPlaying(false);
         }
       }, 300); // 300ms glitch duration
     }
   };
 
-  const getMetadata = (episode) => {
-    // If it's a secure transmission from Supabase
-    if (episode.isSecure) {
-      return {
-        author: episode.author || 'AXiM Core',
-        duration: episode.duration || 'SECURE_DUR',
-        correlation: episode.correlation || 'ENCRYPTED'
-      };
-    }
-
-    // Original WP logic
-    const customFields = episode.custom_fields || {};
-    const author = customFields.op_lead ? customFields.op_lead[0] : 'Nav_Comms';
-    const duration = customFields.duration ? customFields.duration[0] : '00:00';
-    const correlation = customFields.correlation_id ? customFields.correlation_id[0] : 'NULL';
-
-    return { author, duration, correlation };
-  };
+  // `classification` is a column the row actually carries (migration 20261024000000,
+  // DEFAULT 'PUBLIC'). The page used to stamp every Supabase row `isSecure: true` and print
+  // SECURE_TRANSMISSION — an encryption claim nothing had checked, on a table with no
+  // encryption metadata. The label now comes from the published field, or from the id when
+  // there is none (CMS posts).
+  const episodeLabel = (episode) =>
+    episode.classification
+      ? `${String(episode.classification).toUpperCase()}_TRANSMISSION`
+      : `DISPATCH_${String(episode.id).slice(0, 8)}`;
 
   const episodes = [
-    ...secureTransmissions.map(t => ({
+    ...secureTransmissions.map((t) => ({
       ...t,
-      isSecure: true,
       title: { rendered: t.title },
-      excerpt: { rendered: t.summary || 'Secure transmission from AXiM Core.' },
-      content: { rendered: t.content || 'Decrypting payload...' },
-      date: t.date || new Date().toISOString()
+      // `transmissions` has no body column. `summary` is the whole published record, so it
+      // is both the excerpt and the transcript — no invented "Decrypting payload..." text.
+      excerpt: { rendered: t.summary || '' },
+      content: { rendered: t.summary || '' },
+      // The mapper returns `publishedAt`; the page used to read `t.date` and fall back to
+      // `new Date()`, which stamped every transmission with the day it was read.
+      date: t.publishedAt || null
     })),
     ...(wpEpisodes || [])
   ];
 
   const loading = wpLoading && transmissionsLoading;
-  const error = wpError && secureTransmissions.length === 0;
+  // "Nothing published" and "the wire is down" are different facts and this page used to
+  // print the same red [COMM_LINK_DOWN] for both.
+  const hasError = Boolean(wpError) && secureTransmissions.length === 0;
+  const isEmpty = !loading && !hasError && episodes.length === 0;
 
   return (
     <Layout>
@@ -138,6 +207,9 @@ export function TransmissionHub() {
             <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
               Bridge Dispatches from the core. Unfiltered tactical analysis and federation updates.
             </p>
+            <p className="max-w-2xl mt-4 text-gray-500 font-vt323 text-sm uppercase tracking-widest">
+              [ Audio is published only where a recording exists. Everything else is a written dispatch. ]
+            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
@@ -145,24 +217,8 @@ export function TransmissionHub() {
             {/* Audio Player Panel */}
             <div className="lg:col-span-1">
                <div className={`sticky top-24 bg-black/60 backdrop-blur-2xl border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-white/5 shadow-2xl hover:border-apf-purple/40'} p-6 transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
-                                  {/* Frequency Selector Scaffolding */}
-                 <div className="flex justify-between items-center mb-4 gap-2 border-b border-gray-800 pb-2">
-                   <button
-                     className="flex-1 text-left font-vt323 text-xs uppercase tracking-widest text-apf-purpleLight hover:text-white hover:bg-apf-purple/20 p-2 border border-transparent hover:border-apf-purple/50 transition-colors focus:outline-none"
-                     onClick={(e) => { e.currentTarget.blur(); /* Simulation */ }}
-                   >
-                     [ 433.92 MHz :: HIGH GAIN ]
-                   </button>
-                   <button
-                     className="flex-1 text-right font-vt323 text-xs uppercase tracking-widest text-apf-emerald hover:text-white hover:bg-apf-emerald/20 p-2 border border-transparent hover:border-apf-emerald/50 transition-colors focus:outline-none"
-                     onClick={(e) => { e.currentTarget.blur(); /* Simulation */ }}
-                   >
-                     [ 915.00 MHz :: MESH RELAY ]
-                   </button>
-                 </div>
-
                  <div className="mb-6 border-b border-gray-800 pb-4 relative min-h-[80px]">
-                    <span className="font-vt323 text-xs uppercase text-apf-purple tracking-widest block mb-2">Current Frequency</span>
+                    <span className="font-vt323 text-xs uppercase text-apf-purple tracking-widest block mb-2">On The Player</span>
                     <AnimatePresence mode="wait">
                       <motion.h3
                         key={activeEpisode ? activeEpisode.id : 'empty'}
@@ -174,29 +230,37 @@ export function TransmissionHub() {
                       >
                          {activeEpisode ? (
                             <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activeEpisode.title.rendered) }} />
-                         ) : "TUNING..."}
+                         ) : "NOTHING SELECTED"}
                       </motion.h3>
                     </AnimatePresence>
+                    {activeEpisode && (
+                      <span className="mt-2 block font-vt323 text-[11px] uppercase tracking-widest text-gray-500">
+                        {formatPublished(activeEpisode.date) || 'Publication date not recorded'}
+                      </span>
+                    )}
                  </div>
 
-                                  {/* Hidden Audio Element */}
+                 {/* Hidden Audio Element. A source is only ever assigned when one exists. */}
                  <audio
                    ref={audioRef}
                    onEnded={() => setIsPlaying(false)}
                    onError={() => {
-                     // Silently fallback to visualizer simulation
-                     console.warn('Audio playback failed or unavailable');
+                     // A source that will not load must not leave the player claiming to
+                     // broadcast. Stop, and say what happened.
+                     setIsPlaying(false);
+                     setPlaybackNotice('[ THIS RECORDING COULD NOT BE LOADED FROM ITS SOURCE ]');
                    }}
                  />
 
-                 {/* Custom Audio Visualizer (SVG) */}
+                 {/* Audio Visualizer (SVG). Dormant unless audio is actually playing. */}
                  <div className="h-24 w-full bg-gray-900 mb-6 flex items-end justify-center gap-[2px] overflow-hidden relative border border-gray-800 p-2">
                     {!activeEpisode && <span className="absolute inset-0 flex items-center justify-center font-vt323 text-gray-600">AWAITING_SIGNAL</span>}
+                    {activeEpisode && !activeAudio && <span className="absolute inset-0 flex items-center justify-center font-vt323 text-amber-500 text-sm uppercase tracking-widest">NO AUDIO PUBLISHED</span>}
                     {Array.from({ length: 40 }).map((_, i) => (
                       <motion.div
                         key={i}
-                        className={`w-full ${isPlaying ? 'bg-apf-purple shadow-[0_0_5px_rgba(148,0,255,0.8)]' : 'bg-gray-700'}`}
-                        animate={(isPlaying && activeEpisode) || isGlitching ? {
+                        className={`w-full ${isPlaying && activeAudio ? 'bg-apf-purple shadow-[0_0_5px_rgba(148,0,255,0.8)]' : 'bg-gray-700'}`}
+                        animate={(isPlaying && activeAudio) || isGlitching ? {
                           height: [`${0.5 * 20 + 10}%`, `${0.5 * 80 + 20}%`, `${0.5 * 20 + 10}%`],
                           opacity: [0.5, 1, 0.5]
                         } : { height: '5%', opacity: 0.3 }}
@@ -210,48 +274,48 @@ export function TransmissionHub() {
                     ))}
                  </div>
 
-                 {/* Meta Info */}
+                 {/* Meta Info — only fields the record actually carries. */}
                  {activeEpisode && (
                    <div className="mb-6 space-y-2 border-b border-gray-800 pb-4">
+                     {activeEpisode.classification && (
+                       <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
+                         <span>Classification:</span>
+                         <span className="text-apf-emerald">{activeEpisode.classification}</span>
+                       </div>
+                     )}
                      <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
-                       <span>Op. Lead:</span>
-                       <span className="text-apf-purpleLight">{getMetadata(activeEpisode).author}</span>
-                     </div>
-                     <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
-                       <span>Duration:</span>
-                       <span className="text-white">{getMetadata(activeEpisode).duration}</span>
-                     </div>
-                     <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
-                       <span>Correlation:</span>
-                       <span className="text-apf-purpleLight">{getMetadata(activeEpisode).correlation}</span>
+                       <span>Format:</span>
+                       <span className="text-white">{activeAudio ? 'AUDIO' : 'WRITTEN'}</span>
                      </div>
                    </div>
                  )}
 
-                 {/* Player Controls */}
-                 <div className="flex items-center justify-between mt-4">
-                    <button className="text-gray-400 hover:text-white transition-colors">
-                      <SafeIcon name="SkipBack" />
-                    </button>
+                 {/* Transport */}
+                 <div className="flex items-center justify-center mt-4">
                     <button
+                      type="button"
                       onClick={() => activeEpisode && togglePlay(activeEpisode)}
                       className={`h-12 w-12 rounded-full flex items-center justify-center transition-all ${
-                        activeEpisode ? 'bg-apf-purple hover:bg-apf-purpleLight text-white cursor-pointer shadow-[0_0_15px_rgba(148,0,255,0.5)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                        activeAudio ? 'bg-apf-purple hover:bg-apf-purpleLight text-white cursor-pointer shadow-[0_0_15px_rgba(148,0,255,0.5)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'
                       }`}
-                      disabled={!activeEpisode || isGlitching}
+                      disabled={!activeAudio || isGlitching}
+                      aria-label={activeAudio ? (isPlaying ? 'Pause recording' : 'Play recording') : 'No recording available'}
                     >
                       <SafeIcon name={isPlaying ? "Pause" : "Play"} className="h-6 w-6 ml-1" />
-                    </button>
-                    <button className="text-gray-400 hover:text-white transition-colors">
-                      <SafeIcon name="SkipForward" />
                     </button>
                  </div>
 
                  {activeEpisode && (
                    <div className="mt-6 pt-4 border-t border-gray-800 text-center">
-                     <span className={`font-vt323 text-xs uppercase tracking-[0.2em] ${isPlaying ? 'text-apf-emerald animate-pulse' : 'text-gray-500'}`}>
-                       {isPlaying ? 'BROADCASTING_LIVE' : 'SIGNAL_PAUSED'}
+                     <span className={`font-vt323 text-xs uppercase tracking-[0.2em] ${isPlaying && activeAudio ? 'text-apf-emerald animate-pulse' : 'text-gray-500'}`}>
+                       {!activeAudio ? 'NO_RECORDING' : isPlaying ? 'TRANSMITTING' : 'SIGNAL_PAUSED'}
                      </span>
+                   </div>
+                 )}
+
+                 {playbackNotice && (
+                   <div role="status" className="mt-4 border border-amber-500/40 bg-amber-500/5 p-3 font-vt323 text-[11px] leading-relaxed text-amber-400 uppercase tracking-wider">
+                     {playbackNotice}
                    </div>
                  )}
                </div>
@@ -261,7 +325,7 @@ export function TransmissionHub() {
             <div className="lg:col-span-2 space-y-6">
                <h2 className="font-vt323 text-2xl text-white uppercase tracking-widest border-b border-white/10 pb-2 flex justify-between items-center">
                   <span>Assembly Records</span>
-                  {error && <span className="text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
+                  {hasError && <span className="text-red-500 text-sm animate-pulse">[ COMM_LINK_DOWN ]</span>}
                </h2>
 
                {loading ? (
@@ -269,29 +333,45 @@ export function TransmissionHub() {
                     <SafeIcon name="Loader" className="animate-spin mr-2 h-5 w-5" />
                     SCANNING FREQUENCIES...
                   </div>
-               ) : error || !episodes.length ? (
+               ) : hasError ? (
                   <div className="py-12 text-red-500 font-vt323">
                      [COMM_LINK_DOWN]
                   </div>
+               ) : isEmpty ? (
+                  <div className="py-12 px-6 text-center border border-dashed border-gray-800 bg-black/40">
+                    <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ NO ASSEMBLY RECORDS PUBLISHED ]</div>
+                    <p className="font-sans text-sm text-gray-500 max-w-md mx-auto">
+                      The Federation has not published a dispatch or a recording yet. This page
+                      stays empty until one exists.
+                    </p>
+                  </div>
                ) : (
                   episodes.map((episode) => {
-                    const meta = getMetadata(episode);
+                    const recorded = audioSourceFor(episode);
+                    const isActive = activeEpisode?.id === episode.id;
                     try {
                         const title = episode?.title?.rendered ?? "UNTITLED";
-                        const excerpt = episode?.excerpt?.rendered ?? "NO CONTENT";
-                        const content = episode?.content?.rendered ?? "NO CONTENT";
+                        const excerpt = episode?.excerpt?.rendered ?? "";
+                        const content = episode?.content?.rendered ?? "";
+                        const published = formatPublished(episode.date);
                         return (
                         <div
                           key={episode.id}
-                          className={`p-6 border transition-all duration-500 cursor-pointer shadow-2xl backdrop-blur-2xl ${activeEpisode?.id === episode.id ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.isSecure ? 'border-apf-emerald/50' : ''}`}
+                          data-testid="assembly-record"
+                          data-audio={recorded ? 'true' : 'false'}
+                          className={`p-6 border transition-all duration-500 shadow-2xl backdrop-blur-2xl ${isActive ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.classification ? 'border-apf-emerald/50' : ''}`}
                           onClick={() => togglePlay(episode)}
                         >
-                           <div className="flex justify-between items-start mb-2">
-                             <span className={`font-vt323 text-sm ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'}`}>
-                               {episode.isSecure ? 'SECURE_TRANSMISSION' : `EP_${episode.id}`} // {new Date(episode.date).toLocaleDateString()}
+                           <div className="flex justify-between items-start mb-2 gap-4">
+                             <span className={`font-vt323 text-sm ${episode.classification ? 'text-apf-emerald' : 'text-apf-purple'}`}>
+                               {episodeLabel(episode)}
+                               {published ? ` // ${published}` : ''}
                              </span>
-                             {activeEpisode?.id === episode.id && isPlaying && (
-                                <SafeIcon name="Volume2" className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'} h-4 w-4 animate-pulse`} />
+                             <span className={`font-vt323 text-[11px] uppercase tracking-widest shrink-0 ${recorded ? 'text-apf-emerald' : 'text-gray-500'}`}>
+                               {recorded ? 'RECORDED' : 'WRITTEN'}
+                             </span>
+                             {isActive && isPlaying && recorded && (
+                                <SafeIcon name="Volume2" className={`${episode.classification ? 'text-apf-emerald' : 'text-apf-purple'} h-4 w-4 animate-pulse`} />
                              )}
                            </div>
                            <h3
@@ -300,10 +380,10 @@ export function TransmissionHub() {
                            />
 
                            {/* Full Transcript Area */}
-                           {activeEpisode?.id === episode.id ? (
+                           {isActive ? (
                              <div className="mt-4 border-t border-apf-purple/30 pt-4">
-                               <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
-                                 <SafeIcon name="FileText" className="h-4 w-4" /> Bridge Transcript
+                               <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.classification ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
+                                 <SafeIcon name="FileText" className="h-4 w-4" /> {recorded ? 'Bridge Transcript' : 'Written Dispatch'}
                                </h4>
                                <div
                                  className="prose prose-invert max-w-none text-gray-300 font-sans text-sm bg-black/50 p-4 border border-gray-800/50 max-h-96 overflow-y-auto custom-scrollbar"
@@ -318,9 +398,8 @@ export function TransmissionHub() {
                            )}
 
                           <div className="flex gap-4 font-vt323 text-xs text-gray-500 border-t border-gray-800/50 pt-4 mt-4">
-                             <span>Op: {meta.author}</span>
-                             <span>Len: {meta.duration}</span>
-                             <span className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'} ml-auto`}>{meta.correlation}</span>
+                             <span>{recorded ? 'RECORDING AVAILABLE' : 'NO RECORDING'}</span>
+                             {published && <span className="ml-auto">{published}</span>}
                           </div>
                         </div>
                       );

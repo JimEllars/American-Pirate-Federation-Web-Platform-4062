@@ -6,6 +6,7 @@ import { useActiveWallet, useActiveAccount, useConnect, useDisconnect, useWallet
 import { client as thirdwebClient } from '../../lib/web3/client';
 import { embeddedWallet } from 'thirdweb/wallets';
 import { useAppStore } from '../../store/useAppStore';
+import { PassportModal } from '../auth/PassportModal';
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +17,21 @@ export function Navbar() {
 
   const { connect } = useConnect({ client: thirdwebClient });
   const { disconnect } = useDisconnect();
-  const { musterRollDraft, guildAlignment, activeTxQueue, enqueueTx, dequeueTx, clearTxQueue } = useAppStore();
+  // Identity comes from the Passport (the Supabase session and the member row it owns), not
+  // from a connected wallet. Audit F38: the badge used to show a guild label derived from
+  // `localStorage` as soon as a wallet was connected.
+  const {
+    passport,
+    guildAlignment,
+    activeTxQueue,
+    enqueueTx,
+    dequeueTx,
+    clearTxQueue,
+    isPassportOpen,
+    openPassport,
+    closePassport
+  } = useAppStore();
+  const member = passport.member;
 
   const handleConnect = async () => {
     try {
@@ -32,11 +47,24 @@ export function Navbar() {
     { name: 'Directives', path: '/policies' },
     { name: 'Fleet Muster', path: '/events' },
     { name: 'Armory', path: '/shop' },
-    { name: 'Direct Democracy', path: '/propose' },
+    { name: 'Governance', path: '/governance' },
     { name: 'Donate', path: '/donate' }
   ];
 
-  const handleProcessTx = () => {};
+  // SOP Playbook D tools. They live behind one control because the desktop bar has a hard
+  // one-row budget at 1280 px (see audit F18) — nine top-level links do not fit, and a
+  // wrapped row renders the wallet control underneath the 64 px header.
+  const toolLinks = [
+    { name: 'Balance Calculator', path: '/calculator' },
+    { name: 'Treasury Ledger', path: '/ledger' },
+    { name: 'Pay Ratio Explorer', path: '/pay-ratio' }
+  ];
+
+  // The queue has no processor. `handleProcessTx` used to be an empty function behind a
+  // pulsing, hoverable "[ N PENDING TX ]" button, so a member who submitted a draft saw a
+  // permanent alert that promised an action nobody could take. Nothing in this build
+  // broadcasts a transaction (the write path is the Safe-treasury task, audit F16), so the
+  // indicator is now a status readout that says what the queue actually is: local drafts.
   const handlePurgeQueue = () => clearTxQueue();
 
   const getGuildIcon = () => {
@@ -50,6 +78,7 @@ export function Navbar() {
   };
 
   return (
+    <>
     <nav className="fixed w-full z-50 bg-apf-black/90 backdrop-blur-md border-b border-apf-purple/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -61,8 +90,8 @@ export function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden lg:block w-full">
-            <div className="flex items-center justify-end space-x-6 flex-wrap">
+          <div className="hidden xl:block w-full">
+            <div className="flex items-center justify-end gap-2 flex-nowrap">
               {navLinks.map((link) => (
                 <Link
                   key={link.name}
@@ -71,36 +100,72 @@ export function Navbar() {
                     location.pathname === link.path
                       ? 'text-apf-purple'
                       : 'text-gray-300 hover:text-white'
-                  } px-3 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap`}
+                  } px-2.5 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap`}
                 >
                   {link.name}
                 </Link>
               ))}
 
-              {musterRollDraft.walletAddress ? (
-                  <div className="flex items-center gap-3 px-4 py-1.5 border border-apf-purple/30 bg-black/50 rounded group hover:border-apf-purple transition-colors cursor-default">
+              <details className="relative">
+                <summary
+                  className={`${
+                    toolLinks.some((tool) => tool.path === location.pathname)
+                      ? 'text-apf-purple'
+                      : 'text-gray-300 hover:text-white'
+                  } list-none [&::-webkit-details-marker]:hidden cursor-pointer px-2.5 py-2 rounded-md text-sm font-vt323 font-medium uppercase tracking-widest transition-colors whitespace-nowrap select-none`}
+                >
+                  Tools
+                </summary>
+                <div className="absolute right-0 mt-2 w-60 bg-apf-black border border-apf-purple/30 shadow-[0_0_25px_rgba(148,0,255,0.35)] py-1 z-50">
+                  {toolLinks.map((tool) => (
+                    <Link
+                      key={tool.path}
+                      to={tool.path}
+                      onClick={(e) => e.currentTarget.closest('details')?.removeAttribute('open')}
+                      className="block px-4 py-2 text-sm font-vt323 uppercase tracking-widest text-gray-300 hover:text-white hover:bg-apf-purple/10 transition-colors"
+                    >
+                      {tool.name}
+                    </Link>
+                  ))}
+                </div>
+              </details>
+
+              {member ? (
+                  <div className="flex items-center gap-3 px-4 py-1.5 border border-apf-purple/30 bg-black/50 rounded group hover:border-apf-purple transition-colors cursor-default" title={`Filed on the muster roll · ${member.role}`}>
                       <SafeIcon name={getGuildIcon()} className="h-4 w-4 text-apf-purple" />
                       <div className="flex flex-col">
                           <span className="font-vt323 text-[10px] text-gray-500 uppercase tracking-widest leading-none mb-1">{guildAlignment}</span>
                           <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none truncate max-w-[100px]">
-                              {musterRollDraft.walletAddress.substring(0, 6)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 4)}
+                              {member.alias}
                           </span>
                       </div>
                   </div>
               ) : (
-                  <a href="/#join" className="bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-4 rounded transition-all shadow-[0_0_15px_rgba(113,0,255,0.5)] hover:shadow-[0_0_25px_rgba(113,0,255,0.8)] font-vt323 tracking-widest text-lg">
+                  <a href="/#join" className="bg-apf-purple hover:bg-apf-purpleLight text-white font-bold py-2 px-3 rounded transition-all shadow-[0_0_15px_rgba(113,0,255,0.5)] hover:shadow-[0_0_25px_rgba(113,0,255,0.8)] font-vt323 tracking-widest text-base whitespace-nowrap">
                     JOIN THE FLEET
                   </a>
               )}
 
+              {/* Law 4: the Pirate Passport is the primary identity path (Email OTP),
+                  with wallet connection remaining entirely optional. */}
+              <button
+                onClick={openPassport}
+                className="flex items-center gap-2 px-3 py-2 border border-apf-purple/40 text-apf-purple hover:bg-apf-purple/10 hover:border-apf-purple rounded transition-all font-vt323 tracking-widest text-sm uppercase"
+              >
+                <SafeIcon name="Key" className="h-4 w-4" /> Passport
+              </button>
+
               {activeTxQueue?.length > 0 && (
                 <div className="flex items-center gap-2">
-                  <button onClick={handleProcessTx} className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80">
-                    <div className="w-2 h-2 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                    <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
-                      [ {activeTxQueue.length} PENDING TX ]
+                  <span
+                    className="flex items-center gap-2 px-3 py-1.5 border border-amber-500/40 bg-black/50 rounded"
+                    title="Drafts saved in this browser. No transaction has been broadcast."
+                  >
+                    <div className="w-2 h-2 rounded-full bg-amber-500" />
+                    <span className="font-vt323 text-sm text-amber-400 uppercase tracking-wider leading-none">
+                      [ {activeTxQueue.length} LOCAL DRAFT ]
                     </span>
-                  </button>
+                  </span>
                   <button onClick={handlePurgeQueue} className="text-xs text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all px-2 py-1 ml-2">
                     [ PURGE ]
                   </button>
@@ -110,21 +175,21 @@ export function Navbar() {
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
                   disabled
-                  className="bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-4 py-2 rounded font-vt323 tracking-widest text-lg uppercase cursor-not-allowed animate-pulse"
+                  className="flex items-center gap-1.5 bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-3 py-1.5 rounded font-vt323 tracking-widest text-sm uppercase cursor-not-allowed animate-pulse whitespace-nowrap"
                 >
-                  [ INITIALIZING ENCRYPTION... ]
+                  [ CONNECTING WALLET... ]
                 </button>
               ) : !address ? (
                 <button
                   onClick={handleConnect}
-                  className="bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-4 py-2 rounded transition-all font-vt323 tracking-widest text-lg uppercase"
+                  className="flex items-center gap-1.5 bg-black border border-apf-purple/50 text-apf-purple hover:bg-apf-purple/10 px-3 py-1.5 rounded transition-all font-vt323 tracking-widest text-sm uppercase whitespace-nowrap"
                 >
-                  Connect Wallet
+                  Connect
                 </button>
               ) : (
                 <button
                   onClick={() => disconnect(wallet)}
-                  className="flex items-center gap-2 px-4 py-2 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300"
+                  className="flex items-center gap-2 px-3 py-1.5 border border-apf-emerald/30 bg-black/50 rounded hover:border-apf-emerald hover:shadow-[0_0_15px_rgba(16,185,129,0.5)] transition-all duration-300 whitespace-nowrap"
                 >
                   <div className="w-2 h-2 rounded-full bg-apf-emerald animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
                   <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider leading-none">
@@ -136,18 +201,21 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="flex lg:hidden items-center justify-end w-1/2 md:w-auto gap-2">
+          <div className="flex xl:hidden items-center justify-end w-1/2 md:w-auto gap-2">
               {activeTxQueue?.length > 0 && (
                 <div className="flex items-center gap-1.5">
-                  <button onClick={handleProcessTx} className="flex items-center gap-1.5 px-2 py-1.5 border border-apf-emerald bg-black/50 rounded animate-pulse cursor-pointer hover:border-apf-emerald/80 hover:bg-black/80" title={`${activeTxQueue.length} Pending Tx`}>
-                    <div className="w-2 h-2 flex-shrink-0 rounded-full bg-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.8)]"></div>
-                    <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none hidden sm:inline-block">
-                      [ {activeTxQueue.length} PENDING TX ]
+                  <span
+                    className="flex items-center gap-1.5 px-2 py-1.5 border border-amber-500/40 bg-black/50 rounded"
+                    title={`${activeTxQueue.length} draft(s) saved in this browser. Nothing has been broadcast.`}
+                  >
+                    <div className="w-2 h-2 flex-shrink-0 rounded-full bg-amber-500" />
+                    <span className="font-vt323 text-xs text-amber-400 uppercase tracking-wider leading-none hidden sm:inline-block">
+                      [ {activeTxQueue.length} LOCAL DRAFT ]
                     </span>
-                    <span className="font-vt323 text-xs text-apf-emerald uppercase tracking-wider leading-none sm:hidden">
-                      [{activeTxQueue.length} TX]
+                    <span className="font-vt323 text-xs text-amber-400 uppercase tracking-wider leading-none sm:hidden">
+                      [{activeTxQueue.length} DRAFT]
                     </span>
-                  </button>
+                  </span>
                   <button onClick={handlePurgeQueue} className="text-xs text-red-500/50 hover:text-red-500 hover:bg-red-500/10 border border-transparent hover:border-red-500/30 transition-all px-2 py-1 ml-2" title="Purge Queue">
                     [ X ]
                   </button>
@@ -178,7 +246,7 @@ export function Navbar() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="lg:hidden bg-apf-black border-b border-apf-purple/20 max-h-[calc(100vh-4rem)] overflow-y-auto"
+          className="xl:hidden bg-apf-black border-b border-apf-purple/20 max-h-[calc(100vh-4rem)] overflow-y-auto"
         >
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
             {navLinks.map((link) => (
@@ -191,13 +259,29 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-             {musterRollDraft.walletAddress ? (
+
+            <div className="pt-2 mt-2 border-t border-gray-800">
+              <span className="block px-3 text-[10px] uppercase tracking-widest text-gray-600 font-vt323">
+                Tools
+              </span>
+              {toolLinks.map((tool) => (
+                <Link
+                  key={tool.path}
+                  to={tool.path}
+                  className="text-gray-400 hover:text-apf-emerald block px-3 py-2 rounded-md text-base font-vt323 font-medium uppercase"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {tool.name}
+                </Link>
+              ))}
+            </div>
+             {member ? (
                   <div className="flex items-center gap-3 px-3 py-2 mt-4 border-t border-apf-purple/30">
                       <SafeIcon name={getGuildIcon()} className="h-5 w-5 text-apf-purple" />
                       <div className="flex flex-col min-w-0">
                           <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest truncate">{guildAlignment}</span>
                           <span className="font-vt323 text-sm text-apf-emerald uppercase tracking-wider truncate">
-                              {musterRollDraft.walletAddress.substring(0, 8)}...{musterRollDraft.walletAddress.substring(musterRollDraft.walletAddress.length - 6)}
+                              {member.alias}
                           </span>
                       </div>
                   </div>
@@ -207,12 +291,19 @@ export function Navbar() {
                   </a>
               )}
 
+              <button
+                onClick={() => { openPassport(); setIsOpen(false); }}
+                className="mt-4 w-full flex justify-center items-center gap-2 px-4 py-2 border border-apf-purple/40 text-apf-purple rounded font-vt323 tracking-widest text-lg uppercase"
+              >
+                <SafeIcon name="Key" className="h-4 w-4" /> Pirate Passport
+              </button>
+
               {(connectionStatus === "connecting" || connectionStatus === "unknown") ? (
                 <button
                   disabled
                   className="block mt-4 w-full text-center bg-black border border-apf-purple/50 text-apf-purple opacity-70 px-4 py-2 rounded font-vt323 tracking-widest text-lg uppercase cursor-not-allowed animate-pulse"
                 >
-                  [ INITIALIZING ENCRYPTION... ]
+                  [ CONNECTING WALLET... ]
                 </button>
               ) : !address ? (
                 <button
@@ -237,5 +328,9 @@ export function Navbar() {
         </motion.div>
       )}
     </nav>
+
+    {/* Rendered outside <nav> so the fixed overlay is not trapped in the nav's stacking context. */}
+    <PassportModal isOpen={isPassportOpen} onClose={closePassport} />
+    </>
   );
 }

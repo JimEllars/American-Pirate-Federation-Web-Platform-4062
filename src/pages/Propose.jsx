@@ -5,22 +5,19 @@ import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useActiveAccount, useActiveWalletConnectionStatus, useActiveWalletChain } from "thirdweb/react";
-import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
-import Web3ConnectButton from '../components/web3/Web3ConnectButton';
-import { useNavigate } from 'react-router-dom';
+import { SwitchNetworkButton } from '../components/web3/SwitchNetworkButton';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection, logTransactionDispatched, logGasException } from '../lib/api/telemetry';
-import { useSubmitFederationHash } from '../hooks/useAPFWrite.js';
 
 export function Propose() {
-  const { userRole, musterRollDraft, addProposedAmendment, addReputation, addToast, isSigning, setIsSigning, enqueueTx } = useAppStore();
-  const navigate = useNavigate();
+  const { userRole, passport, openPassport, addProposedAmendment, addToast, isSigning, enqueueTx } = useAppStore();
+  const member = passport.member;
   const account = useActiveAccount();
   const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
   const chain = useActiveWalletChain();
-  const isMismatched = chain?.id !== 42161;
-  const switchChain = () => {};
+  // Arbitrum One, or Sepolia 421614 when the platform is pointed at the test chain. This
+  // used to be `const switchChain = () => {}`, which left the gate with a dead button.
+  const isMismatched = Boolean(chain?.id) && chain.id !== 42161 && chain.id !== 421614;
 
   const [formState, setFormState] = useState({
     title: '',
@@ -28,7 +25,6 @@ export function Propose() {
     alignment: ''
   });
   const [submitting, setSubmitting] = useState(false);
-  const [isMining, setIsMining] = useState(false);
 
   const isLoaded = useRef(false);
 
@@ -74,7 +70,7 @@ export function Propose() {
       title: DOMPurify.sanitize(formState.title),
       summary: DOMPurify.sanitize(formState.summary),
       alignment: DOMPurify.sanitize(formState.alignment),
-      sponsor: DOMPurify.sanitize(musterRollDraft.alias || 'Unknown Sovereign')
+      sponsor: DOMPurify.sanitize(member?.alias || 'Unknown Sovereign')
     };
 
     try {
@@ -93,7 +89,7 @@ export function Propose() {
             created_at: new Date().toISOString()
         });
 
-        addToast('[ SYSTEM: PROPOSAL QUEUED FOR SIGNATURE & LOCAL DRAFT RESTORED ]', 'success');
+        addToast('[ SYSTEM: DRAFT RECORDED LOCALLY — NOT BROADCAST TO ARBITRUM ]', 'success');
 
         setFormState({ title: '', summary: '', alignment: '' });
         localStorage.removeItem('apf_proposal_draft');
@@ -104,8 +100,6 @@ export function Propose() {
         setSubmitting(false);
     }
   };
-
-  if (!isAuthorized) {
 
   if (connectionStatus === 'connected' && isMismatched) {
     return (
@@ -121,13 +115,7 @@ export function Propose() {
                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
                   [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
                 </div>
-                <button
-                  onClick={() => switchChain(42161)}
-                  className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
-                  aria-label="Switch to Arbitrum One"
-                >
-                  Switch to Arbitrum One
-                </button>
+                <SwitchNetworkButton />
               </div>
             </div>
           </div>
@@ -136,47 +124,6 @@ export function Propose() {
     );
   }
 
-  if (connectionStatus !== 'connected' || !address) {
-    return (
-      <Layout>
-        <SEO
-          title="Secure Channel | The Federation"
-          description="Web3 Connection Required."
-        />
-        <PageTransition>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
-            <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
-                <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
-                  [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
-                </div>
-                <Web3ConnectButton />
-              </div>
-            </div>
-          </div>
-        </PageTransition>
-      </Layout>
-    );
-  }
-
-      return (
-          <Layout>
-              <PageTransition>
-                  <div className="max-w-3xl mx-auto px-4 py-32 text-center">
-                      <SafeIcon name="Lock" className="mx-auto h-16 w-16 text-red-500 mb-6" />
-                      <h1 className="text-4xl font-black uppercase tracking-tighter text-white mb-4">Clearance Required</h1>
-                      <p className="text-gray-400 font-vt323 text-lg border border-red-500/30 bg-red-500/10 p-6 inline-block">
-                          Access Denied. Only Navigators and Guild Masters may submit formal protocol revisions to the Federation.
-                      </p>
-                      <button onClick={() => navigate('/policies')} className="mt-8 block mx-auto text-apf-purple hover:text-white font-vt323 uppercase tracking-widest underline underline-offset-4 focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
-                          aria-label="Return to Policies">
-                          Return to Policies
-                      </button>
-                  </div>
-              </PageTransition>
-          </Layout>
-      );
-  }
 
   return (
     <Layout>
@@ -191,20 +138,43 @@ export function Propose() {
                 </h1>
               </div>
               <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
-                Draft a new amendment or protocol revision for the Federation. All submissions enter a peer-review queue.
+                Draft a new amendment or protocol revision for the Federation. A draft is saved
+                in this browser; nothing is broadcast until a signing path is authorized.
               </p>
           </div>
 
+          {/* Law 4 / audit F19: the drafting surface is public reading. Clearance gates the
+              submission, not the page — the earlier full-page "ACCESS DENIED" hid the entire
+              governance route from every visitor who had not yet earned Navigator rank. */}
+          {!isAuthorized && (
+            <div
+              role="status"
+              className="mb-6 border border-amber-500/40 bg-amber-500/5 p-4 font-vt323 text-sm text-amber-200"
+            >
+              <div className="flex items-center gap-2 uppercase tracking-widest text-amber-400 mb-1">
+                <SafeIcon name="Lock" className="h-4 w-4" /> Reading clearance: public · Submitting clearance: Navigator
+              </div>
+              <p className="font-sans text-gray-300 leading-relaxed">
+                You can read and draft here. Submitting requires Navigator clearance, which the
+                Federation assigns on your muster record — it cannot be earned or raised in this
+                browser. {member
+                  ? 'Your record is filed; the draft below stays local until clearance is granted.'
+                  : 'File a muster entry with your Pirate Passport first.'}
+              </p>
+              {!member && (
+                <button
+                  type="button"
+                  onClick={openPassport}
+                  className="mt-3 px-4 py-2 border border-amber-400/60 text-amber-200 hover:bg-amber-400/10 transition-colors uppercase tracking-widest text-xs font-vt323"
+                >
+                  Open Pirate Passport
+                </button>
+              )}
+            </div>
+          )}
+
           <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative flex-grow">
                             <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
-              {isMining && (
-                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-                      <div className="font-vt323 text-apf-emerald text-xl uppercase tracking-widest animate-pulse border border-apf-emerald/30 bg-apf-emerald/10 px-8 py-4 text-center">
-                          [ ENCRYPTING PAYLOAD & AWAITING BLOCKCHAIN CONFIRMATION... ]
-                      </div>
-                  </div>
-              )}
-
               <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
                   <div className="space-y-2">
                       <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="title">
@@ -213,7 +183,6 @@ export function Propose() {
                       <input
                           id="title"
                           type="text"
-                          disabled={isMining}
                           required
                           value={formState.title}
                           onChange={(e) => setFormState({...formState, title: e.target.value})}
@@ -229,7 +198,6 @@ export function Propose() {
                       <textarea
                           id="summary"
                           maxLength={2048}
-                          disabled={isMining}
                           required
                           rows={4}
                           value={formState.summary}
@@ -252,7 +220,6 @@ export function Propose() {
                       <input
                           id="alignment"
                           type="text"
-                          disabled={isMining}
                           required
                           value={formState.alignment}
                           onChange={(e) => setFormState({...formState, alignment: e.target.value})}
@@ -263,17 +230,18 @@ export function Propose() {
 
                   <div className="pt-8 border-t border-gray-800 flex items-center justify-between">
                       <div className="font-vt323 text-gray-500 text-sm">
-                          Sponsor: <span className="text-white uppercase">{musterRollDraft.alias || 'Unknown'}</span>
+                          Sponsor: <span className="text-white uppercase">{member?.alias || 'Not filed'}</span>
                       </div>
                       <button
                           type="submit"
-                          disabled={submitting || isSigning || isMining || formState.summary.length === 0 || formState.summary.length > 2048}
+                          disabled={!isAuthorized || submitting || isSigning || formState.summary.length === 0 || formState.summary.length > 2048}
+                          title={!isAuthorized ? 'Navigator clearance required to submit' : undefined}
                           aria-label="Submit to Queue"
                           className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
                               isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
                           }`}
                       >
-                          {submitting ? '[ AWAITING SIGNATURE... ]' : 'Submit to Queue'}
+                          {!isAuthorized ? 'Navigator Clearance Required' : submitting ? '[ RECORDING DRAFT... ]' : 'Submit to Queue'}
                       </button>
                   </div>
               </form>

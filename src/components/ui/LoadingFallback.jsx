@@ -54,7 +54,7 @@ export function LoadingFallback() {
         </div>
 
         <div className="text-apf-purple tracking-widest uppercase text-sm mt-6 animate-pulse border-b border-apf-purple/30 pb-1">
-          [ ESTABLISHING SECURE CONNECTION... ]
+          [ LOADING MODULE... ]
         </div>
       </div>
     </div>

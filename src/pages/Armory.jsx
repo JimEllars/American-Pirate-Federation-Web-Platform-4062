@@ -6,48 +6,23 @@ import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
 import { useAXiMHydration } from '../hooks/useAXiMHydration';
 import { useActiveAccount, useActiveWalletConnectionStatus, useActiveWalletChain } from "thirdweb/react";
-import { NetworkSwitchModal } from '../components/web3/NetworkSwitchModal';
-import Web3ConnectButton from '../components/web3/Web3ConnectButton';
-import { logRequisition } from '../lib/api/telemetry';
+import { SwitchNetworkButton } from '../components/web3/SwitchNetworkButton';
+import { logRequisition, logSignatureRejection } from '../lib/api/telemetry';
 import DOMPurify from 'isomorphic-dompurify';
-import { logSignatureRejection } from '../lib/api/telemetry';
 import ArmoryCategoryBar from '../components/ui/ArmoryCategoryBar';
 
-const PROVISIONS = [
-  {
-    id: 'badge-1',
-    name: 'Federation Deckhand Pin',
-    price: 15,
-    type: 'Hardware',
-    image: 'https://images.unsplash.com/photo-1614729939124-03290b5509ce?w=500&auto=format&fit=crop&q=60',
-    requirement: 'Deckhand'
-  },
-  {
-    id: 'hoodie-1',
-    name: 'Stealth-Mesh Protocol Hoodie',
-    price: 45,
-    type: 'Apparel',
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=500&auto=format&fit=crop&q=60',
-    requirement: 'Unverified' // Open to all
-  },
-  {
-    id: 'comms-1',
-    name: 'Encrypted Comms Module',
-    price: 120,
-    type: 'Tech',
-    image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=500&auto=format&fit=crop&q=60',
-    requirement: 'Navigator'
-  }
-];
 
 export function Armory() {
-  const { userRole, musterRollDraft, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
+  const { userRole, passport, openPassport, reputationPoints, spendReputation, requisitionHistory, addRequisition, reputationHistory, isSigning, setIsSigning, addToast } = useAppStore();
+  const member = passport.member;
   const account = useActiveAccount();
   const address = account?.address;
   const connectionStatus = useActiveWalletConnectionStatus();
   const chain = useActiveWalletChain();
-  const isMismatched = chain?.id !== 42161;
-  const switchChain = () => {};
+  // Arbitrum One, or Sepolia 421614 when the platform is pointed at the test chain — the
+  // same pair `Layout` treats as in-network. This used to be `const switchChain = () => {}`,
+  // so the gate below had no working exit.
+  const isMismatched = Boolean(chain?.id) && chain.id !== 42161 && chain.id !== 421614;
   const [procuring, setProcuring] = useState(null);
   const [activeCategory, setActiveCategory] = useState('ALL');
   const categories = ['ALL', 'HARDWARE', 'APPAREL', 'TECH'];
@@ -65,14 +40,13 @@ export function Armory() {
       try {
         const data = await fetchArmoryInventory();
         if (isMounted) {
-          if (data && data.length > 0) {
-            setLiveInventory(data);
-          } else {
-            setLiveInventory(PROVISIONS);
-          }
+          // Law 1: an empty armory renders the empty state. It used to fall back to a
+          // three-item catalogue of Unsplash stock photos presented as Federation
+          // provisions, so /shop always looked stocked while armory_inventory held 0 rows.
+          if (isMounted) setLiveInventory(Array.isArray(data) ? data : []);
         }
       } catch (error) {
-        if (isMounted) setLiveInventory(PROVISIONS);
+        if (isMounted) setLiveInventory([]);
       } finally {
         if (isMounted) setInventoryLoading(false);
       }
@@ -81,14 +55,19 @@ export function Armory() {
     return () => { isMounted = false; };
   }, [fetchArmoryInventory]);
 
+  /**
+   * Clearance is the rank on the member record (audit F39), and a requisition is signed by
+   * the connected wallet — so both are required. The local draft's `status`/`walletAddress`
+   * used to stand in for the Federation's record here, which meant a visitor who had typed
+   * an alias into this browser could unlock restricted provisions.
+   */
   const isEligible = (req) => {
     if (req === 'Unverified') return true;
-    const isCommitted = musterRollDraft.status === 'committed';
-    const hasWallet = musterRollDraft.walletAddress?.toLowerCase() === address?.toLowerCase();
+    if (!member || !address) return false;
 
-    if (req === 'Deckhand' && hasWallet && ['Deckhand', 'Navigator', 'Guild Master'].includes(userRole)) return true;
-    if (req === 'Navigator' && hasWallet && isCommitted && ['Navigator', 'Guild Master'].includes(userRole)) return true;
-    if (req === 'Guild Master' && hasWallet && isCommitted && userRole === 'Guild Master') return true;
+    if (req === 'Deckhand') return ['Deckhand', 'Navigator', 'Guild Master'].includes(member.role);
+    if (req === 'Navigator') return ['Navigator', 'Guild Master'].includes(member.role);
+    if (req === 'Guild Master') return member.role === 'Guild Master';
 
     return false;
   };
@@ -112,7 +91,7 @@ export function Armory() {
       }
       spendReputation(item.price);
       addRequisition(item);
-      logRequisition(address || '0xANONYMOUS', item.id, item.price);
+      logRequisition();
       addToast(`[ AUTHORIZED: ${item.name} PROVISIONED ]`, 'success');
     } catch (err) {
       if (err.code === 4001 || (err.message && err.message.toLowerCase().includes('user rejected'))) {
@@ -141,12 +120,7 @@ export function Armory() {
                 <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
                   [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
                 </div>
-                <button
-                  onClick={() => switchChain(42161)}
-                  className="bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md"
-                >
-                  Switch to Arbitrum One
-                </button>
+                <SwitchNetworkButton />
               </div>
             </div>
           </div>
@@ -155,28 +129,6 @@ export function Armory() {
     );
   }
 
-  if (connectionStatus !== 'connected' || !address) {
-    return (
-      <Layout>
-        <SEO
-          title="Secure Channel | The Federation"
-          description="Web3 Connection Required."
-        />
-        <PageTransition>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
-            <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
-                <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
-                  [ SECURE CHANNEL: WEB3 CONNECTION REQUIRED ]
-                </div>
-                <Web3ConnectButton />
-              </div>
-            </div>
-          </div>
-        </PageTransition>
-      </Layout>
-    );
-  }
 
 
   return (
@@ -201,8 +153,8 @@ export function Armory() {
             <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 font-vt323 text-sm inline-block min-w-[250px] relative z-20">
                <div className="text-gray-300 uppercase mb-1">Current Clearance</div>
                <div className="flex items-center gap-2 mb-2 border-b border-gray-800 pb-2">
-                 <div className={`h-2 w-2 rounded-full ${musterRollDraft.walletAddress ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
-                 <span className={musterRollDraft.walletAddress ? 'text-white' : 'text-gray-200'}>
+                 <div className={`h-2 w-2 rounded-full ${member ? 'bg-green-500' : 'bg-red-500 animate-pulse'}`} />
+                 <span className={member ? 'text-white' : 'text-gray-200'} title={member ? 'Filed on the muster roll' : 'No member record — file one in the muster form'}>
                    {userRole}
                  </span>
                </div>
@@ -210,12 +162,15 @@ export function Armory() {
                  <span className="text-gray-300 uppercase flex items-center gap-1 group-hover:text-white transition-colors">
                      Reputation: <SafeIcon name="Info" className="h-3 w-3" />
                  </span>
-                 <span className="text-apf-purpleLight font-bold">{reputationPoints} PTS</span>
+                 <span className="text-apf-purpleLight font-bold" title="Local ledger for this browser — not a Federation record">
+                   {reputationPoints} PTS
+                 </span>
 
                  {/* Reputation Log Dropdown */}
                  {showRepLog && (
                      <div className="absolute top-full right-0 mt-2 w-64 bg-black border border-gray-800 shadow-2xl p-4 z-50 max-h-48 overflow-y-auto custom-scrollbar">
                          <div className="text-gray-200 text-xs uppercase mb-2 border-b border-gray-800 pb-1">Reputation Logs</div>
+                         <div className="text-[10px] text-gray-500 mb-2 leading-snug">Local to this browser. Not a Federation record.</div>
                          {reputationHistory && reputationHistory.length > 0 ? (
                              <ul className="space-y-2">
                                  {reputationHistory.map((log, idx) => (
@@ -231,8 +186,14 @@ export function Armory() {
                      </div>
                  )}
                </div>
-               {!musterRollDraft.walletAddress && (
-                 <div className="mt-2 text-xs text-apf-purple">Authorize Entry Protocol to upgrade clearance</div>
+               {!member && (
+                 <button
+                   type="button"
+                   onClick={openPassport}
+                   className="mt-2 text-xs text-apf-purple underline underline-offset-4 hover:text-white text-left"
+                 >
+                   No member record — open a Pirate Passport
+                 </button>
                )}
             </div>
           </div>
@@ -245,6 +206,20 @@ export function Armory() {
                         <div className="text-[#10B981] font-vt323 text-lg animate-pulse">
                             [ QUARTERMASTER: RE-INDEXING AVAILABLE HARDWARE MATRIX... ]
                         </div>
+                    </div>
+                 </div>
+             ) : filteredInventory.length === 0 ? (
+                 <div className="col-span-full py-16 flex justify-center">
+                    <div className="max-w-xl w-full bg-black/40 backdrop-blur-md border border-dashed border-gray-800 p-8 text-center">
+                        <SafeIcon name="Package" className="mx-auto h-10 w-10 text-gray-600 mb-4" />
+                        <div className="font-vt323 text-lg text-gray-300 uppercase tracking-widest mb-2">
+                            {liveInventory.length === 0 ? 'The Armory is not stocked yet' : `No provisions in ${activeCategory}`}
+                        </div>
+                        <p className="font-sans text-sm text-gray-500 leading-relaxed">
+                            {liveInventory.length === 0
+                              ? 'Provisions appear here only once they exist in Federation inventory. Nothing is listed speculatively.'
+                              : 'Try another category.'}
+                        </p>
                     </div>
                  </div>
              ) : filteredInventory.map((item) => {

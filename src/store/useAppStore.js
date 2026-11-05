@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { fetchMember, getSession, signOutPassport } from '../lib/api/members';
 
 export const useAppStore = create(
   persist(
@@ -13,11 +14,33 @@ export const useAppStore = create(
         rsvps: [], // Track event RSVPs
       },
       userRole: 'Unverified', // Roles: Unverified, Deckhand, Navigator, Guild Master
-      guildAlignment: 'Unaligned',
+guildAlignment: 'Unaligned',
+      // --- Pirate Passport -------------------------------------------------
+      // Audit F37/F38/F39: the only authoritative statement about who a visitor is the
+      // Supabase session and the `members` row it owns. `userRole` and `guildAlignment`
+      // above are mirrors of that row. Nothing in this browser writes them any more:
+      // connecting a wallet used to promote a visitor to Deckhand, committing a local
+      // draft promoted them to Navigator, and 500 locally-clicked points made them a
+      // Guild Master. Those ranks were then shown as "Clearance" and gated /policies and
+      // /propose, so the site told visitors the Federation had ranked them when the
+      // members table had never heard of them.
+      //
+      // status: 'unknown' (not yet asked) | 'anonymous' | 'passport-only' (signed in,
+      // not on the roll) | 'enrolled' | 'error'
+      passport: { status: 'unknown', session: null, member: null, error: null },
+      // The Passport dialog is opened from the navigation bar, from the muster form and from
+      // every place that needs an identity to act. One flag, so those callers cannot drift.
+      isPassportOpen: false,
+      openPassport: () => set({ isPassportOpen: true }),
+      closePassport: () => set({ isPassportOpen: false }),
       policySignals: {}, // Track signaled policies { policyCode: true }
       policyComments: {}, // Track comments { policyCode: [{ author, role, text, date }] }
       proposedAmendments: [], // [{ id, title, summary, alignment, sponsor, date }]
-      reputationPoints: 100, // Mock reputation
+      // Starts at zero because no civic action has been taken yet. This is a local ledger of
+      // actions taken in this browser (zustand `persist`), not a Federation record — the
+      // earlier seeded value of 100 handed every first-time visitor reputation points they
+      // had never earned and priced /shop against them (Architectural Law 1).
+      reputationPoints: 0,
       reputationHistory: [], // [{ action, amount, date }]
       toasts: [],
       requisitionHistory: [], // Track purchases [{ id, name, cost, date, status }]
@@ -34,9 +57,6 @@ export const useAppStore = create(
       setLastSyncTime: (time) => set({ lastSyncTime: time }),
       aiContextPayload: null,
       setAiContextPayload: (payload) => set({ aiContextPayload: payload }),
-      pendingAiAction: null,
-      setPendingAiAction: (action) => set({ pendingAiAction: action }),
-      clearPendingAiAction: () => set({ pendingAiAction: null }),
       aiDecryptedResponse: null,
       setAiDecryptedResponse: (response) => set({ aiDecryptedResponse: response }),
       activeTxQueue: [],
@@ -45,6 +65,14 @@ export const useAppStore = create(
       clearTxQueue: () => set({ activeTxQueue: [] }),
       telemetryLogs: [],
       addTelemetryLog: (message) => set((state) => ({ telemetryLogs: [message, ...state.telemetryLogs].slice(0, 3) })),
+
+      // What the client actually observed when it last POSTed to /api/telemetry.
+      // The shell used to render "[ INGRESS: CLOUDFLARE_EDGE_ACTIVE ]" unconditionally,
+      // asserting an edge state it never probed. This is the observed outcome instead:
+      //   state: 'idle' | 'accepted' | 'rejected' | 'unreachable'
+      // Not persisted — a reading from a previous session is not a reading.
+      ingressStatus: { state: 'idle', count: 0, http: null, at: null },
+      setIngressStatus: (status) => set({ ingressStatus: status }),
 
       addToast: (message, type = 'info', persistent = false) => {
         const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Date.now().toString(36) + Date.now().toString(36);
@@ -74,44 +102,56 @@ export const useAppStore = create(
           if (processedData.walletAddress) {
             processedData.walletAddress = processedData.walletAddress.toLowerCase();
           }
-          const newState = {
-            musterRollDraft: { ...state.musterRollDraft, ...processedData }
-          };
-
-          let newRole = state.userRole;
-          let newGuild = state.guildAlignment;
-
-          // Sovereign Role Escalation
-          if (newState.musterRollDraft.walletAddress && state.userRole === 'Unverified') {
-            newRole = 'Deckhand';
-          }
-
-          if (newState.musterRollDraft.status === 'committed' && (newRole === 'Deckhand' || newRole === 'Unverified')) {
-              newRole = 'Navigator';
-          }
-
-          if (state.reputationPoints > 500) {
-              newRole = 'Guild Master';
-          }
-
-          // Guild Assignment based on skillset
-          if (data.skills) {
-             const skillsLower = data.skills.toLowerCase();
-             if (skillsLower.includes('code') || skillsLower.includes('dev')) newGuild = "Shipwright's Guild";
-             else if (skillsLower.includes('health') || skillsLower.includes('medic')) newGuild = "Surgeon's Dispensary";
-             else if (skillsLower.includes('logistic') || skillsLower.includes('supply')) newGuild = "Quartermaster's Provisions";
-             else if (skillsLower.includes('agitprop') || skillsLower.includes('media')) newGuild = "Navigator's Guild";
-             else newGuild = "Federation Reserve";
-          }
-
-          return { ...newState, userRole: newRole, guildAlignment: newGuild };
+          // The draft is exactly that: a draft. It never assigns rank or guild — those
+          // come back from the members row (see refreshPassport).
+          return { musterRollDraft: { ...state.musterRollDraft, ...processedData } };
         }),
+
+      /**
+       * Read the session and the member row it owns, and mirror the Federation-assigned
+       * rank/guild into the fields the UI reads. Called once at boot (App.jsx) and after
+       * sign-in, sign-out and enrollment.
+       */
+      refreshPassport: async () => {
+        const session = await getSession();
+
+        if (!session?.user) {
+          set({
+            passport: { status: 'anonymous', session: null, member: null, error: null },
+            userRole: 'Unverified',
+            guildAlignment: 'Unaligned'
+          });
+          return;
+        }
+
+        try {
+          const member = await fetchMember(session.user.id);
+          set({
+            passport: { status: member ? 'enrolled' : 'passport-only', session, member, error: null },
+            userRole: member?.role ?? 'Unverified',
+            guildAlignment: member?.guild ?? 'Unaligned'
+          });
+        } catch (err) {
+          set({
+            passport: { status: 'error', session, member: null, error: err?.message || 'The muster roll is unreachable.' },
+            userRole: 'Unverified',
+            guildAlignment: 'Unaligned'
+          });
+        }
+      },
+
+      signOutPassport: async () => {
+        await signOutPassport();
+        set({
+          passport: { status: 'anonymous', session: null, member: null, error: null },
+          userRole: 'Unverified',
+          guildAlignment: 'Unaligned'
+        });
+      },
 
       clearMusterRoll: () =>
         set({
-          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle', rsvps: [] },
-          userRole: 'Unverified',
-          guildAlignment: 'Unaligned'
+          musterRollDraft: { alias: '', comms: '', skills: '', walletAddress: '', status: 'idle', rsvps: [] }
         }),
 
       signalPolicy: (policyCode) =>
@@ -132,19 +172,10 @@ export const useAppStore = create(
               newRep = Math.max(0, newRep - 20);
           }
 
-          let newRole = state.userRole;
-          if (newRep > 500) {
-              newRole = 'Guild Master';
-          } else if (newRep <= 500 && state.userRole === 'Guild Master') {
-              newRole = state.musterRollDraft.status === 'committed' ? 'Navigator' :
-                        (state.musterRollDraft.walletAddress ? 'Deckhand' : 'Unverified');
-          }
-
           return {
             policySignals: { ...state.policySignals, [policyCode]: isSignaling },
             reputationPoints: newRep,
-            reputationHistory: repHistory,
-            userRole: newRole
+            reputationHistory: repHistory
           };
         }),
 
@@ -175,41 +206,19 @@ export const useAppStore = create(
              date: new Date().toISOString()
           };
 
-          let newRole = state.userRole;
-          if (newRep > 500) {
-              newRole = 'Guild Master';
-          }
-
           return {
              musterRollDraft: { ...state.musterRollDraft, rsvps: newRsvps },
              reputationPoints: newRep,
-             reputationHistory: [repLog, ...state.reputationHistory],
-             userRole: newRole
+             reputationHistory: [repLog, ...state.reputationHistory]
           };
         }),
 
       spendReputation: (amount) =>
-        set((state) => {
-          const newRep = Math.max(0, state.reputationPoints - amount);
-          let newRole = state.userRole;
-
-          // Re-evaluate role on reputation change
-          if (newRep <= 500 && state.userRole === 'Guild Master') {
-              newRole = state.musterRollDraft.status === 'committed' ? 'Navigator' :
-                        (state.musterRollDraft.walletAddress ? 'Deckhand' : 'Unverified');
-          }
-
-          return { reputationPoints: newRep, userRole: newRole };
-        }),
+        set((state) => ({ reputationPoints: Math.max(0, state.reputationPoints - amount) })),
 
       addReputation: (amount, action = "Sovereign Action") =>
         set((state) => {
           const newRep = state.reputationPoints + amount;
-          let newRole = state.userRole;
-
-          if (newRep > 500) {
-              newRole = 'Guild Master';
-          }
 
           const repLog = {
              action,
@@ -219,7 +228,6 @@ export const useAppStore = create(
 
           return {
             reputationPoints: newRep,
-            userRole: newRole,
             reputationHistory: [repLog, ...state.reputationHistory]
           };
         }),
@@ -243,11 +251,20 @@ export const useAppStore = create(
         requisitionHistory: state.requisitionHistory,
         reputationPoints: state.reputationPoints,
         reputationHistory: state.reputationHistory,
-        userRole: state.userRole,
-        guildAlignment: state.guildAlignment,
         musterRollDraft: state.musterRollDraft,
         policySignals: state.policySignals
       }),
+      version: 2,
+      // v1 persisted `userRole`/`guildAlignment`, which let an old browser keep a rank the
+      // Federation never assigned. Drop them on upgrade; they are re-derived from the
+      // member row at boot.
+      migrate: (persisted, version) => {
+        if (!persisted || version >= 2) return persisted;
+        const next = { ...persisted };
+        delete next.userRole;
+        delete next.guildAlignment;
+        return next;
+      },
       onRehydrateStorage: () => (state, error) => {
         if (error) {
           console.warn('[Zustand] Rehydration error, resetting state:', error);

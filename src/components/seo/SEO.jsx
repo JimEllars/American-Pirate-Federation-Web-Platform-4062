@@ -14,11 +14,11 @@ export function SEO({ title, description, type = 'website', articleData }) {
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={metaDesc} />
-      <meta property="og:image" content="/og-image.jpg" />
+      <meta property="og:image" content="/og-image.png" />
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={metaDesc} />
-      <meta name="twitter:image" content="/og-image.jpg" />
+      <meta name="twitter:image" content="/og-image.png" />
       
 
 
@@ -29,7 +29,7 @@ export function SEO({ title, description, type = 'website', articleData }) {
           "@type": "Organization",
           "name": "American Pirate Federation",
           "url": "https://pirateusa.org",
-          "logo": "https://pirateusa.org/logo.png",
+          "logo": "https://pirateusa.org/og-image.png",
           "description": "A Hybrid Federation of DAO Nodes and Sovereign LLCs.",
           "sameAs": [
             "https://twitter.com/piratefederation"

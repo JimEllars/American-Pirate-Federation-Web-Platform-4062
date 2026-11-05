@@ -43,7 +43,11 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: 'dist',
-    sourcemap: mode === 'development',
+    // Hard-off. Source maps must never reach a public CDN: they expose the full
+    // pre-minified source tree, including any string that was meant to stay server-side.
+    // (Previously `mode === 'development'`, which flipped on for `vite build --mode
+    // development` — a flag CI is free to pass.)
+    sourcemap: false,
     chunkSizeWarningLimit: 5000,
     rollupOptions: {
       output: {

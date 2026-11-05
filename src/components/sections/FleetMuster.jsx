@@ -1,47 +1,28 @@
-import React from 'react';
-import { useActiveAccount } from "thirdweb/react";
+import React, { useState } from 'react';
 import SafeIcon from '../../common/SafeIcon';
 import { useAppStore } from '../../store/useAppStore';
-import { logEventSignal } from '../../lib/api/telemetry';
-import { logSignatureRejection } from '../../lib/api/telemetry';
+import { registerEventSignal } from '../../lib/api/eventSignals';
 
 
 export function FleetMuster({ event }) {
-  const { musterRollDraft, registerSignal, isSigning, setIsSigning, addToast } = useAppStore();
-  const account = useActiveAccount();
-  const address = account?.address;
-  const isCommitted = musterRollDraft.status === 'committed';
+  const { passport, musterRollDraft, registerSignal, addToast } = useAppStore();
+  const [registering, setRegistering] = useState(false);
+  const member = passport.member;
+  const isEnrolled = Boolean(member);
   const hasRSVPd = musterRollDraft.rsvps?.includes(event.title);
 
-  // Mock alias generation based on hash for demo purposes if actual names aren't tracked server-side yet
-  const hashString = (str) => {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-        hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return hash;
-  };
-  const getMockAliases = () => {
-     const count = Math.abs(hashString(event.title)) % 5 + 2; // 2 to 6 aliases
-     const bases = ['Ghost', 'Cipher', 'Null', 'Void', 'Neon', 'Chrome', 'Byte'];
-     const aliases = [];
-     for(let i=0; i<count; i++) {
-         aliases.push(`${bases[(Math.abs(hashString(event.title + i))) % bases.length]}_${(Math.abs(hashString(event.title + i * 2))) % 99}`);
-     }
-     if (hasRSVPd && musterRollDraft.alias) aliases.unshift(musterRollDraft.alias);
-     return aliases.slice(0, 5); // show max 5
-  };
-
-  const registeredAliases = getMockAliases();
-
+  // Law 1: no fabricated attendee roll. We can only truthfully show the current
+  // user's own registered signal, because RSVP rows are not publicly readable
+  // (see supabase migration 20261102000000 — event_signals is ownership-scoped).
+  const ownSignal = hasRSVPd && musterRollDraft.alias ? musterRollDraft.alias : null;
 
   return (
     <div className="flex flex-col p-6 border-b border-gray-800 hover:bg-apf-purple/5 transition-colors group">
       <div className="flex flex-col md:flex-row gap-6">
           <div className="md:w-1/4">
             <div className="text-4xl font-black text-apf-purple/40 group-hover:text-apf-purple transition-colors">
-              {event.date.split(' ')[0]}
-              <span className="block text-sm uppercase text-gray-500">{event.date.split(' ')[1]}</span>
+              {(event.date || 'TBD').split(' ')[0]}
+              <span className="block text-sm uppercase text-gray-500">{(event.date || '').split(' ')[1] || 'DATE PENDING'}</span>
             </div>
           </div>
 
@@ -61,41 +42,45 @@ export function FleetMuster({ event }) {
           </div>
 
           <div className="md:w-1/4 flex items-center justify-end">
+            {/* A signal is a row in `event_signals` owned by the signed-in member — no
+                wallet, no signature ritual, no claim on the visitor's behalf. */}
             <button
               onClick={async () => {
-                if (!isCommitted || hasRSVPd || isSigning) return;
+                if (hasRSVPd || registering) return;
 
+                if (!member) {
+                  addToast('[ SIGNAL: FILE A MUSTER ENTRY BEFORE REGISTERING ]', 'warning');
+                  return;
+                }
+
+                setRegistering(true);
                 try {
-                  setIsSigning(true);
-                  if (!account || !address) {
-                    addToast("[ ENCRYPTION FAILED: WALLET DISCONNECTED ]", "error");
-                    return;
-                  }
-
-                  const signature = await account.wallet.sign("Authorize Fleet Muster Signal: " + event.title);
+                  const { alreadyRegistered } = await registerEventSignal({
+                    eventId: event.id,
+                    memberId: member.id
+                  });
                   registerSignal(event.title);
-                  logEventSignal(address, event.title, signature);
-                  addToast("[ EVENT SIGNAL CRYPTOGRAPHICALLY SECURED ]", "success");
+                  addToast(
+                    alreadyRegistered
+                      ? '[ SIGNAL ALREADY ON THE FLEET MUSTER ]'
+                      : '[ SIGNAL REGISTERED ON THE FLEET MUSTER ]',
+                    'success'
+                  );
                 } catch (error) {
-                  if (error.code === 4001 || error.message.includes('user rejected')) {
-                     logSignatureRejection('/dashboard');
-                     addToast("[ SIGNAL AUTHORIZATION REJECTED ]", "error");
-                  } else {
-                     addToast("[ SIGNAL AUTHORIZATION FAILED ]", "error");
-                  }
+                  addToast(`[ SIGNAL FAILED: ${(error?.message || 'THE MUSTER REJECTED IT').toUpperCase()} ]`, 'error');
                 } finally {
-                  setIsSigning(false);
+                  setRegistering(false);
                 }
               }}
-              disabled={isSigning}
+              disabled={registering}
               className={`px-6 py-2 border font-mono text-xs uppercase transition-all tracking-widest ${
                 hasRSVPd
                   ? 'bg-apf-purple text-white border-apf-purple cursor-default'
-                  : isCommitted
-                    ? (isSigning ? 'border-gray-500 text-gray-500 cursor-wait bg-black/50' : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white')
+                  : isEnrolled
+                    ? (registering ? 'border-gray-500 text-gray-500 cursor-wait bg-black/50' : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white')
                     : 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
               }`}>
-              {isSigning ? 'Encrypting Signal...' : (hasRSVPd ? 'Signal Registered' : (isCommitted ? 'Register Signal' : 'Clearance Reqd'))}
+              {registering ? 'Filing Signal…' : (hasRSVPd ? 'Signal Registered' : (isEnrolled ? 'Register Signal' : 'Muster Entry Reqd'))}
             </button>
           </div>
       </div>
@@ -105,14 +90,15 @@ export function FleetMuster({ event }) {
           <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest flex items-center gap-1">
               <SafeIcon name="Radio" className="h-3 w-3" /> Signals Detected:
           </span>
-          <div className="flex flex-wrap gap-2">
-              {registeredAliases.map((alias, i) => (
-                  <span key={i} className={`font-vt323 text-xs px-2 py-0.5 border ${alias === musterRollDraft.alias ? 'border-apf-emerald text-apf-emerald bg-apf-emerald/10' : 'border-gray-700 text-gray-400 bg-gray-900'}`}>
-                      {alias}
+          <div className="flex flex-wrap gap-2 items-center">
+              {ownSignal ? (
+                  <span className="font-vt323 text-xs px-2 py-0.5 border border-apf-emerald text-apf-emerald bg-apf-emerald/10">
+                      {ownSignal}
                   </span>
-              ))}
-              {Math.abs(hashString(event.title)) % 10 > 5 && (
-                  <span className="font-vt323 text-xs text-gray-600 px-2 py-0.5">+{Math.abs(hashString(event.title)) % 15 + 3} more...</span>
+              ) : (
+                  <span className="font-vt323 text-xs text-gray-600">
+                      No public signal roll published for this muster.
+                  </span>
               )}
           </div>
       </div>

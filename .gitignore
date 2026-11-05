@@ -26,6 +26,7 @@ dist-ssr
 *.bundle
 *.patch
 test-results/
+playwright-report/
 patch_*.py
 
 # Agent & Patch Artifacts
@@ -33,4 +34,5 @@ patch_*.py
 *.patch
 patch_*.py
 test-results/
+playwright-report/
 .last-run.json
