@@ -178,6 +178,12 @@ const measureOverflow = (page) =>
 
 for (const width of [375, 768, 1440]) {
   test(`no horizontal overflow at ${width}px on any route`, async ({ page }) => {
+    // Twelve cold navigations plus a settle poll each. The default 45 s budget covered the
+    // 375/768 sweeps but not 1440 on a loaded runner: the 2026-11-05 run timed out mid-loop
+    // and the catch block below reported the initialiser's `0px`, which reads as a layout
+    // defect that does not exist. Budget the work, and never report a number the last
+    // sample did not produce.
+    test.setTimeout(120000);
     await page.setViewportSize({ width, height: width === 375 ? 812 : 900 });
     for (const route of ROUTES) {
       await page.goto(route.path, { waitUntil: 'domcontentloaded' });
@@ -192,6 +198,11 @@ for (const width of [375, 768, 1440]) {
           }, { timeout: 8000 })
           .toBeLessThanOrEqual(1);
       } catch (err) {
+        if (last.overflow <= 1) {
+          throw new Error(
+            `overflow measurement failed on ${route.path} at ${width}px before it could settle: ${err.message}`
+          );
+        }
         throw new Error(
           `horizontal overflow of ${last.overflow}px on ${route.path} at ${width}px` +
             (last.worst
@@ -500,4 +511,41 @@ test('no control claims encryption is being initialised', async ({ page }) => {
 
   // Connecting a wallet initialises no encryption. The pending state now says what it is.
   await expect(page.locator('body')).not.toContainText(/INITIALIZING ENCRYPTION/i);
+});
+
+
+// ---------------------------------------------------------------------------
+// Public content — nothing is decrypted, and local notes are not a Federation record.
+// ---------------------------------------------------------------------------
+
+test('public dispatches are not presented as decrypted ciphertext', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+
+  // Every dispatch on these surfaces is public WordPress HTML. "Read Decrypt",
+  // "SECURE TRANSMISSION" and "CLOSE DECRYPT" described a cryptographic operation that
+  // never happened, on content the CMS serves in clear text.
+  for (const path of ['/', '/intelligence', '/podcast']) {
+    await page.goto(path, { waitUntil: 'domcontentloaded' });
+    const body = page.locator('body');
+    await expect(body, `${path} still claims decryption`).not.toContainText(/decrypt/i);
+    await expect(body, `${path} still claims a secure transmission`).not.toContainText(
+      /SECURE[_ ]TRANSMISSION/i
+    );
+  }
+});
+
+test('/policies labels annotations as local notes, never as peer review', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/policies', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+  await body.getByRole('button', { name: /^notes \(0\)$/i }).first().click();
+
+  // The thread is this browser's store. Presenting it as "peer review" or "commentary"
+  // told a visitor the Federation had a review process with no entries in it.
+  await expect(body).not.toContainText(/peer review/i);
+  await expect(body).toContainText(/saved in this browser only/i);
+
+  // Drafts on the same page are local too; the copy must not promise a public floor.
+  await expect(body).toContainText(/These drafts are stored in this browser/i);
 });
