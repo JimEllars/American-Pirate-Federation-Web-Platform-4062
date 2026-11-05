@@ -161,10 +161,19 @@ export function TransmissionHub() {
     }
   };
 
+  // `classification` is a column the row actually carries (migration 20261024000000,
+  // DEFAULT 'PUBLIC'). The page used to stamp every Supabase row `isSecure: true` and print
+  // SECURE_TRANSMISSION — an encryption claim nothing had checked, on a table with no
+  // encryption metadata. The label now comes from the published field, or from the id when
+  // there is none (CMS posts).
+  const episodeLabel = (episode) =>
+    episode.classification
+      ? `${String(episode.classification).toUpperCase()}_TRANSMISSION`
+      : `DISPATCH_${String(episode.id).slice(0, 8)}`;
+
   const episodes = [
     ...secureTransmissions.map((t) => ({
       ...t,
-      isSecure: true,
       title: { rendered: t.title },
       // `transmissions` has no body column. `summary` is the whole published record, so it
       // is both the excerpt and the transcript — no invented "Decrypting payload..." text.
@@ -268,7 +277,7 @@ export function TransmissionHub() {
                  {/* Meta Info — only fields the record actually carries. */}
                  {activeEpisode && (
                    <div className="mb-6 space-y-2 border-b border-gray-800 pb-4">
-                     {activeEpisode.isSecure && activeEpisode.classification && (
+                     {activeEpisode.classification && (
                        <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
                          <span>Classification:</span>
                          <span className="text-apf-emerald">{activeEpisode.classification}</span>
@@ -350,19 +359,19 @@ export function TransmissionHub() {
                           key={episode.id}
                           data-testid="assembly-record"
                           data-audio={recorded ? 'true' : 'false'}
-                          className={`p-6 border transition-all duration-500 shadow-2xl backdrop-blur-2xl ${isActive ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.isSecure ? 'border-apf-emerald/50' : ''}`}
+                          className={`p-6 border transition-all duration-500 shadow-2xl backdrop-blur-2xl ${isActive ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.classification ? 'border-apf-emerald/50' : ''}`}
                           onClick={() => togglePlay(episode)}
                         >
                            <div className="flex justify-between items-start mb-2 gap-4">
-                             <span className={`font-vt323 text-sm ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'}`}>
-                               {episode.isSecure ? 'SECURE_TRANSMISSION' : `DISPATCH_${episode.id}`}
+                             <span className={`font-vt323 text-sm ${episode.classification ? 'text-apf-emerald' : 'text-apf-purple'}`}>
+                               {episodeLabel(episode)}
                                {published ? ` // ${published}` : ''}
                              </span>
                              <span className={`font-vt323 text-[11px] uppercase tracking-widest shrink-0 ${recorded ? 'text-apf-emerald' : 'text-gray-500'}`}>
                                {recorded ? 'RECORDED' : 'WRITTEN'}
                              </span>
                              {isActive && isPlaying && recorded && (
-                                <SafeIcon name="Volume2" className={`${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purple'} h-4 w-4 animate-pulse`} />
+                                <SafeIcon name="Volume2" className={`${episode.classification ? 'text-apf-emerald' : 'text-apf-purple'} h-4 w-4 animate-pulse`} />
                              )}
                            </div>
                            <h3
@@ -373,7 +382,7 @@ export function TransmissionHub() {
                            {/* Full Transcript Area */}
                            {isActive ? (
                              <div className="mt-4 border-t border-apf-purple/30 pt-4">
-                               <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.isSecure ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
+                               <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.classification ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
                                  <SafeIcon name="FileText" className="h-4 w-4" /> {recorded ? 'Bridge Transcript' : 'Written Dispatch'}
                                </h4>
                                <div

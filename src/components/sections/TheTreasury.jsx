@@ -186,7 +186,7 @@ export function TheTreasury() {
                     </p>
 
                     <div className="mt-8 pt-8 border-t border-white/10">
-                      <h4 className="font-vt323 text-lg text-white mb-4 uppercase tracking-widest">[ DECRYPTED_BLUEPRINTS ]</h4>
+                      <h4 className="font-vt323 text-lg text-white mb-4 uppercase tracking-widest">[ GUILD BLUEPRINTS — PUBLIC RECORD ]</h4>
                       {loading && <p className="font-vt323 text-gray-500 animate-pulse">Synchronizing Fleet Assets...</p>}
                       {error && <p className="font-vt323 text-red-500">SIGNAL INTERRUPTED: {error}</p>}
                       {!loading && !error && guides && guides.length > 0 && (
@@ -311,7 +311,7 @@ export function TheTreasury() {
                              <td colSpan="6" className="py-16 text-center">
                                <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ LEDGER SYNCHRONIZED — NO ENTRIES ]</div>
                                <p className="font-vt323 text-gray-500 text-sm max-w-md mx-auto">
-                                 The Federation has not recorded any settled treasury allocations yet. Entries appear here automatically once a Safe multisig transaction is confirmed and ingested.
+                                 The Federation has not recorded any settled treasury allocations yet. Rows appear only when the Federation publishes a settled transaction to its ledger.
                                </p>
                              </td>
                            </tr>

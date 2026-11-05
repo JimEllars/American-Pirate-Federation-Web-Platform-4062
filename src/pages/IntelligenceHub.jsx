@@ -315,7 +315,7 @@ export function IntelligenceHub() {
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                           />
                           <button onClick={() => setActivePost(post)} className="mt-auto w-fit text-sm font-mono text-apf-purple hover:text-white flex items-center gap-2 uppercase tracking-widest">
-                            Read Decrypt <SafeIcon name="ArrowRight" />
+                            Read Dispatch <SafeIcon name="ArrowRight" />
                           </button>
                         </div>
                       </motion.div>

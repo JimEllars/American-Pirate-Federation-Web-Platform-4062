@@ -21,7 +21,7 @@ export function NewsFeed() {
           </h2>
         </div>
         <div className="mb-8">
-          <span className="font-vt323 text-apf-emerald/80 text-xl tracking-widest uppercase">[ DECRYPTING INCOMING TRANSMISSIONS... ]</span>
+          <span className="font-vt323 text-apf-emerald/80 text-xl tracking-widest uppercase">[ LOADING DISPATCHES FROM THE CMS... ]</span>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {[1, 2, 3].map((item) => (
@@ -116,7 +116,7 @@ export function NewsFeed() {
                   />
                 </div>
                 <button onClick={() => setActivePost(post)} className="mt-4 text-sm font-vt323 uppercase tracking-widest text-apf-purpleLight hover:text-white flex items-center gap-2 self-start">
-                  Read Decrypt <SafeIcon name="ArrowRight" />
+                  Read Dispatch <SafeIcon name="ArrowRight" />
                 </button>
               </div>
             </motion.div>
