@@ -234,7 +234,7 @@ test('treasury ledger publishes no invented transactions', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-  const ledgerTab = page.getByRole('button', { name: /mothership ledger/i });
+  const ledgerTab = page.getByRole('button', { name: /treasury ledger/i });
   await expect(ledgerTab).toBeVisible();
   await ledgerTab.click();
 
@@ -447,7 +447,7 @@ test('the muster form is not wallet-gated and does not claim enrollment it canno
   // Anonymous visitor: the page must say what is missing rather than file anything.
   await expect(body).toContainText(/a pirate passport is required/i);
 
-  await page.getByLabel(/alias_callsign/i).fill('TEST_VESSEL');
+  await page.getByLabel(/callsign/i).fill('TEST_VESSEL');
   await submit.click();
 
   // The Passport dialog opens; no success is announced.

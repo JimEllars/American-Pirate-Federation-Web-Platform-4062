@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import SafeIcon from '../../common/SafeIcon';
 import { useAXiMHydration } from '../../hooks/useAXiMHydration';
 
 /**
@@ -66,28 +65,29 @@ export function Ticker() {
   }, [fetchLiveLedger, fetchActiveEvents, fetchActiveProposals]);
 
   const updates = [...liveUpdates, ...DEPLOYMENT_FACTS];
-  const duplicatedUpdates = [...updates, ...updates, ...updates];
+  const loop = [...updates, ...updates];
 
   return (
-    <div className="w-full bg-black/40 backdrop-blur-md border-y border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden py-2 flex items-center">
-      <div className="w-full relative flex whitespace-nowrap overflow-hidden">
-        <motion.div
-          animate={{ x: [0, -1000] }}
-          transition={{
-            repeat: Infinity,
-            ease: "linear",
-            duration: 20
-          }}
-          className="flex gap-8 items-center text-apf-purpleLight font-vt323 text-lg uppercase tracking-wider"
-        >
-          {duplicatedUpdates.map((text, i) => (
-            <div key={i} className="flex items-center gap-4">
-              <SafeIcon name="Radio" className="text-apf-purple" />
-              <span>{text}</span>
-              <span className="text-apf-purple/50">|</span>
-            </div>
-          ))}
-        </motion.div>
+    <div className="border-y border-white/[0.06] bg-surface-900/50">
+      <div className="apf-container flex items-center gap-4 py-2.5">
+        <span className="hidden shrink-0 items-center gap-2 font-terminal text-[10px] uppercase tracking-[0.2em] text-ink-dim sm:flex">
+          <span className="h-1.5 w-1.5 rounded-full bg-apf-emerald" />
+          status
+        </span>
+        <div className="relative min-w-0 flex-1 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_6%,black_94%,transparent)]">
+          <motion.div
+            animate={{ x: ['0%', '-50%'] }}
+            transition={{ repeat: Infinity, ease: 'linear', duration: 60 }}
+            className="flex w-max items-center whitespace-nowrap font-terminal text-[11px] uppercase tracking-[0.14em] text-ink-muted"
+          >
+            {loop.map((text, i) => (
+              <span key={i} className="flex items-center gap-3 pr-10">
+                <span className="text-apf-purple/70" aria-hidden="true">/</span>
+                {text}
+              </span>
+            ))}
+          </motion.div>
+        </div>
       </div>
     </div>
   );
