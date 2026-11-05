@@ -14,8 +14,9 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
   // written here: this card cannot promote anybody.
   const { userRole, policySignals, signalPolicy, policyComments, addPolicyComment, addToast, isCoreSynced } = useAppStore();
 
-  // Law 1: no seeded reviewer. An un-annotated directive shows an empty review
-  // thread rather than a fabricated endorsement from a fictional Navigator.
+  // Law 1: no seeded reviewer, and no public review thread. `policyComments` lives in this
+  // browser's persisted store and is written by nobody else — so it must never be labelled
+  // "peer review" or "commentary", which reads as a Federation record. It is a note pad.
   const comments = policyComments[code] || [];
 
   const hasSignaled = policySignals[code] || false;
@@ -87,7 +88,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 mix-blend-screen opacity-10 md:opacity-15"
         >
           <div className="border-4 border-apf-emerald text-apf-emerald font-vt323 text-4xl font-black p-4 uppercase tracking-[0.3em] whitespace-nowrap">
-            Authorized
+            Local Signal
           </div>
         </motion.div>
       )}
@@ -108,7 +109,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             onClick={() => { setShowComments(!showComments); setShowHistory(false); }}
             className={`text-xs font-vt323 hover:text-apf-purple transition-colors uppercase tracking-widest ${showComments ? 'text-apf-purple' : 'text-gray-500'}`}
           >
-            Commentary ({comments.length})
+            Notes ({comments.length})
           </button>
           <button
             onClick={() => { setShowHistory(!showHistory); setShowComments(false); }}
@@ -192,7 +193,8 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             <div className="overflow-y-auto space-y-3 mb-2 flex-grow pr-2 custom-scrollbar">
               {comments.length === 0 && (
                 <div className="text-xs font-vt323 text-gray-600 border border-dashed border-gray-800 p-2 text-center">
-                  No peer review recorded for this directive yet.
+                  No notes on this device. Notes are saved in this browser only — they are not
+                  peer review and the Federation never receives them.
                 </div>
               )}
               {comments.map((comment, i) => (
@@ -211,7 +213,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="Add peer review..."
+                  placeholder="Add a note (saved in this browser)"
                   className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple focus:ring-1 focus:ring-apf-purple font-vt323"
                 />
                 <button type="submit" className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
@@ -246,7 +248,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             }`}
           >
             <span className="relative z-10 flex items-center gap-2">
-              {hasSignaled ? <><SafeIcon name="Check" /> DIRECTIVE AUTHORIZED</> : 'AUTHORIZE DIRECTIVE'}
+              {hasSignaled ? <><SafeIcon name="Check" /> SIGNALED IN THIS BROWSER</> : 'SIGNAL SUPPORT'}
             </span>
           </button>
         )}

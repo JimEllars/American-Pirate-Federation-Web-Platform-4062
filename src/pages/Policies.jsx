@@ -116,11 +116,12 @@ export function Policies() {
 
           <div className="mt-16 p-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 text-center relative overflow-hidden">
              <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
-            <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Proposed Amendments (Drafts)</h3>
+            <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Your Draft Amendments (this browser)</h3>
             <p className="text-gray-500 font-sans text-sm mb-8 max-w-2xl mx-auto relative z-10">
-              Anyone may read this floor. A draft stays a draft until the Quartermaster&rsquo;s
-              Provisions certifies it for a ballot — nothing on this page promotes a motion,
-              and no clearance level can be raised from a browser.
+              These drafts are stored in this browser, not on the Federation&rsquo;s floor. No other
+              member can read them and the Federation has not received them. A draft stays a
+              draft until the Quartermaster&rsquo;s Provisions certifies it for a ballot — nothing
+              on this page promotes a motion, and no clearance level can be raised from a browser.
             </p>
             <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
                 {activeDrafts && activeDrafts.length > 0 ? (
