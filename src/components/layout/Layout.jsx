@@ -186,6 +186,7 @@ export function Layout({ children }) {
               <h3 className="font-terminal text-[11px] uppercase tracking-[0.18em] text-ink-dim">Explore</h3>
               <ul className="mt-3 space-y-2 text-sm">
                 {[
+                  ['Forum', '/forum'],
                   ['Members', '/members'],
                   ['Intelligence', '/intelligence'],
                   ['Directives', '/policies'],

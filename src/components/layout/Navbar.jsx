@@ -45,6 +45,7 @@ export function Navbar() {
     { name: 'Directives', path: '/policies' },
     { name: 'Fleet Muster', path: '/events' },
     { name: 'Armory', path: '/shop' },
+    { name: 'Forum', path: '/forum' },
     { name: 'Governance', path: '/governance' },
     { name: 'Donate', path: '/donate' }
   ];
