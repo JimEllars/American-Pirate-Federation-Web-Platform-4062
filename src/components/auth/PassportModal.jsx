@@ -24,8 +24,7 @@ export function PassportModal({ isOpen, onClose }) {
   const { passport, signOutPassport, refreshPassport } = useAppStore();
   const dialogRef = useRef(null);
 
-  // Keyboard + focus handling so the dialog behaves like a dialog (it previously had no
-  // role, no aria-modal, and no Escape handler).
+  // Keyboard + focus handling so the dialog behaves like a dialog.
   useEffect(() => {
     if (!isOpen) return;
 
@@ -78,54 +77,56 @@ export function PassportModal({ isOpen, onClose }) {
   const sessionEmail = passport.session?.user?.email;
   const member = passport.member;
 
+  const label = 'text-[11px] uppercase tracking-[0.12em] text-ink-dim';
+
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="passport-title"
         tabIndex={-1}
-        className="bg-apf-black border border-apf-purple/50 max-w-md w-full relative overflow-hidden p-6 font-vt323 focus:outline-none focus:ring-2 focus:ring-apf-purple/60"
+        className="apf-card relative w-full max-w-md p-6 focus:outline-none sm:p-7"
       >
         <button
           onClick={onClose}
           aria-label="Close passport"
-          className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+          className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white"
         >
-            <SafeIcon name="X" className="h-6 w-6" />
+            <SafeIcon name="X" className="h-5 w-5" />
         </button>
 
-        <h2 id="passport-title" className="text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-            <SafeIcon name="Shield" className="text-apf-purple h-6 w-6" /> Pirate Passport
+        <h2 id="passport-title" className="flex items-center gap-2 text-xl font-semibold text-white">
+            <SafeIcon name="Shield" className="h-5 w-5 text-apf-purpleLight" /> Pirate Passport
         </h2>
 
         {passport.status === 'unknown' ? (
-          <p className="text-gray-400 text-sm">[ CHECKING SESSION… ]</p>
+          <p className="mt-6 text-sm text-ink-dim">Checking session…</p>
         ) : sessionEmail ? (
           /* ---------- Signed in: the actual account ---------- */
-          <div className="space-y-4">
-            <div className="bg-black/50 border border-gray-800 p-4 text-sm">
-              <div className="text-gray-400 uppercase tracking-widest mb-1 text-xs">Signal endpoint</div>
-              <div className="text-white text-base break-all mb-4">{sessionEmail}</div>
+          <div className="mt-6 space-y-4">
+            <div className="rounded-xl border border-white/[0.07] bg-surface-950/60 p-4">
+              <div className={`${label} mb-1`}>Signal endpoint</div>
+              <div className="mb-4 break-all text-sm text-white">{sessionEmail}</div>
 
               {member ? (
                 <>
-                  <div className="text-gray-400 uppercase tracking-widest mb-1 text-xs">Alias</div>
-                  <div className="text-white text-lg uppercase tracking-wider mb-4">{member.alias}</div>
+                  <div className={`${label} mb-1`}>Alias</div>
+                  <div className="mb-4 text-base font-medium text-white">{member.alias}</div>
 
-                  <div className="text-gray-400 uppercase tracking-widest mb-1 text-xs">Clearance</div>
-                  <div className="text-apf-emerald text-lg uppercase tracking-wider mb-4">{member.role}</div>
+                  <div className={`${label} mb-1`}>Clearance</div>
+                  <div className="mb-4 text-base font-medium text-emerald-300">{member.role}</div>
 
-                  <div className="text-gray-400 uppercase tracking-widest mb-1 text-xs">Guild</div>
-                  <div className="text-apf-purple text-lg uppercase tracking-wider">{member.guild}</div>
+                  <div className={`${label} mb-1`}>Guild</div>
+                  <div className="text-base font-medium text-apf-purpleLight">{member.guild}</div>
                 </>
               ) : (
-                <div className="border-t border-gray-800 pt-4">
-                  <div className="text-amber-300 uppercase tracking-widest text-xs mb-1">
-                    [ NOT ON THE MUSTER ROLL ]
+                <div className="border-t border-white/[0.07] pt-4">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-amber-300">
+                    Not on the muster roll
                   </div>
-                  <p className="text-gray-300 text-sm leading-snug">
+                  <p className="mt-1.5 text-sm leading-relaxed text-ink-muted">
                     This Passport is valid but carries no member record, so the Federation has
                     not assigned a rank. File an entry in the muster form on the home page.
                   </p>
@@ -134,8 +135,8 @@ export function PassportModal({ isOpen, onClose }) {
             </div>
 
             {passport.status === 'error' && passport.error && (
-              <p className="text-amber-400 text-xs leading-snug">
-                [ MUSTER ROLL UNREACHABLE: {passport.error} ]
+              <p className="text-xs leading-relaxed text-amber-300">
+                Muster roll unreachable: {passport.error}
               </p>
             )}
 
@@ -144,25 +145,25 @@ export function PassportModal({ isOpen, onClose }) {
                 await signOutPassport();
                 onClose?.();
               }}
-              className="w-full border border-gray-800 hover:border-red-500/50 text-gray-400 hover:text-red-400 px-4 py-3 uppercase tracking-widest transition-all text-sm"
+              className="apf-btn apf-btn-ghost w-full"
             >
-              [ End Passport Session ]
+              End Passport session
             </button>
           </div>
         ) : (
           /* ---------- Signed out: request an Email OTP ---------- */
-          <form onSubmit={handleMagicLink} className="space-y-4">
-            <p className="text-gray-400 text-sm leading-tight mb-4">
-                Establish a secure uplink. Enter your comm-link address to receive a one-time
-                access code.
+          <form onSubmit={handleMagicLink} className="mt-6 space-y-4">
+            <p className="text-sm leading-relaxed text-ink-muted">
+              Sign in with a one-time code sent to your email. No wallet, no gas, no address
+              required.
             </p>
             <div>
                 <input
                 type="email"
                 required
                 aria-label="Email address for the one-time access code"
-                placeholder="Enter comm-link address..."
-                className="w-full bg-black/50 border border-gray-800 px-4 py-3 text-white focus:outline-none focus:border-apf-purple transition-colors"
+                placeholder="you@example.com"
+                className="w-full rounded-lg border border-white/[0.1] bg-surface-950 px-3.5 py-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 />
@@ -171,29 +172,29 @@ export function PassportModal({ isOpen, onClose }) {
             <button
                 type="submit"
                 disabled={status === 'sending' || status === 'success' || !isSupabaseConfigured}
-                className="w-full bg-apf-purple hover:bg-apf-purpleLight text-white px-4 py-3 uppercase tracking-widest transition-all focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="apf-btn apf-btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
             >
-                {status === 'sending' ? '[ INITIATING UPLINK... ]' :
-                 status === 'success' ? '[ TRANSMISSION SENT ]' :
-                 'Request Access Sequence'}
+                {status === 'sending' ? 'Sending code…' :
+                 status === 'success' ? 'Code sent' :
+                 'Send sign-in code'}
             </button>
 
             {!isSupabaseConfigured && (
-              <p className="text-amber-400 text-xs leading-snug">
-                [ THIS BUILD HAS NO SUPABASE PROJECT CONFIGURED — SIGN-IN IS UNAVAILABLE ]
+              <p className="text-xs leading-relaxed text-amber-300">
+                This build has no Supabase project configured — sign-in is unavailable.
               </p>
             )}
 
             {status === 'success' && (
-              <p className="text-apf-emerald text-sm mt-2 leading-snug">
+              <p className="text-sm leading-relaxed text-emerald-300">
                 Check that address for a one-time link. Opening it signs this browser in; the
                 passport above updates on return.
               </p>
             )}
 
             {status === 'error' && (
-              <p className="text-red-500 text-sm mt-2 leading-snug">
-                [ UPLINK FAILED{errorMessage ? `: ${errorMessage}` : '. VERIFY COORDINATES.'} ]
+              <p className="text-sm leading-relaxed text-red-400">
+                Sign-in failed{errorMessage ? `: ${errorMessage}` : '. Check the address and try again.'}
               </p>
             )}
           </form>

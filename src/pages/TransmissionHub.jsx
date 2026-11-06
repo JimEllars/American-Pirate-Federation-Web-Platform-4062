@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
+import { PageHeader } from '../components/layout/PageHeader';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -196,29 +197,21 @@ export function TransmissionHub() {
     <Layout>
       <SEO title="The Signal | Assembly Records" description="Bridge Dispatches and Assembly Records of the American Pirate Federation." />
       <PageTransition>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="mb-16">
-             <div className="flex items-center gap-4 mb-6">
-              <SafeIcon name="Radio" className="h-10 w-10 text-apf-purple" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white">
-                The Signal
-              </h1>
-            </div>
-            <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
-              Bridge Dispatches from the core. Unfiltered tactical analysis and federation updates.
-            </p>
-            <p className="max-w-2xl mt-4 text-gray-500 font-vt323 text-sm uppercase tracking-widest">
-              [ Audio is published only where a recording exists. Everything else is a written dispatch. ]
-            </p>
-          </div>
+        <div className="apf-container py-14 sm:py-20">
+          <PageHeader
+            icon="Radio"
+            kicker="The Signal"
+            title="Transmissions"
+            lede="Bridge dispatches and assembly records from the Federation. Audio is published only where a recording exists; everything else is a written dispatch."
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
 
             {/* Audio Player Panel */}
             <div className="lg:col-span-1">
-               <div className={`sticky top-24 bg-black/60 backdrop-blur-2xl border ${isPlaying ? 'border-apf-purple shadow-[0_0_30px_rgba(148,0,255,0.3)]' : 'border-white/5 shadow-2xl hover:border-apf-purple/40'} p-6 transition-all duration-500 ${isGlitching ? 'glitch-hover animate-pulse grayscale opacity-50' : ''}`}>
-                 <div className="mb-6 border-b border-gray-800 pb-4 relative min-h-[80px]">
-                    <span className="font-vt323 text-xs uppercase text-apf-purple tracking-widest block mb-2">On The Player</span>
+               <div className={`apf-card sticky top-24 p-6 transition-colors ${isPlaying ? 'border-apf-purple/40' : 'hover:border-white/15'} ${isGlitching ? 'animate-pulse opacity-60' : ''}`}>
+                 <div className="relative mb-5 min-h-[80px] border-b border-white/[0.06] pb-4">
+                    <span className="mb-2 block text-[10px] uppercase tracking-[0.16em] text-ink-dim">Now on the player</span>
                     <AnimatePresence mode="wait">
                       <motion.h3
                         key={activeEpisode ? activeEpisode.id : 'empty'}
@@ -226,7 +219,7 @@ export function TransmissionHub() {
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: isGlitching ? 10 : -10 }}
                         transition={{ duration: 0.2 }}
-                        className="text-xl font-bold text-white line-clamp-2"
+                        className="line-clamp-2 text-lg font-semibold text-white"
                       >
                          {activeEpisode ? (
                             <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(activeEpisode.title.rendered) }} />
@@ -234,7 +227,7 @@ export function TransmissionHub() {
                       </motion.h3>
                     </AnimatePresence>
                     {activeEpisode && (
-                      <span className="mt-2 block font-vt323 text-[11px] uppercase tracking-widest text-gray-500">
+                      <span className="mt-2 block font-mono text-[11px] text-ink-dim">
                         {formatPublished(activeEpisode.date) || 'Publication date not recorded'}
                       </span>
                     )}
@@ -245,21 +238,23 @@ export function TransmissionHub() {
                    ref={audioRef}
                    onEnded={() => setIsPlaying(false)}
                    onError={() => {
-                     // A source that will not load must not leave the player claiming to
-                     // broadcast. Stop, and say what happened.
+                     // An <audio> element with no src fires `error` on mount. Only a source
+                     // that was actually assigned can fail to load; otherwise the player
+                     // would announce a broken recording before anything was selected.
+                     if (!audioRef.current?.getAttribute('src')) return;
                      setIsPlaying(false);
                      setPlaybackNotice('[ THIS RECORDING COULD NOT BE LOADED FROM ITS SOURCE ]');
                    }}
                  />
 
                  {/* Audio Visualizer (SVG). Dormant unless audio is actually playing. */}
-                 <div className="h-24 w-full bg-gray-900 mb-6 flex items-end justify-center gap-[2px] overflow-hidden relative border border-gray-800 p-2">
+                 <div className="relative mb-5 flex h-24 w-full items-end justify-center gap-[2px] overflow-hidden rounded-xl border border-white/[0.06] bg-surface-950 p-2">
                     {!activeEpisode && <span className="absolute inset-0 flex items-center justify-center font-vt323 text-gray-600">AWAITING_SIGNAL</span>}
                     {activeEpisode && !activeAudio && <span className="absolute inset-0 flex items-center justify-center font-vt323 text-amber-500 text-sm uppercase tracking-widest">NO AUDIO PUBLISHED</span>}
                     {Array.from({ length: 40 }).map((_, i) => (
                       <motion.div
                         key={i}
-                        className={`w-full ${isPlaying && activeAudio ? 'bg-apf-purple shadow-[0_0_5px_rgba(148,0,255,0.8)]' : 'bg-gray-700'}`}
+                        className={`w-full rounded-full ${isPlaying && activeAudio ? 'bg-apf-purple' : 'bg-white/15'}`}
                         animate={(isPlaying && activeAudio) || isGlitching ? {
                           height: [`${0.5 * 20 + 10}%`, `${0.5 * 80 + 20}%`, `${0.5 * 20 + 10}%`],
                           opacity: [0.5, 1, 0.5]
@@ -276,14 +271,14 @@ export function TransmissionHub() {
 
                  {/* Meta Info — only fields the record actually carries. */}
                  {activeEpisode && (
-                   <div className="mb-6 space-y-2 border-b border-gray-800 pb-4">
+                   <div className="mb-5 space-y-2 border-b border-white/[0.06] pb-4">
                      {activeEpisode.classification && (
-                       <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
+                       <div className="flex justify-between text-[11px] text-ink-dim">
                          <span>Classification:</span>
                          <span className="text-apf-emerald">{activeEpisode.classification}</span>
                        </div>
                      )}
-                     <div className="flex justify-between font-vt323 text-xs text-gray-500 uppercase">
+                     <div className="flex justify-between text-[11px] text-ink-dim">
                        <span>Format:</span>
                        <span className="text-white">{activeAudio ? 'AUDIO' : 'WRITTEN'}</span>
                      </div>
@@ -295,8 +290,8 @@ export function TransmissionHub() {
                     <button
                       type="button"
                       onClick={() => activeEpisode && togglePlay(activeEpisode)}
-                      className={`h-12 w-12 rounded-full flex items-center justify-center transition-all ${
-                        activeAudio ? 'bg-apf-purple hover:bg-apf-purpleLight text-white cursor-pointer shadow-[0_0_15px_rgba(148,0,255,0.5)]' : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                      className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
+                        activeAudio ? 'cursor-pointer bg-apf-purple text-white hover:bg-[#A21CE8]' : 'cursor-not-allowed bg-white/[0.05] text-ink-dim'
                       }`}
                       disabled={!activeAudio || isGlitching}
                       aria-label={activeAudio ? (isPlaying ? 'Pause recording' : 'Play recording') : 'No recording available'}
@@ -306,15 +301,15 @@ export function TransmissionHub() {
                  </div>
 
                  {activeEpisode && (
-                   <div className="mt-6 pt-4 border-t border-gray-800 text-center">
-                     <span className={`font-vt323 text-xs uppercase tracking-[0.2em] ${isPlaying && activeAudio ? 'text-apf-emerald animate-pulse' : 'text-gray-500'}`}>
+                   <div className="mt-5 border-t border-white/[0.06] pt-4 text-center">
+                     <span className={`font-terminal text-[11px] uppercase tracking-[0.16em] ${isPlaying && activeAudio ? 'text-emerald-300' : 'text-ink-dim'}`}>
                        {!activeAudio ? 'NO_RECORDING' : isPlaying ? 'TRANSMITTING' : 'SIGNAL_PAUSED'}
                      </span>
                    </div>
                  )}
 
                  {playbackNotice && (
-                   <div role="status" className="mt-4 border border-amber-500/40 bg-amber-500/5 p-3 font-vt323 text-[11px] leading-relaxed text-amber-400 uppercase tracking-wider">
+                   <div role="status" className="mt-4 rounded-lg border border-amber-400/25 bg-amber-400/[0.05] p-3 text-xs leading-relaxed text-amber-200">
                      {playbackNotice}
                    </div>
                  )}
@@ -323,24 +318,24 @@ export function TransmissionHub() {
 
             {/* Episode List */}
             <div className="lg:col-span-2 space-y-6">
-               <h2 className="font-vt323 text-2xl text-white uppercase tracking-widest border-b border-white/10 pb-2 flex justify-between items-center">
-                  <span>Assembly Records</span>
-                  {hasError && <span className="text-red-500 text-sm animate-pulse">[ COMM_LINK_DOWN ]</span>}
+               <h2 className="flex items-center justify-between border-b border-white/[0.06] pb-3 text-2xl font-semibold tracking-tight text-white">
+                  <span>Assembly records</span>
+                  {hasError && <span className="text-xs font-normal text-red-400">Link down</span>}
                </h2>
 
                {loading ? (
-                  <div className="py-12 flex items-center text-apf-purple font-vt323">
-                    <SafeIcon name="Loader" className="animate-spin mr-2 h-5 w-5" />
-                    SCANNING FREQUENCIES...
+                  <div className="flex items-center gap-3 py-12 text-sm text-ink-muted">
+                    <SafeIcon name="Loader" className="h-4 w-4 animate-spin text-apf-purpleLight" />
+                    Loading records…
                   </div>
                ) : hasError ? (
-                  <div className="py-12 text-red-500 font-vt323">
-                     [COMM_LINK_DOWN]
+                  <div className="py-12 text-sm text-red-400">
+                     The CMS could not be reached.
                   </div>
                ) : isEmpty ? (
-                  <div className="py-12 px-6 text-center border border-dashed border-gray-800 bg-black/40">
-                    <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ NO ASSEMBLY RECORDS PUBLISHED ]</div>
-                    <p className="font-sans text-sm text-gray-500 max-w-md mx-auto">
+                  <div className="rounded-2xl border border-dashed border-white/[0.1] bg-surface-900/40 px-6 py-12 text-center">
+                    <div className="mb-2 text-base font-medium text-white">No assembly records published</div>
+                    <p className="mx-auto max-w-md text-sm leading-relaxed text-ink-muted">
                       The Federation has not published a dispatch or a recording yet. This page
                       stays empty until one exists.
                     </p>
@@ -359,15 +354,15 @@ export function TransmissionHub() {
                           key={episode.id}
                           data-testid="assembly-record"
                           data-audio={recorded ? 'true' : 'false'}
-                          className={`p-6 border transition-all duration-500 shadow-2xl backdrop-blur-2xl ${isActive ? 'border-apf-purple bg-apf-purple/10' : 'bg-black/60 border-white/5 hover:border-apf-purple/40'} ${episode.classification ? 'border-apf-emerald/50' : ''}`}
+                          className={`apf-card cursor-pointer p-6 transition-colors ${isActive ? 'border-apf-purple/40 bg-apf-purple/[0.06]' : 'hover:border-white/15'}`}
                           onClick={() => togglePlay(episode)}
                         >
                            <div className="flex justify-between items-start mb-2 gap-4">
-                             <span className={`font-vt323 text-sm ${episode.classification ? 'text-apf-emerald' : 'text-apf-purple'}`}>
+                             <span className={`font-mono text-[11px] uppercase tracking-[0.1em] ${episode.classification ? 'text-emerald-300' : 'text-apf-purpleLight'}`}>
                                {episodeLabel(episode)}
-                               {published ? ` // ${published}` : ''}
+                               {published ? ` · ${published}` : ''}
                              </span>
-                             <span className={`font-vt323 text-[11px] uppercase tracking-widest shrink-0 ${recorded ? 'text-apf-emerald' : 'text-gray-500'}`}>
+                             <span className={`shrink-0 text-[10px] uppercase tracking-[0.1em] ${recorded ? 'text-emerald-300' : 'text-ink-dim'}`}>
                                {recorded ? 'RECORDED' : 'WRITTEN'}
                              </span>
                              {isActive && isPlaying && recorded && (
@@ -375,38 +370,38 @@ export function TransmissionHub() {
                              )}
                            </div>
                            <h3
-                             className="text-xl font-bold text-white mb-3"
+                             className="mb-3 text-lg font-semibold leading-snug text-white"
                              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(title) }}
                            />
 
                            {/* Full Transcript Area */}
                            {isActive ? (
-                             <div className="mt-4 border-t border-apf-purple/30 pt-4">
-                               <h4 className={`font-vt323 text-sm uppercase tracking-widest mb-4 flex items-center gap-2 ${episode.classification ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
+                             <div className="mt-4 border-t border-white/[0.06] pt-4">
+                               <h4 className={`font-display text-sm tracking-tight mb-4 flex items-center gap-2 ${episode.classification ? 'text-apf-emerald' : 'text-apf-purpleLight'}`}>
                                  <SafeIcon name="FileText" className="h-4 w-4" /> {recorded ? 'Bridge Transcript' : 'Written Dispatch'}
                                </h4>
                                <div
-                                 className="prose prose-invert max-w-none text-gray-300 font-sans text-sm bg-black/50 p-4 border border-gray-800/50 max-h-96 overflow-y-auto custom-scrollbar"
+                                 className="prose prose-invert max-h-96 max-w-none overflow-y-auto rounded-lg border border-white/[0.06] bg-surface-950/70 p-4 text-sm text-ink-muted"
                                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }}
                                />
                              </div>
                            ) : (
                              <div
-                              className="prose prose-invert prose-sm text-gray-400 line-clamp-2 font-sans mb-4"
+                              className="mb-4 line-clamp-2 text-sm leading-relaxed text-ink-muted"
                               dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(excerpt) }}
                              />
                            )}
 
-                          <div className="flex gap-4 font-vt323 text-xs text-gray-500 border-t border-gray-800/50 pt-4 mt-4">
-                             <span>{recorded ? 'RECORDING AVAILABLE' : 'NO RECORDING'}</span>
+                          <div className="mt-4 flex gap-4 border-t border-white/[0.06] pt-4 text-[11px] text-ink-dim">
+                             <span>{recorded ? 'Recording available' : 'No recording'}</span>
                              {published && <span className="ml-auto">{published}</span>}
                           </div>
                         </div>
                       );
                     } catch (e) {
                       return (
-                        <div key={episode.id} className="text-gray-500 font-vt323 border border-red-900 bg-red-900/10 p-4">
-                          [ CORRUPTED PACKET: BROADCAST SIGNATURE INTEGRITY COMPROMISED ]
+                        <div key={episode.id} className="rounded-lg border border-red-500/25 bg-red-500/[0.06] p-4 text-xs text-red-300">
+                          This record could not be read. It is not being displayed as a broadcast.
                         </div>
                       );
                     }

@@ -10,8 +10,11 @@ export function ToastContainer() {
       <AnimatePresence>
         {toasts.slice(-3).map((toast) => {
           const isError = toast.type === 'error' || toast.type === 'warning' || toast.type === 'critical';
-          const borderColor = toast.type === 'critical' ? 'border-red-500' : isError ? 'border-apf-purple' : 'border-apf-emerald';
-          const textColor = toast.type === 'critical' ? 'text-red-500' : isError ? 'text-apf-purple' : 'text-apf-emerald';
+          const dotColor = toast.type === 'critical' || toast.type === 'error'
+            ? 'bg-red-400'
+            : toast.type === 'warning'
+              ? 'bg-amber-400'
+              : 'bg-emerald-400';
 
           return (
             <motion.div
@@ -19,9 +22,10 @@ export function ToastContainer() {
               initial={{ opacity: 0, x: 50, scale: 0.9 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-              className={`bg-black/80 backdrop-blur-2xl border font-vt323 text-sm tracking-widest px-4 py-3 shadow-[0_0_15px_rgba(0,0,0,0.5)] pointer-events-auto ${borderColor} ${textColor}`}
+              className="pointer-events-auto flex items-start gap-2.5 rounded-xl border border-white/[0.1] bg-surface-800/95 px-4 py-3 text-sm leading-snug text-ink shadow-lift backdrop-blur-xl"
             >
-              {toast.message}
+              <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dotColor}`} />
+              <span>{toast.message}</span>
             </motion.div>
           );
         })}

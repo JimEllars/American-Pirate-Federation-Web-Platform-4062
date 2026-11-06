@@ -44,7 +44,7 @@ export function SwitchNetworkButton({ className = '', label = 'Switch to Arbitru
       disabled={switching}
       aria-busy={switching}
       aria-label={label}
-      className={`bg-apf-purple/20 border border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white px-8 py-3 font-vt323 text-lg uppercase tracking-widest transition-all duration-300 w-full max-w-md focus:outline-none focus:ring-2 focus:ring-apf-purple/50 disabled:opacity-60 disabled:cursor-wait ${className}`}
+      className={`apf-btn apf-btn-primary w-full max-w-md disabled:cursor-wait disabled:opacity-60 ${className}`}
     >
       {switching ? 'Requesting Switch…' : label}
     </button>

@@ -44,20 +44,17 @@ export class ErrorBoundary extends React.Component {
       }
 
       return (
-        <div className="min-h-screen bg-apf-black flex flex-col items-center justify-center p-4 relative overflow-hidden font-vt323 selection:bg-amber-500/30 selection:text-amber-200">
-          <div className="scanlines !pointer-events-none" />
-          <div className="fixed inset-0 neon-grid opacity-20 !pointer-events-none" />
+        <div className="flex min-h-screen flex-col items-center justify-center bg-surface-950 p-4">
+          <div className="apf-card relative w-full max-w-2xl p-8 text-center md:p-12">
+            <SafeIcon name="AlertOctagon" className="mx-auto mb-6 h-10 w-10 text-amber-400" />
 
-          <div className="relative z-10 max-w-2xl w-full bg-black/80 backdrop-blur-2xl border border-amber-500/50 shadow-[0_0_50px_rgba(245,158,11,0.2)] p-8 md:p-12 text-center">
-            <SafeIcon name="AlertOctagon" className="h-20 w-20 text-amber-500 mx-auto mb-6 animate-pulse" />
-
-            <h1 className="text-4xl md:text-5xl font-black uppercase text-amber-500 tracking-widest mb-4 glitch-hover">
+            <h1 className="mb-4 text-3xl font-semibold tracking-tight text-white md:text-4xl">
               System Fault
             </h1>
 
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-amber-500/50 to-transparent mb-8" />
+            <div className="mx-auto mb-8 h-px w-24 bg-amber-400/30" />
 
-            <p className="text-gray-400 text-lg md:text-xl uppercase tracking-widest mb-8 leading-relaxed">
+            <p className="mb-8 text-base leading-relaxed text-ink-muted">
               Interface initialization failed.<br/>
               A core component experienced a fatal exception.
             </p>
@@ -65,7 +62,7 @@ export class ErrorBoundary extends React.Component {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <button
                 onClick={() => window.location.reload()}
-                className="bg-transparent border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black font-bold py-3 px-6 transition-all uppercase tracking-widest text-lg group flex items-center justify-center"
+                className="apf-btn border border-amber-400/40 text-amber-200 hover:bg-amber-400/10"
               >
                 Reload Interface
                 <SafeIcon name="RefreshCw" className="inline-block ml-3 group-hover:animate-spin h-5 w-5" />
@@ -73,7 +70,7 @@ export class ErrorBoundary extends React.Component {
 
               <button
                 onClick={this.clearCacheAndRestart}
-                className="bg-black/50 border border-gray-600 text-gray-400 hover:border-red-500 hover:text-red-500 font-bold py-3 px-6 transition-all uppercase tracking-widest text-sm flex items-center justify-center"
+                className="apf-btn border border-white/[0.12] text-ink-muted hover:border-white/25 hover:text-white"
               >
                 Clear Cache & Restart
                 <SafeIcon name="Trash2" className="inline-block ml-2 h-4 w-4" />
@@ -83,7 +80,7 @@ export class ErrorBoundary extends React.Component {
             <div className="text-left">
               <button
                 onClick={() => this.setState({ showDiagnostics: !this.state.showDiagnostics })}
-                className="text-amber-500/70 hover:text-amber-500 text-sm uppercase tracking-wider mb-2 flex items-center"
+                className="mb-2 flex items-center text-sm text-ink-dim hover:text-white"
               >
                 <SafeIcon name={this.state.showDiagnostics ? 'ChevronDown' : 'ChevronRight'} className="h-4 w-4 mr-1" />
                 Diagnostic Details

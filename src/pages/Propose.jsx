@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
+import { PageHeader } from '../components/layout/PageHeader';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
@@ -109,10 +110,10 @@ export function Propose() {
           description="Arbitrum Network Required."
         />
         <PageTransition>
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
+          <div className="apf-container max-w-4xl py-14 sm:py-20 flex flex-col min-h-[calc(100vh-64px)]">
             <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col items-center justify-center p-12 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
-                <div className="text-white font-vt323 text-2xl mb-8 uppercase tracking-widest text-center">
+              <div className="flex flex-col items-center justify-center p-12 apf-card hover:border-white/15 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
+                <div className="mb-6 text-lg font-semibold text-white">
                   [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
                 </div>
                 <SwitchNetworkButton />
@@ -129,19 +130,13 @@ export function Propose() {
     <Layout>
       <SEO title="Propose Revision | Policies" description="Submit a new protocol draft to the Federation." />
       <PageTransition>
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 flex flex-col min-h-[calc(100vh-64px)]">
-          <div className="mb-12">
-             <div className="flex items-center gap-4 mb-6">
-                <SafeIcon name="Edit3" className="h-10 w-10 text-apf-purple" />
-                <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-white">
-                  Proposition Portal
-                </h1>
-              </div>
-              <p className="max-w-2xl text-gray-400 font-vt323 text-lg border-l-2 border-apf-purple pl-6">
-                Draft a new amendment or protocol revision for the Federation. A draft is saved
-                in this browser; nothing is broadcast until a signing path is authorized.
-              </p>
-          </div>
+        <div className="apf-container max-w-4xl py-14 sm:py-20 flex flex-col min-h-[calc(100vh-64px)]">
+          <PageHeader
+            icon="Edit3"
+            kicker="Governance"
+            title="Proposition Portal"
+            lede="Draft a new amendment or protocol revision for the Federation. A draft is saved in this browser; nothing is broadcast until a signing path is authorized."
+          />
 
           {/* Law 4 / audit F19: the drafting surface is public reading. Clearance gates the
               submission, not the page — the earlier full-page "ACCESS DENIED" hid the entire
@@ -149,12 +144,12 @@ export function Propose() {
           {!isAuthorized && (
             <div
               role="status"
-              className="mb-6 border border-amber-500/40 bg-amber-500/5 p-4 font-vt323 text-sm text-amber-200"
+              className="mb-6 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4 text-sm text-amber-200"
             >
-              <div className="flex items-center gap-2 uppercase tracking-widest text-amber-400 mb-1">
+              <div className="mb-1 flex items-center gap-2 font-medium text-amber-300">
                 <SafeIcon name="Lock" className="h-4 w-4" /> Reading clearance: public · Submitting clearance: Navigator
               </div>
-              <p className="font-sans text-gray-300 leading-relaxed">
+              <p className="leading-relaxed text-amber-100/80">
                 You can read and draft here. Submitting requires Navigator clearance, which the
                 Federation assigns on your muster record — it cannot be earned or raised in this
                 browser. {member
@@ -165,7 +160,7 @@ export function Propose() {
                 <button
                   type="button"
                   onClick={openPassport}
-                  className="mt-3 px-4 py-2 border border-amber-400/60 text-amber-200 hover:bg-amber-400/10 transition-colors uppercase tracking-widest text-xs font-vt323"
+                  className="mt-3 inline-flex min-h-[36px] items-center rounded-lg border border-amber-400/40 px-3 text-xs font-medium text-amber-200 transition-colors hover:bg-amber-400/10"
                 >
                   Open Pirate Passport
                 </button>
@@ -173,11 +168,11 @@ export function Propose() {
             </div>
           )}
 
-          <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative flex-grow">
+          <div className="apf-card relative flex-grow p-6 sm:p-8">
                             <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
               <form onSubmit={handleSubmit} className="relative z-10 space-y-8">
                   <div className="space-y-2">
-                      <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="title">
+                      <label className="block text-[11px] uppercase tracking-[0.12em] text-ink-dim" htmlFor="title">
                           Protocol Title / Designation
                       </label>
                       <input
@@ -186,13 +181,13 @@ export function Propose() {
                           required
                           value={formState.title}
                           onChange={(e) => setFormState({...formState, title: e.target.value})}
-                          className="w-full bg-black/50 border border-gray-800 p-3 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors"
+                          className="w-full rounded-lg border border-white/[0.1] bg-surface-950 px-3.5 py-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
                           placeholder="Ex: Decentralized Supply Chain Verification"
                       />
                   </div>
 
                   <div className="space-y-2">
-                      <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="summary">
+                      <label className="block text-[11px] uppercase tracking-[0.12em] text-ink-dim" htmlFor="summary">
                           Executive Summary / Abstract
                       </label>
                       <textarea
@@ -202,7 +197,7 @@ export function Propose() {
                           rows={4}
                           value={formState.summary}
                           onChange={(e) => setFormState({...formState, summary: e.target.value})}
-                          className="w-full bg-black/50 border border-gray-800 p-3 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors resize-none"
+                          className="w-full resize-none rounded-lg border border-white/[0.1] bg-surface-950 px-3.5 py-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
                           placeholder="Briefly explain the mechanism and intent of this protocol..."
                       />
                       <div className={`font-vt323 text-sm text-right mt-1 ${formState.summary.length > 2048 * 0.9 ? 'text-red-500' : 'text-apf-emerald'}`}>
@@ -214,7 +209,7 @@ export function Propose() {
                       <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block flex items-center gap-2" htmlFor="alignment">
                           Constitutional Alignment <SafeIcon name="HelpCircle" className="h-4 w-4 text-gray-500" />
                       </label>
-                      <p className="text-gray-500 font-vt323 text-xs mb-2">
+                      <p className="mb-2 text-xs text-ink-dim">
                           Cite the U.S. Constitutional Amendment or founding principle this proposal enforces or defends.
                       </p>
                       <input
@@ -223,13 +218,13 @@ export function Propose() {
                           required
                           value={formState.alignment}
                           onChange={(e) => setFormState({...formState, alignment: e.target.value})}
-                          className="w-full bg-black/50 border border-gray-800 p-3 text-white focus:outline-none focus:border-apf-emerald font-vt323 text-lg transition-colors"
+                          className="w-full rounded-lg border border-white/[0.1] bg-surface-950 px-3.5 py-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
                           placeholder="Ex: 4th Amendment - Protection against unreasonable search and seizure"
                       />
                   </div>
 
-                  <div className="pt-8 border-t border-gray-800 flex items-center justify-between">
-                      <div className="font-vt323 text-gray-500 text-sm">
+                  <div className="flex items-center justify-between border-t border-white/[0.06] pt-8">
+                      <div className="text-sm text-ink-dim">
                           Sponsor: <span className="text-white uppercase">{member?.alias || 'Not filed'}</span>
                       </div>
                       <button
@@ -237,8 +232,8 @@ export function Propose() {
                           disabled={!isAuthorized || submitting || isSigning || formState.summary.length === 0 || formState.summary.length > 2048}
                           title={!isAuthorized ? 'Navigator clearance required to submit' : undefined}
                           aria-label="Submit to Queue"
-                          className={`font-vt323 text-xl py-3 px-8 transition-all uppercase tracking-widest flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-apf-purple/50 ${
-                              isSigning ? 'opacity-50 cursor-not-allowed bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white'
+                          className={`inline-flex min-h-[44px] items-center gap-2 rounded-xl px-6 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${
+                              isSigning ? 'cursor-not-allowed bg-white/[0.05] text-ink-dim' : 'bg-apf-purple text-white hover:bg-[#A21CE8]'
                           }`}
                       >
                           {!isAuthorized ? 'Navigator Clearance Required' : submitting ? '[ RECORDING DRAFT... ]' : 'Submit to Queue'}

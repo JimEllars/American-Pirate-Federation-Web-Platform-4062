@@ -17,18 +17,18 @@ export function FleetMuster({ event }) {
   const ownSignal = hasRSVPd && musterRollDraft.alias ? musterRollDraft.alias : null;
 
   return (
-    <div className="flex flex-col p-6 border-b border-gray-800 hover:bg-apf-purple/5 transition-colors group">
+    <div className="flex flex-col border-b border-white/[0.06] p-6 transition-colors last:border-b-0 hover:bg-white/[0.02]">
       <div className="flex flex-col md:flex-row gap-6">
           <div className="md:w-1/4">
-            <div className="text-4xl font-black text-apf-purple/40 group-hover:text-apf-purple transition-colors">
+            <div className="font-display text-3xl font-semibold tracking-tight text-apf-purpleLight">
               {(event.date || 'TBD').split(' ')[0]}
-              <span className="block text-sm uppercase text-gray-500">{(event.date || '').split(' ')[1] || 'DATE PENDING'}</span>
+              <span className="mt-1 block text-[11px] uppercase tracking-[0.12em] text-ink-dim">{(event.date || '').split(' ')[1] || 'DATE PENDING'}</span>
             </div>
           </div>
 
           <div className="flex-grow">
-            <h3 className="text-2xl font-bold text-white mb-2">{event.title}</h3>
-            <div className="flex flex-wrap gap-4 text-xs font-mono text-gray-400">
+            <h3 className="text-lg font-semibold text-white">{event.title}</h3>
+            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-ink-muted">
               <span className="flex items-center gap-1">
                 <SafeIcon name="MapPin" className="text-apf-purple" /> {event.location}
               </span>
@@ -73,12 +73,12 @@ export function FleetMuster({ event }) {
                 }
               }}
               disabled={registering}
-              className={`px-6 py-2 border font-mono text-xs uppercase transition-all tracking-widest ${
+              className={`min-h-[38px] rounded-lg border px-4 text-xs font-medium transition-colors ${
                 hasRSVPd
-                  ? 'bg-apf-purple text-white border-apf-purple cursor-default'
+                  ? 'border-apf-emerald/30 bg-emerald-400/[0.08] text-emerald-300 cursor-default'
                   : isEnrolled
-                    ? (registering ? 'border-gray-500 text-gray-500 cursor-wait bg-black/50' : 'border-apf-purple text-apf-purple hover:bg-apf-purple hover:text-white')
-                    : 'border-gray-800 text-gray-600 cursor-not-allowed bg-black/50'
+                    ? (registering ? 'cursor-wait border-white/10 text-ink-dim' : 'border-white/[0.12] text-ink-muted hover:border-white/25 hover:text-white')
+                     : 'cursor-not-allowed border-white/[0.06] text-ink-dim'
               }`}>
               {registering ? 'Filing Signal…' : (hasRSVPd ? 'Signal Registered' : (isEnrolled ? 'Register Signal' : 'Muster Entry Reqd'))}
             </button>
@@ -86,17 +86,17 @@ export function FleetMuster({ event }) {
       </div>
       
       {/* Registered Signals List */}
-      <div className="mt-6 pt-4 border-t border-gray-800/50 flex flex-wrap items-center gap-3">
-          <span className="font-vt323 text-xs text-gray-500 uppercase tracking-widest flex items-center gap-1">
+      <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/[0.06] pt-4">
+          <span className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-ink-dim">
               <SafeIcon name="Radio" className="h-3 w-3" /> Signals Detected:
           </span>
           <div className="flex flex-wrap gap-2 items-center">
               {ownSignal ? (
-                  <span className="font-vt323 text-xs px-2 py-0.5 border border-apf-emerald text-apf-emerald bg-apf-emerald/10">
+                  <span className="rounded-md border border-emerald-400/30 bg-emerald-400/[0.08] px-2 py-0.5 text-[11px] text-emerald-300">
                       {ownSignal}
                   </span>
               ) : (
-                  <span className="font-vt323 text-xs text-gray-600">
+                  <span className="text-[11px] text-ink-dim">
                       No public signal roll published for this muster.
                   </span>
               )}

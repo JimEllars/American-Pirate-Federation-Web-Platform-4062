@@ -40,7 +40,7 @@ export function ContributeButton({ className = '', showLabel = false }) {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-white/10 bg-surface-900/90 text-sm font-medium text-white shadow-lift backdrop-blur transition-colors hover:border-apf-purple/40 hover:bg-surface-800 ${
+        className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-white/10 bg-surface-900/90 text-sm font-medium text-white shadow-lift backdrop-blur transition-colors hover:border-white/15 hover:bg-surface-800 ${
           showLabel ? 'px-4' : 'h-11 w-11 p-0'
         } ${className}`}
         aria-label="Contribute to the federation"

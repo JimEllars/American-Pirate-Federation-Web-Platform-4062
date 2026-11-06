@@ -72,17 +72,17 @@ export function DonateWidget() {
   };
 
   return (
-    <div className="w-[300px] h-[300px] shrink-0 overflow-hidden bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl px-4 pt-3 pb-2 flex flex-col font-vt323 hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all">
-      <div className="flex justify-between items-center mb-2.5 border-b border-gray-800 pb-2">
-        <span className="text-white uppercase tracking-widest text-lg leading-none">Contribute</span>
-        <SafeIcon name="DollarSign" className="text-apf-emerald h-4 w-4" />
+    <div className="w-[300px] h-[300px] shrink-0 overflow-hidden rounded-2xl border border-white/[0.08] bg-surface-900 px-4 pb-3 pt-4 flex flex-col font-sans shadow-soft">
+      <div className="mb-3 flex items-center justify-between border-b border-white/[0.07] pb-2.5">
+        <span className="font-display text-base font-semibold leading-none text-white">Contribute</span>
+        <SafeIcon name="DollarSign" className="h-4 w-4 text-emerald-300" />
       </div>
 
-      <div className="flex gap-1.5 mb-2" role="group" aria-label="Contribution frequency">
+      <div className="mb-2 flex gap-1.5" role="group" aria-label="Contribution frequency">
         <button
           type="button"
           aria-pressed={frequency === 'monthly'}
-          className={`flex-1 py-1.5 text-[11px] uppercase tracking-widest border ${frequency === 'monthly' ? 'bg-apf-emerald/20 border-apf-emerald text-apf-emerald' : 'bg-transparent border-gray-800 text-gray-500 hover:border-gray-500'}`}
+          className={`flex-1 rounded-lg border py-1.5 text-[11px] font-medium transition-colors ${frequency === 'monthly' ? 'border-apf-emerald bg-apf-emerald/15 text-emerald-300' : 'border-white/[0.08] text-ink-dim hover:border-white/20 hover:text-white'}`}
           onClick={() => setFrequency('monthly')}
         >
           Monthly
@@ -90,20 +90,20 @@ export function DonateWidget() {
         <button
           type="button"
           aria-pressed={frequency === 'one-time'}
-          className={`flex-1 py-1.5 text-[11px] uppercase tracking-widest border ${frequency === 'one-time' ? 'bg-apf-emerald/20 border-apf-emerald text-apf-emerald' : 'bg-transparent border-gray-800 text-gray-500 hover:border-gray-500'}`}
+          className={`flex-1 rounded-lg border py-1.5 text-[11px] font-medium transition-colors ${frequency === 'one-time' ? 'border-apf-emerald bg-apf-emerald/15 text-emerald-300' : 'border-white/[0.08] text-ink-dim hover:border-white/20 hover:text-white'}`}
           onClick={() => setFrequency('one-time')}
         >
           One-Time
         </button>
       </div>
 
-      <div className="grid grid-cols-4 gap-1.5 mb-2.5" role="group" aria-label="Contribution amount">
+      <div className="mb-2.5 grid grid-cols-4 gap-1.5" role="group" aria-label="Contribution amount">
         {presets.map((val) => (
           <button
             key={val}
             type="button"
             aria-pressed={amount === val}
-            className={`py-2.5 text-sm border transition-colors ${amount === val ? 'bg-apf-emerald text-black border-apf-emerald' : 'bg-black/50 border-gray-800 text-white hover:border-apf-emerald/50'}`}
+            className={`rounded-lg border py-2.5 text-sm font-medium transition-colors ${amount === val ? 'border-apf-emerald bg-apf-emerald text-black' : 'border-white/[0.08] bg-surface-950/60 text-white hover:border-apf-emerald/50'}`}
             onClick={() => handleAmountClick(val)}
           >
             ${val}
@@ -121,7 +121,7 @@ export function DonateWidget() {
           min="5"
           inputMode="decimal"
           placeholder="Custom amount ($5 min)"
-          className={`w-full bg-black/50 border px-2 py-2 text-sm text-white focus:outline-none transition-colors ${amount === 'custom' ? 'border-apf-emerald focus:border-apf-emerald' : 'border-gray-800 focus:border-apf-emerald/50'}`}
+          className={`w-full rounded-lg border bg-surface-950/60 px-2.5 py-2 text-sm text-white placeholder:text-ink-dim focus:outline-none transition-colors ${amount === 'custom' ? 'border-apf-emerald' : 'border-white/[0.08] focus:border-apf-purpleLight/60'}`}
           value={customAmount}
           onChange={(e) => {
             setAmount('custom');
@@ -133,15 +133,15 @@ export function DonateWidget() {
 
       <button
         type="button"
-        className="w-full bg-apf-emerald hover:bg-emerald-400 text-black font-bold uppercase py-2.5 tracking-widest transition-colors shrink-0"
+        className="w-full shrink-0 rounded-lg bg-apf-purple py-2.5 text-sm font-medium text-white transition-colors hover:bg-[#A21CE8] disabled:opacity-60"
         onClick={handleDonate}
         disabled={isSubmitting}
         aria-busy={isSubmitting}
       >
-        {isSubmitting ? 'Opening Checkout…' : (frequency === 'monthly' ? 'Contribute Monthly' : 'Contribute Once')}
+        {isSubmitting ? 'Opening checkout…' : (frequency === 'monthly' ? 'Contribute Monthly' : 'Contribute Once')}
       </button>
 
-      <p className="mt-auto pt-2 text-[9px] leading-[1.3] text-gray-400 text-center shrink-0">
+      <p className="mt-auto pt-2 text-center text-[9px] leading-[1.3] text-gray-400">
         Contributions or gifts to the American Pirate Federation (or APF Action) are not
         deductible as charitable contributions for federal income tax purposes.
       </p>

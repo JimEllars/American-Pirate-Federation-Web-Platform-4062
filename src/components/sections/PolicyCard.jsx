@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../store/useAppStore';
 import DOMPurify from 'isomorphic-dompurify';
 
-
 export function PolicyCard({ title, code, summary, status, consensus, sponsor, lastRevision, provenance, reference }) {
   const [showHistory, setShowHistory] = useState(false);
   const [showComments, setShowComments] = useState(false);
@@ -34,8 +33,7 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
    * Audit F40: this used to collect a wallet signature for the directive and then throw it
    * away before toasting "[ CONSENSUS SIGNAL CRYPTOGRAPHICALLY SECURED ]". Nothing was
    * secured and nothing was recorded outside this browser, so the signature ritual is gone
-   * and the toast says what actually happened. Consensus scores stay the published
-   * baseline — a local signal is not a vote and never moves the number on this card.
+   * and the toast says what actually happened.
    */
   const handleAuthorize = () => {
     if (!canSignal) return;
@@ -60,67 +58,50 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
     }
   };
 
-
   if (!isCoreSynced) {
     return (
-      <div className="bg-[#111111] animate-pulse border border-[#9400FF] shadow-[0_0_15px_rgba(148,0,255,0.5)] p-6 h-64 flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <div className="h-6 bg-gray-800 w-24"></div>
-          <div className="h-4 bg-gray-800 w-16"></div>
+      <div className="apf-card h-64 animate-pulse p-6">
+        <div className="flex items-center justify-between">
+          <div className="h-5 w-24 rounded bg-white/[0.06]" />
+          <div className="h-4 w-16 rounded bg-white/[0.04]" />
         </div>
-        <div className="h-8 bg-gray-800 w-3/4 mb-4"></div>
-        <div className="h-16 bg-gray-800 w-full mb-6"></div>
-        <div className="mt-auto h-8 bg-gray-800 w-full"></div>
+        <div className="mt-5 h-6 w-3/4 rounded bg-white/[0.06]" />
+        <div className="mt-4 h-4 w-full rounded bg-white/[0.04]" />
+        <div className="mt-2 h-4 w-5/6 rounded bg-white/[0.04]" />
+        <div className="mt-8 h-9 w-full rounded bg-white/[0.04]" />
       </div>
     );
   }
 
   return (
-    <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 group relative overflow-hidden flex flex-col">
-      <div className="absolute top-0 right-0 p-2 opacity-5 group-hover:opacity-20 transition-opacity !pointer-events-none">
-        <SafeIcon name="Shield" className="h-24 w-24 text-apf-purple" />
-      </div>
-
-      {hasSignaled && (
-        <motion.div
-          initial={{ scale: 3, opacity: 0, rotate: -20 }}
-          animate={{ scale: 1, rotate: -20 }}
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0 mix-blend-screen opacity-10 md:opacity-15"
-        >
-          <div className="border-4 border-apf-emerald text-apf-emerald font-vt323 text-4xl font-black p-4 uppercase tracking-[0.3em] whitespace-nowrap">
-            Local Signal
-          </div>
-        </motion.div>
-      )}
-
-      <div className="flex items-center justify-between mb-4 relative z-10">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-vt323 px-2 py-1 bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/30">
+    <div className="apf-card flex flex-col p-6">
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <span className="rounded-md bg-apf-purple/15 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.1em] text-apf-purpleLight">
             {code}
           </span>
-          <span className={`text-[10px] font-vt323 uppercase tracking-tighter ${
-            status === 'Active' ? 'text-green-500' : 'text-yellow-500'
-          }`}>
-            ● {status}
+          <span className="flex items-center gap-1.5 text-[11px] text-ink-dim">
+            <span className={`h-1.5 w-1.5 rounded-full ${status === 'Active' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+            {status}
           </span>
         </div>
-        <div className="flex gap-4">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => { setShowComments(!showComments); setShowHistory(false); }}
-            className={`text-xs font-vt323 hover:text-apf-purple transition-colors uppercase tracking-widest ${showComments ? 'text-apf-purple' : 'text-gray-500'}`}
+            className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${showComments ? 'bg-white/[0.06] text-white' : 'text-ink-dim hover:text-white'}`}
           >
             Notes ({comments.length})
           </button>
           <button
             onClick={() => { setShowHistory(!showHistory); setShowComments(false); }}
-            className={`text-xs font-vt323 hover:text-apf-purple transition-colors uppercase tracking-widest ${showHistory ? 'text-apf-purple' : 'text-gray-500'}`}
+            className={`rounded-lg px-2 py-1 text-[11px] font-medium transition-colors ${showHistory ? 'bg-white/[0.06] text-white' : 'text-ink-dim hover:text-white'}`}
           >
             History
           </button>
         </div>
       </div>
 
-      <h3 className="text-xl font-bold mb-3 text-white group-hover:text-apf-purpleLight transition-colors relative z-10 font-vt323" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
+      <h3 className="mt-4 text-lg font-semibold leading-snug text-white" dangerouslySetInnerHTML={{ __html: sanitizedTitle }} />
 
       <AnimatePresence mode="wait">
         {!showHistory && !showComments ? (
@@ -129,37 +110,31 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-grow flex flex-col relative z-10"
+            className="flex flex-grow flex-col"
           >
-            <p className="text-sm text-gray-400 font-sans line-clamp-2 mb-6 flex-grow" dangerouslySetInnerHTML={{ __html: sanitizedSummary }} />
+            <p className="mb-5 mt-2 flex-grow text-sm leading-relaxed text-ink-muted" dangerouslySetInnerHTML={{ __html: sanitizedSummary }} />
 
-            <div className="border-t border-gray-800 pt-4 mb-4 space-y-3">
-               {consensus && (
-                 <div>
-                   <div className="flex justify-between text-[10px] font-vt323 uppercase text-gray-500 mb-1">
-                     <span>Doctrine Baseline</span>
-                     <span className="text-apf-purple">{currentConsensus}%</span>
-                   </div>
-                   <div className="h-1 w-full bg-gray-900 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${currentConsensus}%` }}
-                        transition={{ duration: 1, ease: "easeOut" }}
-                        className="h-full bg-gradient-to-r from-apf-purple/50 to-apf-purple"
-                      />
-                   </div>
-                   {/* Law 1: a seeded baseline is not a ballot result, and must not read as one. */}
-                   <div className="flex justify-between text-[9px] font-vt323 uppercase tracking-widest mt-1">
-                     <span className="text-gray-600">
-                       {provenance === 'member-vote' ? 'Member ballot' : 'Founding draft · no ballot yet'}
-                     </span>
-                     <span className="text-gray-700" title="Consensus methodology is published with the Master Strategy Plan.">
-                       Method
-                     </span>
-                   </div>
-                 </div>
-               )}
-            </div>
+            {consensus && (
+              <div className="mb-4 border-t border-white/[0.06] pt-4">
+                <div className="flex items-baseline justify-between text-[11px]">
+                  <span className="uppercase tracking-[0.12em] text-ink-dim">Doctrine baseline</span>
+                  <span className="font-mono text-xs text-apf-purpleLight">{currentConsensus}%</span>
+                </div>
+                <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-white/[0.06]">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${currentConsensus}%` }}
+                    transition={{ duration: 0.6, ease: 'easeOut' }}
+                    className="h-full rounded-full bg-apf-purple"
+                  />
+                </div>
+                {/* Law 1: a seeded baseline is not a ballot result, and must not read as one. */}
+                <div className="mt-2 flex items-center justify-between text-[10px] text-ink-dim">
+                  <span>{provenance === 'member-vote' ? 'Member ballot' : 'Founding draft · no ballot yet'}</span>
+                  <span title="Consensus methodology is published with the Master Strategy Plan.">Method</span>
+                </div>
+              </div>
+            )}
           </motion.div>
         ) : showHistory ? (
           <motion.div
@@ -167,20 +142,20 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-grow relative z-10 border-t border-gray-800 pt-4 mb-4 text-xs font-vt323 text-gray-400 space-y-2"
+            className="mt-4 flex-grow space-y-2.5 border-t border-white/[0.06] pt-4 text-xs"
           >
-             <div className="flex justify-between">
-               <span className="text-gray-500">Authorized By:</span>
-               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon name="Users" className="h-3 w-3"/> {sponsor}</span>
-             </div>
-             <div className="flex justify-between">
-               <span className="text-gray-500">Last Revision:</span>
-               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon name="Clock" className="h-3 w-3"/> {lastRevision}</span>
-             </div>
-             <div className="flex justify-between">
-               <span className="text-gray-500">Status:</span>
-               <span className="text-apf-purpleLight flex items-center gap-1"><SafeIcon name="Activity" className="h-3 w-3"/> {status}</span>
-             </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-ink-dim">Authorized by</span>
+              <span className="flex items-center gap-1.5 text-right text-ink"><SafeIcon name="Users" className="h-3.5 w-3.5 text-apf-purpleLight" /> {sponsor}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-ink-dim">Last revision</span>
+              <span className="flex items-center gap-1.5 text-ink"><SafeIcon name="Clock" className="h-3.5 w-3.5 text-apf-purpleLight" /> {lastRevision}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-ink-dim">Status</span>
+              <span className="flex items-center gap-1.5 text-ink"><SafeIcon name="Activity" className="h-3.5 w-3.5 text-apf-purpleLight" /> {status}</span>
+            </div>
           </motion.div>
         ) : (
           <motion.div
@@ -188,73 +163,69 @@ export function PolicyCard({ title, code, summary, status, consensus, sponsor, l
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex-grow relative z-10 border-t border-gray-800 pt-4 mb-4 flex flex-col h-40"
+            className="mt-4 flex min-h-[170px] flex-grow flex-col border-t border-white/[0.06] pt-4"
           >
-            <div className="overflow-y-auto space-y-3 mb-2 flex-grow pr-2 custom-scrollbar">
+            <div className="mb-2 max-h-40 flex-grow space-y-2 overflow-y-auto pr-1">
               {comments.length === 0 && (
-                <div className="text-xs font-vt323 text-gray-600 border border-dashed border-gray-800 p-2 text-center">
+                <div className="rounded-lg border border-dashed border-white/[0.1] p-3 text-center text-[11px] leading-relaxed text-ink-dim">
                   No notes on this device. Notes are saved in this browser only — they are not
                   peer review and the Federation never receives them.
                 </div>
               )}
               {comments.map((comment, i) => (
-                <div key={i} className="bg-black/50 p-2 border-l-2 border-apf-purple">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-xs font-vt323 text-apf-purpleLight">{DOMPurify.sanitize(comment.author)}</span>
-                    <span className="text-[10px] font-vt323 text-gray-500 uppercase">{DOMPurify.sanitize(comment.role)}</span>
+                <div key={i} className="rounded-lg bg-white/[0.03] p-2.5">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-[11px] font-medium text-apf-purpleLight">{DOMPurify.sanitize(comment.author)}</span>
+                    <span className="text-[10px] text-ink-dim">{DOMPurify.sanitize(comment.role)}</span>
                   </div>
-                  <p className="text-sm text-gray-300 font-sans">{DOMPurify.sanitize(comment.text)}</p>
+                  <p className="text-xs leading-relaxed text-ink-muted">{DOMPurify.sanitize(comment.text)}</p>
                 </div>
               ))}
             </div>
             {canComment ? (
-              <form onSubmit={(e) => { e.preventDefault(); handleAddComment(); }} className="flex gap-2 mt-auto">
+              <form onSubmit={(e) => { e.preventDefault(); handleAddComment(); }} className="mt-auto flex gap-2">
                 <input
                   type="text"
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   placeholder="Add a note (saved in this browser)"
-                  className="flex-grow bg-black/50 border border-gray-700 p-2 text-sm text-white focus:outline-none focus:border-apf-purple focus:ring-1 focus:ring-apf-purple font-vt323"
+                  className="min-w-0 flex-grow rounded-lg border border-white/[0.1] bg-surface-950 px-2.5 py-2 text-xs text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
                 />
-                <button type="submit" className="bg-apf-purple/20 text-apf-purpleLight border border-apf-purple/50 px-3 hover:bg-apf-purple hover:text-white transition-colors">
+                <button type="submit" className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-white/[0.1] text-ink-muted transition-colors hover:border-white/20 hover:text-white" aria-label="Save note">
                   <SafeIcon name="MessageSquare" className="h-4 w-4" />
                 </button>
               </form>
             ) : (
-              <div className="mt-auto text-center p-2 border border-dashed border-gray-800 text-gray-500 text-xs font-vt323">
-                [ Clearance required for active annotation ]
+              <div className="mt-auto rounded-lg border border-dashed border-white/[0.08] p-2 text-center text-[11px] text-ink-dim">
+                Clearance required to add notes
               </div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between gap-3 mt-auto pt-2 relative z-10 border-t border-gray-800/50">
-        {/* Audit F41: this slot held a "Review Protocol ›" button with no handler on all
-            fourteen cards. There is no per-protocol page to open — the doctrine entry is the
-            protocol — so the slot now carries the constitutional reference it is anchored to. */}
-        <span className="flex items-center gap-2 text-[10px] sm:text-xs font-vt323 text-gray-500 uppercase tracking-widest">
-          <SafeIcon name="Anchor" className="h-3 w-3 text-apf-purple/60" />
+      <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+        {/* Audit F41: this slot held a "Review Protocol ›" button with no handler. The slot
+            carries the constitutional reference instead. */}
+        <span className="flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] text-ink-dim">
+          <SafeIcon name="Anchor" className="h-3 w-3 text-apf-purple/70" />
           {reference ? `Anchored: ${reference}` : 'Anchored: Federation charter'}
         </span>
 
-        {canSignal && (
+        {canSignal ? (
           <button
             onClick={handleAuthorize}
-            className={`relative overflow-hidden px-4 py-2 text-xs font-vt323 uppercase tracking-widest transition-all border ${
+            className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-lg border px-3 text-[11px] font-medium transition-colors ${
               hasSignaled
-                ? 'bg-apf-purple/20 border-apf-emerald text-apf-emerald shadow-[0_0_10px_rgba(16,185,129,0.3)]'
-                : 'border-gray-800 text-gray-500 hover:border-apf-purple/40 hover:text-apf-purple'
+                ? 'border-emerald-400/30 bg-emerald-400/[0.08] text-emerald-300'
+                : 'border-white/[0.12] text-ink-muted hover:border-white/25 hover:text-white'
             }`}
           >
-            <span className="relative z-10 flex items-center gap-2">
-              {hasSignaled ? <><SafeIcon name="Check" /> SIGNALED IN THIS BROWSER</> : 'SIGNAL SUPPORT'}
-            </span>
+            {hasSignaled ? <><SafeIcon name="Check" className="h-3.5 w-3.5" /> SIGNALED IN THIS BROWSER</> : 'SIGNAL SUPPORT'}
           </button>
-        )}
-        {!canSignal && (
-          <span className="text-[10px] font-vt323 text-gray-600 uppercase tracking-widest border border-gray-800/50 px-2 py-1">
-            Nav Clearance Reqd
+        ) : (
+          <span className="rounded-lg border border-white/[0.08] px-2 py-1 text-[10px] uppercase tracking-[0.1em] text-ink-dim">
+            Navigator clearance required
           </span>
         )}
       </div>
