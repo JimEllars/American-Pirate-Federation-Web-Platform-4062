@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { LINK_LIMITS, normalizeLinks, safeLinkUrl } from './links';
 
 /**
  * Member profiles (Phase A of docs/community-platform-roadmap.md).
@@ -9,13 +10,18 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
  * supabase/migrations/20261106090000_member_profiles.sql.
  */
 
+// Link limits live in ./links so the read path, the write path and the unit test share one
+// definition. The other limits are this page's own.
 export const PROFILE_LIMITS = {
   headline: 120,
   bio: 1200,
-  links: 5,
-  linkLabel: 40,
-  linkUrl: 300
+  links: LINK_LIMITS.count,
+  linkLabel: LINK_LIMITS.label,
+  linkUrl: LINK_LIMITS.url
 };
+
+/** Re-exported for callers that already import profile helpers from this module. */
+export { normalizeLinks };
 
 const isMissingRelation = (error) =>
   Boolean(error) && (error.code === '42P01' || /does not exist|schema cache/i.test(error.message || ''));
@@ -28,17 +34,6 @@ export class ProfileSchemaMissing extends Error {
   }
 }
 
-export function normalizeLinks(raw) {
-  if (!Array.isArray(raw)) return [];
-  return raw
-    .filter((link) => link && typeof link.url === 'string' && link.url.trim() !== '')
-    .slice(0, PROFILE_LIMITS.links)
-    .map((link) => ({
-      label: String(link.label || 'Link').trim().slice(0, PROFILE_LIMITS.linkLabel),
-      url: link.url.trim().slice(0, PROFILE_LIMITS.linkUrl)
-    }));
-}
-
 export function validateProfile({ headline = '', bio = '', links = [] }) {
   const cleanHeadline = String(headline).trim();
   const cleanBio = String(bio).trim();
@@ -49,9 +44,19 @@ export function validateProfile({ headline = '', bio = '', links = [] }) {
   if (cleanBio.length > PROFILE_LIMITS.bio) {
     return `Bio must be ${PROFILE_LIMITS.bio} characters or fewer.`;
   }
-  for (const link of normalizeLinks(links)) {
-    if (!/^https?:\/\//i.test(link.url)) {
-      return 'Links must start with http:// or https://.';
+
+  // Validate what was supplied, not what survived normalization: a rejected scheme has to
+  // come back as an error the member can act on, not as a link that silently disappears.
+  const supplied = Array.isArray(links) ? links : [];
+  if (supplied.length > PROFILE_LIMITS.links) {
+    return `A profile can hold ${PROFILE_LIMITS.links} links or fewer.`;
+  }
+  for (const link of supplied) {
+    if (!link || typeof link !== 'object') continue;
+    const url = String(link.url ?? '').trim();
+    if (!url) continue;
+    if (!safeLinkUrl(url)) {
+      return 'Links must be complete http:// or https:// addresses.';
     }
   }
   return null;
