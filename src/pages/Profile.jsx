@@ -138,7 +138,7 @@ export function Profile() {
           <div className="apf-container max-w-2xl py-16 sm:py-24">
             <PageHeader icon="User" kicker="Identity" title="Your profile" lede="Your Passport is valid, but the Federation has no member record for it yet." />
             <div className="apf-card p-8 text-center">
-              <SafeIcon name="ClipboardList" className="mx-auto h-8 w-8 text-amber-300" />
+              <SafeIcon name="Clipboard" className="mx-auto h-8 w-8 text-amber-300" />
               <p className="mt-4 text-base font-medium text-white">File a muster entry first</p>
               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
                 Profiles attach to a member record. Your rank and guild come from that record,
