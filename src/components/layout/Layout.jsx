@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from './Navbar';
-import { ContributeButton } from '../web3/ContributeButton';
 import { NetworkSwitchModal } from '../web3/NetworkSwitchModal';
 import { useAppStore } from '../../store/useAppStore';
-import { useParallax } from '../../hooks/useParallax';
-import { generateChecksum, logCommLinkSubscription, isTelemetryConfigured } from '../../lib/api/telemetry';
-import { motion } from 'framer-motion';
+import { logCommLinkSubscription, isTelemetryConfigured } from '../../lib/api/telemetry';
 import { Link, useLocation } from 'react-router-dom';
 import { useActiveAccount, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
+import SafeIcon from '../../common/SafeIcon';
 import { arbitrum } from 'thirdweb/chains';
 
 export function Layout({ children }) {
@@ -21,7 +19,6 @@ export function Layout({ children }) {
   useEffect(() => {
     setIsSigning(false);
   }, [location.pathname, setIsSigning]);
-  const scrollOffset = useParallax();
   const [queueDepth, setQueueDepth] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isMounted = useRef(true);
@@ -137,7 +134,7 @@ export function Layout({ children }) {
   const isSecureContext = typeof window !== 'undefined' && window.isSecureContext;
 
   return (
-    <div className="min-h-screen relative apf-root-container flex flex-col bg-apf-black">
+    <div className="apf-root-container relative flex min-h-screen flex-col bg-surface-950">
       <NetworkSwitchModal
         isWrongNetwork={Boolean(isMismatched && !isCorrectNetwork)}
         onSwitchNetwork={async () => {
@@ -152,87 +149,115 @@ export function Layout({ children }) {
         }}
         onDismiss={() => setIsCorrectNetwork(true)}
       />
-      {/* Scanlines overlay */}
-      <div className="scanlines !pointer-events-none" />
 
-      {/* Triple-Layered Digital Sea Parallax Grid */}
-      {/* Deepest Horizon Layer */}
-      <motion.div
-        className="fixed inset-0 bg-digital-sea !pointer-events-none"
-        style={{ y: -scrollOffset * 0.15, scale: 2, zIndex: 0, opacity: 0.03 }}
-      />
-
-      {/* Mid Layer */}
-      <motion.div
-        className="fixed inset-0 bg-digital-sea opacity-20 !pointer-events-none"
-        style={{ y: -scrollOffset * 0.4, scale: 1.5, zIndex: 0 }}
-      />
-
-      {/* Fore Layer */}
-      <motion.div
-        className="fixed inset-0 bg-digital-sea opacity-30 !pointer-events-none"
-        style={{ y: -scrollOffset, zIndex: 0 }}
-      />
+      {/* One quiet atmosphere layer instead of three parallax grids and a fixed scanline
+          overlay. The CRT texture now belongs to the terminal panel only. */}
+      <div className="pointer-events-none fixed inset-0 z-0 bg-hero-glow opacity-70" aria-hidden="true" />
+      <div className="pointer-events-none fixed inset-0 z-0 bg-grid-faint opacity-[0.35] [mask-image:radial-gradient(70%_50%_at_50%_0%,black,transparent)]" aria-hidden="true" />
 
       <Navbar />
-      <div className="fixed bottom-4 left-4 z-50">
-        <ContributeButton />
-      </div>
 
-      <main className="flex-grow pt-16 relative z-10 pointer-events-auto">
+      <main className="relative z-10 flex-grow pt-16">
         {children}
       </main>
 
+      <footer className="relative z-10 border-t border-white/[0.06] bg-surface-950">
+        <div className="apf-container py-14">
+          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-12">
+            <div className="md:col-span-2 lg:col-span-5">
+              <Link to="/" className="flex items-center gap-2.5">
+                <span className="grid h-9 w-9 place-items-center rounded-xl bg-apf-purple/15 ring-1 ring-inset ring-apf-purple/30">
+                  <SafeIcon name="Anchor" className="h-5 w-5 text-apf-purpleLight" />
+                </span>
+                <span className="font-display text-[15px] font-semibold tracking-tight text-white">
+                  American Pirate Federation
+                </span>
+              </Link>
+              <p className="mt-4 max-w-sm text-sm leading-relaxed text-ink-muted">
+                A member-owned civic organization. Open source, read-only treasury, and no
+                third-party tracking.
+              </p>
+              <p className="mt-4 font-terminal text-[11px] uppercase tracking-[0.18em] text-ink-dim">
+                {isSecureContext ? '[ CONTEXT: SECURE ]' : '[ CONTEXT: NOT SECURE ]'} · AGPL-3.0
+              </p>
+            </div>
 
-      {/* Telemetry Terminal */}
-      <div className="fixed bottom-4 right-4 z-50 w-64 bg-black/80 border border-[#10B981]/50 p-2 pointer-events-none">
-        <div className="text-[#10B981] font-mono text-xs space-y-1">
-          {telemetryLogs.length === 0 ? (
-            <div>[ AXiM CORE: STANDBY FOR INGRESS ]</div>
-          ) : (
-            telemetryLogs.map((log, i) => (
-              <div key={i}>{log}</div>
-            ))
-          )}
-          <div className="font-vt323 border-t border-[#10B981]/30 pt-1 mt-1">
-            [ QUEUE_DEPTH: {queueDepth}_PENDING_PACKETS ]
+            <div className="min-w-0 lg:col-span-2">
+              <h3 className="font-terminal text-[11px] uppercase tracking-[0.18em] text-ink-dim">Explore</h3>
+              <ul className="mt-3 space-y-2 text-sm">
+                {[
+                  ['Intelligence', '/intelligence'],
+                  ['Directives', '/policies'],
+                  ['Fleet Muster', '/events'],
+                  ['The Signal', '/podcast'],
+                  ['Armory', '/shop']
+                ].map(([label, href]) => (
+                  <li key={href}>
+                    <Link to={href} className="text-ink-muted transition-colors hover:text-white">{label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="min-w-0 lg:col-span-2">
+              <h3 className="font-terminal text-[11px] uppercase tracking-[0.18em] text-ink-dim">Instruments</h3>
+              <ul className="mt-3 space-y-2 text-sm">
+                {[
+                  ['Balance Calculator', '/calculator'],
+                  ['Treasury Ledger', '/ledger'],
+                  ['Pay Ratio Explorer', '/pay-ratio'],
+                  ['Governance', '/governance']
+                ].map(([label, href]) => (
+                  <li key={href}>
+                    <Link to={href} className="text-ink-muted transition-colors hover:text-white">{label}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="min-w-0 md:col-span-2 lg:col-span-3">
+              <h3 className="font-terminal text-[11px] uppercase tracking-[0.18em] text-ink-dim">Intelligence feed</h3>
+              <p className="mt-3 text-sm text-ink-muted">Occasional dispatches. No tracking, no resale.</p>
+              <form onSubmit={handleSubscribeSubmit} className="mt-3 flex gap-2">
+                <input
+                  type="email"
+                  name="email"
+                  aria-label="Email address"
+                  placeholder="you@example.com"
+                  className="min-h-[40px] w-full min-w-0 flex-1 rounded-lg border border-white/[0.1] bg-surface-900 px-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSubscribeSubmit(e);
+                    }
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="min-h-[40px] rounded-lg bg-apf-purple px-3.5 text-sm font-medium text-white transition-colors hover:bg-[#A21CE8] disabled:opacity-50"
+                >
+                  Join
+                </button>
+              </form>
+            </div>
           </div>
-          <div className="font-vt323 border-t border-[#10B981]/30 pt-1 mt-1 text-apf-emerald">
-            {ingressLine}
+
+          <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 rounded-xl border border-white/[0.06] bg-black/30 px-4 py-3 font-terminal text-[11px] uppercase tracking-[0.14em] text-ink-dim">
+            <span className="flex items-center gap-2 text-emerald-300/80">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              edge telemetry
+            </span>
+            <span>{ingressLine}</span>
+            <span>{queueDepth} queued</span>
+            {telemetryLogs[0] && <span className="text-ink-dim">{telemetryLogs[0]}</span>}
+          </div>
+
+          <div className="mt-6 flex flex-col gap-3 border-t border-white/[0.06] pt-6 text-xs text-ink-dim sm:flex-row sm:items-center sm:justify-between">
+            <p>© {new Date().getFullYear()} American Pirate Federation. Source under AGPL-3.0.</p>
+            <p className="font-terminal uppercase tracking-[0.16em]">No third-party pixels · read-only treasury</p>
           </div>
         </div>
-      </div>
-
-
-      <footer className="border-t border-apf-purple/20 bg-apf-black/80 py-8 text-center text-sm font-vt323 text-gray-500 relative z-10 pointer-events-auto">
-        <div className="max-w-md mx-auto mb-8">
-          <h3 className="text-apf-purple uppercase tracking-widest mb-4">JOIN THE INTELLIGENCE FEED</h3>
-          <form onSubmit={handleSubscribeSubmit} className="flex gap-2">
-            <input
-              type="email"
-              name="email"
-              placeholder="ENTER COMM-LINK ADDRESS..."
-              className="flex-1 bg-black/50 border border-apf-purple/30 px-4 py-2 text-white font-mono text-xs focus:outline-none focus:border-apf-purple"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleSubscribeSubmit(e);
-                }
-              }}
-            />
-            <button type="submit" disabled={isSubmitting} className="bg-apf-purple hover:bg-apf-purpleLight text-white px-4 py-2 font-mono text-xs uppercase tracking-widest transition-colors disabled:opacity-50">INITIALIZE</button>
-          </form>
-        </div>
-        {/* SOP Playbook D tools, reachable without opening the drawer. */}
-        <nav aria-label="Fleet instruments" className="max-w-3xl mx-auto mb-6 flex flex-wrap justify-center gap-x-5 gap-y-2 px-4">
-          <Link to="/calculator" className="hover:text-apf-emerald uppercase tracking-widest">Great Balance Calculator</Link>
-          <Link to="/ledger" className="hover:text-apf-emerald uppercase tracking-widest">Treasury Ledger</Link>
-          <Link to="/pay-ratio" className="hover:text-apf-emerald uppercase tracking-widest">Pay Ratio Explorer</Link>
-          <Link to="/governance" className="hover:text-apf-emerald uppercase tracking-widest">Governance</Link>
-        </nav>
-        <p>
-          {isSecureContext ? '[ CONTEXT: SECURE ]' : '[ CONTEXT: NOT SECURE ]'} APF © {new Date().getFullYear()}
-        </p>
       </footer>
     </div>
   );

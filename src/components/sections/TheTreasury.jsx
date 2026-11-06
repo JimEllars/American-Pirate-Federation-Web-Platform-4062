@@ -86,49 +86,53 @@ export function TheTreasury() {
 
   return (
     <>
-    <section className="py-24 bg-apf-black neon-grid relative">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
+    <section className="relative border-b border-white/[0.06] py-20 sm:py-24">
+      <div className="apf-container">
+        <div className="flex flex-col gap-8 border-b border-white/[0.07] pb-8 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-2xl">
+            <p className="apf-kicker">Federation assets</p>
+            <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+              Where the money goes
+            </h2>
+            <p className="apf-lede mt-4">
+              Guild programmes and settled allocations, published as they happen. The
+              treasury is read-only from this site — no page here can move a dollar.
+            </p>
+          </div>
+
+          <div className="apf-card px-6 py-5">
+            <span className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">Vault balance</span>
+            {/* Audit F43: this used to print "0.00 ETH" whenever the read failed, which
+                for a Safe address was always — the panel called a getBalance() view the
+                Safe does not implement. The reading is now the address's real native
+                balance, and an absent reading says so. */}
+            <div className="mt-2 font-mono text-2xl font-semibold text-emerald-300">
+              {(() => {
+                if (!isConfigured) return 'Not published';
+                if (isLoadingBalance) return 'Reading chain…';
+                if (treasuryBalance === null || treasuryBalance === undefined) return 'Unavailable';
+                return `${treasuryBalance} ${treasurySymbol || ''}`.trim();
+              })()}
+            </div>
+            <div className="mt-1 font-terminal text-[10px] uppercase tracking-[0.16em] text-ink-dim">
+              Arbitrum One · read-only
+            </div>
+          </div>
         </div>
 
-        {/* Navigation / Header */}
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12 border-b border-gray-800 pb-4">
-           <div>
-              <h2
-                 className="text-4xl font-black uppercase tracking-tighter text-white"
-              >Federation Assets</h2>
-              <p className="font-vt323 text-apf-purple mt-2 tracking-widest">[ DECENTRALIZED_RESOURCE_ALLOCATION ]</p>
-              <div className="mt-4 inline-block border border-apf-emerald bg-apf-emerald/10 px-4 py-2">
-                <span className="font-vt323 text-sm text-gray-400 uppercase tracking-widest block">Vault Balance:</span>
-                {/* Audit F43: this used to print "0.00 ETH" whenever the read failed, which
-                    for a Safe address was always — the panel called a getBalance() view the
-                    Safe does not implement. The reading is now the address's real native
-                    balance, and an absent reading says so. */}
-                <span className="font-mono text-2xl text-apf-emerald font-bold">
-                  {(() => {
-                    if (!isConfigured) return '[ TREASURY ADDRESS NOT PUBLISHED ]';
-                    if (isLoadingBalance) return '[ READING CHAIN... ]';
-                    if (treasuryBalance === null || treasuryBalance === undefined) return '[ BALANCE UNAVAILABLE ]';
-                    return `${treasuryBalance} ${treasurySymbol || ''}`.trim();
-                  })()}
-                </span>
-              </div>
-           </div>
-
-           <div className="flex gap-4 mt-6 md:mt-0 font-vt323 text-sm uppercase">
-             <button
-               onClick={() => setActiveTab('guilds')}
-               className={`pb-2 transition-colors ${activeTab === 'guilds' ? 'text-apf-purple border-b-2 border-apf-purple' : 'text-gray-500 hover:text-white'}`}
-             >
-               Intel & Blueprints
-             </button>
-             <button
-               onClick={() => setActiveTab('ledger')}
-               className={`pb-2 transition-colors ${activeTab === 'ledger' ? 'text-apf-purple border-b-2 border-apf-purple' : 'text-gray-500 hover:text-white'}`}
-             >
-               Mothership Ledger
-             </button>
-           </div>
+        <div className="mt-8 inline-flex rounded-xl border border-white/[0.08] bg-surface-900/70 p-1">
+          <button
+            onClick={() => setActiveTab('guilds')}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'guilds' ? 'bg-white/[0.08] text-white' : 'text-ink-muted hover:text-white'}`}
+          >
+            Guilds &amp; blueprints
+          </button>
+          <button
+            onClick={() => setActiveTab('ledger')}
+            className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'ledger' ? 'bg-white/[0.08] text-white' : 'text-ink-muted hover:text-white'}`}
+          >
+            Treasury ledger
+          </button>
         </div>
 
         <AnimatePresence mode="wait">
@@ -138,70 +142,74 @@ export function TheTreasury() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              className="flex flex-col lg:flex-row gap-12"
+              className="mt-8 grid gap-8 lg:grid-cols-12"
             >
-              {/* Guilds List */}
-              <div className="lg:w-1/3">
-                <div className="space-y-4">
+              <div className="lg:col-span-4">
+                <div className="space-y-2">
                   {GUILDS.map((guild) => (
                     <button
                       key={guild.id}
                       onClick={() => setActiveGuild(guild)}
-                      className={`w-full text-left p-4 flex items-center gap-4 border transition-all ${
+                      className={`flex w-full items-center gap-3 rounded-xl border p-4 text-left transition-colors ${
                         activeGuild.id === guild.id
-                        ? 'border-apf-purple bg-apf-purple/10 text-white'
-                        : 'border-white/5 bg-black/60 text-gray-500 hover:border-white/20'
+                        ? 'border-apf-purple/40 bg-apf-purple/[0.08] text-white'
+                        : 'border-white/[0.07] bg-surface-900/60 text-ink-muted hover:border-white/15 hover:text-white'
                       }`}
                     >
-                      <SafeIcon name={guild.icon} className={activeGuild.id === guild.id ? 'text-apf-purple' : ''} />
-                      <span className="font-vt323 text-lg uppercase tracking-wider">{guild.name}</span>
+                      <SafeIcon name={guild.icon} className={activeGuild.id === guild.id ? 'h-5 w-5 text-apf-purpleLight' : 'h-5 w-5'} />
+                      <span className="text-sm font-medium">{guild.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* Guild Details */}
-              <div className="lg:w-2/3 min-h-[400px] bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 font-vt323 text-apf-purple opacity-30">
+              <div className="apf-card relative overflow-hidden p-6 sm:p-8 lg:col-span-8">
+                <div className="absolute right-5 top-5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-dim">
                   {activeGuild.meta}
                 </div>
 
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={activeGuild.id}
-                    initial={{ opacity: 0, x: 20 }}
+                    initial={{ opacity: 0, x: 12 }}
                     animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    className="prose prose-invert max-w-none"
+                    exit={{ opacity: 0, x: -12 }}
+                    transition={{ duration: 0.2 }}
                   >
-                    <div className="flex items-center gap-4 mb-6">
-                      <div className="p-3 bg-apf-purple/20 border border-apf-purple">
-                        <SafeIcon name={activeGuild.icon} className="h-8 w-8 text-apf-purple" />
+                    <div className="flex items-center gap-3">
+                      <div className="grid h-11 w-11 place-items-center rounded-xl bg-apf-purple/15 ring-1 ring-inset ring-apf-purple/30">
+                        <SafeIcon name={activeGuild.icon} className="h-5 w-5 text-apf-purpleLight" />
                       </div>
-                      <h3 className="text-3xl font-vt323 uppercase m-0">{activeGuild.name}</h3>
+                      <h3 className="text-xl font-semibold text-white sm:text-2xl">{activeGuild.name}</h3>
                     </div>
 
-                    <p className="font-vt323 text-apf-purpleLight text-xl leading-relaxed">
+                    <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-muted">
                       {activeGuild.content}
                     </p>
 
-                    <div className="mt-8 pt-8 border-t border-white/10">
-                      <h4 className="font-vt323 text-lg text-white mb-4 uppercase tracking-widest">[ GUILD BLUEPRINTS — PUBLIC RECORD ]</h4>
-                      {loading && <p className="font-vt323 text-gray-500 animate-pulse">Synchronizing Fleet Assets...</p>}
-                      {error && <p className="font-vt323 text-red-500">SIGNAL INTERRUPTED: {error}</p>}
+                    <div className="mt-8 border-t border-white/[0.06] pt-6">
+                      <h4 className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">Guild blueprints · public record</h4>
+                      {loading && <p className="mt-4 text-sm text-ink-dim">Loading blueprints…</p>}
+                      {error && <p className="mt-4 text-sm text-red-400">Blueprints unavailable: {error}</p>}
                       {!loading && !error && guides && guides.length > 0 && (
-                        <ul className="space-y-3">
+                        <ul className="mt-3 divide-y divide-white/[0.06]">
                           {guides.map((guide) => (
-                            <li key={guide.id} className="border border-white/10 p-3 bg-black/60 hover:border-apf-purple transition-all cursor-pointer">
-                               <a href={guide.link} target="_blank" rel="noreferrer" className="block text-apf-purple hover:text-white font-vt323 text-lg uppercase">
-                                  &gt; {DOMPurify.sanitize(guide.title?.rendered || "CLASSIFIED_DOCUMENT")}
+                            <li key={guide.id}>
+                               <a
+                                 href={guide.link}
+                                 target="_blank"
+                                 rel="noreferrer"
+                                 className="flex items-center justify-between gap-4 py-3 text-sm text-ink transition-colors hover:text-apf-purpleLight"
+                               >
+                                  <span>{DOMPurify.sanitize(guide.title?.rendered || 'Untitled document')}</span>
+                                  <SafeIcon name="ArrowUpRight" className="h-4 w-4 text-ink-dim" />
                                </a>
                             </li>
                           ))}
                         </ul>
                       )}
                       {!loading && !error && (!guides || guides.length === 0) && (
-                         <p className="font-vt323 text-gray-500">No active blueprints currently verified for this sector.</p>
+                         <p className="mt-4 text-sm text-ink-dim">No blueprints published for this guild yet.</p>
                       )}
                     </div>
                   </motion.div>
@@ -215,16 +223,17 @@ export function TheTreasury() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              className="mt-8"
             >
-              <div className="bg-[#111111] animate-pulse border border-[#9400FF] shadow-[0_0_15px_rgba(148,0,255,0.5)] p-8 h-[500px]">
-                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
+              <div className="apf-card h-[480px] animate-pulse p-8">
+                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
                    <div>
-                     <div className="h-8 bg-gray-800 w-64 mb-2"></div>
-                     <div className="h-4 bg-gray-800 w-96"></div>
+                     <div className="mb-2 h-8 w-64 rounded bg-white/[0.06]"></div>
+                     <div className="h-4 w-96 rounded bg-white/[0.04]"></div>
                    </div>
-                   <div className="h-10 bg-gray-800 w-48"></div>
+                   <div className="h-10 w-48 rounded bg-white/[0.04]"></div>
                  </div>
-                 <div className="w-full h-64 bg-gray-800"></div>
+                 <div className="mt-8 h-64 rounded-xl bg-white/[0.03]"></div>
               </div>
             </motion.div>
           ) : (
@@ -233,12 +242,13 @@ export function TheTreasury() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              className="mt-8"
             >
-              <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
-                 <div className="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4">
+              <div className="apf-card p-6 sm:p-8">
+                 <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                    <div>
-                     <h3 className="text-2xl font-bold uppercase text-white">Treasury Transparency</h3>
-                     <p className="font-vt323 text-gray-500 text-sm">
+                     <h3 className="text-xl font-semibold text-white sm:text-2xl">Treasury transparency</h3>
+                     <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-muted">
                        Ledger entries below are read directly from the Federation&rsquo;s Supabase ledger table. Nothing here is simulated.
                        {ledger.length === 0 && ' No on-chain settlements have been recorded yet.'}
                      </p>
@@ -248,14 +258,14 @@ export function TheTreasury() {
                        href={explorerUrl}
                        target="_blank"
                        rel="noopener noreferrer"
-                       className="flex items-center gap-2 border border-apf-purple text-apf-purple px-4 py-2 font-vt323 text-xs uppercase hover:bg-apf-purple hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-apf-purple/50"
+                       className="apf-btn apf-btn-ghost shrink-0"
                        aria-label="Verify the APF Safe multisig on Arbiscan"
                      >
                        <SafeIcon name="ExternalLink" className="h-4 w-4" /> Verify on Arbiscan
                      </a>
                    ) : (
                      <span
-                       className="flex items-center gap-2 border border-gray-800 text-gray-600 px-4 py-2 font-vt323 text-xs uppercase cursor-not-allowed"
+                       className="inline-flex shrink-0 cursor-not-allowed items-center gap-2 rounded-xl border border-white/[0.07] px-4 py-2.5 text-sm text-ink-dim"
                        title="No treasury address is configured, so there is nothing to verify on-chain yet."
                      >
                        <SafeIcon name="Lock" className="h-4 w-4" /> No Safe deployed
@@ -265,67 +275,66 @@ export function TheTreasury() {
 
                  {/* Honest audit state. There is no published IPFS audit yet, so we say so
                      rather than rendering a hash and a "verification: SUCCESS" banner. */}
-                 <div className="bg-black border border-white/10 p-5 mb-8 font-vt323 text-xs">
-                   <div className="text-white uppercase tracking-widest mb-2">[ AUDIT STATUS ]</div>
-                   <p className="text-gray-400 leading-relaxed">
+                 <div className="mt-6 rounded-xl border border-white/[0.07] bg-black/30 p-5">
+                   <div className="text-[11px] uppercase tracking-[0.14em] text-ink-dim">Audit status</div>
+                   <p className="mt-2 text-sm leading-relaxed text-ink-muted">
                      {explorerUrl
                        ? 'Treasury balances and transfers are verifiable directly against the Arbiscan explorer link above. A signed, IPFS-pinned allocation report has not been published yet; when it is, its CID and Merkle root will be listed here.'
                        : 'The APF Arbitrum Safe multisig is not deployed yet, so there is no audit to publish. This panel will populate with a signed report CID once the Treasury is live.'}
                    </p>
                  </div>
 
-{/* Contribute Section Mapping */}
-                 <div className="col-span-1 lg:col-span-3 mb-8 w-full border border-apf-purple/30 bg-black/50 p-6 flex flex-col md:flex-row justify-between items-center gap-6">
+                 <div className="mt-6 flex flex-col justify-between gap-4 rounded-xl border border-apf-purple/20 bg-apf-purple/[0.05] p-5 md:flex-row md:items-center">
                     <div>
-                      <h4 className="text-white font-vt323 text-xl uppercase tracking-widest mb-1">Federation Funding</h4>
-                      <p className="text-gray-400 font-vt323 text-sm">
+                      <h4 className="text-base font-semibold text-white">Federation funding</h4>
+                      <p className="mt-1 text-sm leading-relaxed text-ink-muted">
                         Card contributions route to APF Action (501(c)(4)) and are not tax-deductible. Crypto contributions settle on Arbitrum One.
                       </p>
                     </div>
                     <div className="w-full md:w-auto">
-                       <ContributeButton className="w-full md:w-48" />
+                       <ContributeButton showLabel className="w-full md:w-48" />
                     </div>
                  </div>
 
-                 <div className="overflow-x-auto">
-                    <table className="w-full text-left font-vt323">
-                      <thead className="text-xs text-gray-500 uppercase bg-gray-900 border-b border-gray-800">
-                        <tr>
-                          <th className="px-6 py-3">TxHash</th>
-                          <th className="px-6 py-3">Date</th>
-                          <th className="px-6 py-3">Allocation</th>
-                          <th className="px-6 py-3">Target</th>
-                          <th className="px-6 py-3">Directive Correlation</th>
-                          <th className="px-6 py-3 text-right">Status</th>
+                 <div className="mt-8 overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-left">
+                      <thead>
+                        <tr className="border-b border-white/[0.07] text-[10px] uppercase tracking-[0.14em] text-ink-dim">
+                          <th className="px-3 py-3 font-medium">Tx hash</th>
+                          <th className="px-3 py-3 font-medium">Date</th>
+                          <th className="px-3 py-3 font-medium">Allocation</th>
+                          <th className="px-3 py-3 font-medium">Target</th>
+                          <th className="px-3 py-3 font-medium">Directive</th>
+                          <th className="px-3 py-3 text-right font-medium">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="text-sm relative min-h-[200px]">
+                      <tbody className="text-sm">
                         {ledgerLoading ? (
                            <tr>
-                             <td colSpan="6" className="text-center py-12 text-apf-purple animate-pulse">
-                               [ SYNCING DECENTRALIZED LEDGER... ]
+                             <td colSpan="6" className="py-12 text-center text-ink-dim">
+                               Loading ledger…
                              </td>
                            </tr>
                         ) : ledger.length === 0 ? (
                            <tr>
-                             <td colSpan="6" className="py-16 text-center">
-                               <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ LEDGER SYNCHRONIZED — NO ENTRIES ]</div>
-                               <p className="font-vt323 text-gray-500 text-sm max-w-md mx-auto">
-                                 The Federation has not recorded any settled treasury allocations yet. Rows appear only when the Federation publishes a settled transaction to its ledger.
+                             <td colSpan="6" className="px-4 py-16 text-center">
+                               <div className="text-base font-medium text-white">No entries yet</div>
+                               <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-ink-muted">
+                                 The Federation has not recorded any settled treasury allocations. Rows appear only when a settled transaction is published to its ledger.
                                </p>
                              </td>
                            </tr>
                         ) : (
                           ledger.map((tx, idx) => (
-                            <tr key={idx} className="border-b border-gray-800 hover:bg-white/5 transition-colors">
-                              <td className="px-6 py-4 text-apf-purple truncate max-w-[120px] sm:max-w-none">{DOMPurify.sanitize(tx.txId)}</td>
-                              <td className="px-6 py-4 text-gray-400">{DOMPurify.sanitize(tx.date)}</td>
-                              <td className="px-6 py-4 text-white font-bold">{DOMPurify.sanitize(tx.amount)}</td>
-                              <td className="px-6 py-4 text-gray-300">{DOMPurify.sanitize(tx.target)}</td>
-                              <td className="px-6 py-4 text-apf-emerald">{DOMPurify.sanitize(tx.alignment)}</td>
-                              <td className="px-6 py-4 text-right">
-                                 <span className={`px-2 py-1 text-[10px] uppercase tracking-widest border ${
-                                   tx.status === 'Settled' ? 'text-green-500 border-green-500/30 bg-green-500/10' : 'text-yellow-500 border-yellow-500/30 bg-yellow-500/10'
+                            <tr key={idx} className="border-b border-white/[0.05] transition-colors hover:bg-white/[0.02]">
+                              <td className="max-w-[140px] truncate px-3 py-3.5 font-mono text-xs text-apf-purpleLight">{DOMPurify.sanitize(tx.txId)}</td>
+                              <td className="px-3 py-3.5 text-ink-muted">{DOMPurify.sanitize(tx.date)}</td>
+                              <td className="px-3 py-3.5 font-medium text-white">{DOMPurify.sanitize(tx.amount)}</td>
+                              <td className="px-3 py-3.5 text-ink-muted">{DOMPurify.sanitize(tx.target)}</td>
+                              <td className="px-3 py-3.5 text-emerald-300">{DOMPurify.sanitize(tx.alignment)}</td>
+                              <td className="px-3 py-3.5 text-right">
+                                 <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] uppercase tracking-wide ${
+                                   tx.status === 'Settled' ? 'bg-emerald-400/10 text-emerald-300' : 'bg-amber-400/10 text-amber-300'
                                  }`}>
                                    {DOMPurify.sanitize(tx.status)}
                                  </span>
@@ -337,19 +346,18 @@ export function TheTreasury() {
                     </table>
                  </div>
 
-
                 {!hasTreasuryAddress ? (
-                  <div className="mt-8 border border-apf-purple/40 bg-black/60 p-6 text-center">
-                    <span className="font-vt323 text-apf-purple text-xl block mb-2">[ STATUS: SAFE RATIFICATION PENDING ]</span>
-                    <p className="font-vt323 text-gray-300 text-base max-w-xl mx-auto">
-                      The APF Arbitrum Safe multisig will be activated within 30 days of Wyoming DAO LLC formal charter registration. On-chain treasury streams will populate following inaugural key-ceremony deployment.
+                  <div className="mt-8 rounded-xl border border-white/[0.07] bg-black/30 p-6 text-center">
+                    <span className="text-sm font-medium text-white">Safe ratification pending</span>
+                    <p className="mx-auto mt-2 max-w-xl text-sm leading-relaxed text-ink-muted">
+                      The APF Arbitrum Safe multisig is not deployed yet. Treasury rows will appear here once the Safe is live and a settled transaction is published.
                     </p>
                   </div>
                 ) : null}
 
-                 <div className="mt-6 text-center font-vt323 text-sm">
-                   <div className="text-gray-500">[ FULFILLING_ARTICLE_II: RADICAL_TRANSPARENCY ]</div>
-                 </div>
+                 <p className="mt-6 text-center font-terminal text-[10px] uppercase tracking-[0.18em] text-ink-dim">
+                   Article II · radical transparency
+                 </p>
               </div>
             </motion.div>
           )}

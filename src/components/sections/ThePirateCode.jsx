@@ -27,48 +27,49 @@ const ARTICLES = [
 
 export function ThePirateCode() {
   return (
-    <section className="py-24 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 relative overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-16 text-center">
-          <h2 className="text-4xl md:text-6xl font-black uppercase mb-4 tracking-tighter">
-            The Pirate Code
+    <section className="border-b border-white/[0.06] py-20 sm:py-24">
+      <div className="apf-container">
+        <div className="max-w-2xl">
+          <p className="apf-kicker">The Pirate Code</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Twenty articles. One direction.
           </h2>
-          <p className="font-vt323 text-apf-purple text-xl tracking-[0.2em]">
-            [ PROTOCOL: THE TWENTY ARTICLES ]
+          <p className="apf-lede mt-4">
+            The Federation&apos;s governing principles, each anchored to the constitutional
+            provision it defends. This is the doctrine of record — not a campaign promise.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1">
+        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {ARTICLES.map((article, index) => (
-            <motion.div
+            <motion.article
               key={article.id}
-              whileHover={{ scale: 1.02 }}
-              className="group relative bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 border-l-4 border-l-apf-purple cursor-crosshair"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.35, delay: (index % 3) * 0.04, ease: 'easeOut' }}
+              className="apf-card flex flex-col p-6"
             >
-              <div className="absolute inset-0 bg-apf-purple/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-              <span className="font-vt323 text-apf-purple text-2xl mb-2 block">ARTICLE {article.id}</span>
-              <h3 className="text-2xl font-bold text-white mb-2 group-hover:glitch-hover transition-all duration-500">
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-apf-purpleLight">
+                  Article {article.id}
+                </span>
+                <span className="text-right text-[10px] uppercase tracking-[0.12em] text-ink-dim">
+                  {article.theme}
+                </span>
+              </div>
+              <h3 className="mt-3 text-lg font-semibold leading-snug text-white">
                 {article.title}
               </h3>
-              <p className="font-vt323 text-gray-500 uppercase text-xs tracking-widest mb-4">
-                {article.theme}
+              <p className="mb-4 mt-2.5 text-sm leading-relaxed text-ink-muted">
+                {article.content}
               </p>
-              <div className="prose prose-invert prose-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500">
-                {article.reference ? (
-                  <p className="font-vt323 text-gray-300 text-lg">
-                    {article.content}{' '}
-                    <span
-                      className="text-apf-purple underline decoration-dotted cursor-help"
-                      title={`Reference: ${article.reference}`}
-                    >
-                      [Citation]
-                    </span>
-                  </p>
-                ) : (
-                  <p className="font-vt323 text-gray-300 text-lg">{article.content}</p>
-                )}
-              </div>
-            </motion.div>
+              {article.reference && (
+                <p className="mt-auto border-t border-white/[0.06] pt-3 text-[11px] leading-relaxed text-ink-dim">
+                  <span className="text-ink-muted">Anchored:</span> {article.reference}
+                </p>
+              )}
+            </motion.article>
           ))}
         </div>
       </div>

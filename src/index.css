@@ -3,56 +3,142 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-apf-black text-apf-white antialiased overflow-x-hidden selection:bg-apf-purple selection:text-white font-sans;
+  html {
+    scroll-behavior: smooth;
   }
-  
+
+  body {
+    @apply bg-surface-950 text-ink antialiased overflow-x-hidden font-sans;
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    @apply bg-apf-purple/70 text-white;
+  }
+
   h1, h2, h3, h4 {
-    @apply font-vt323;
+    @apply font-display font-semibold tracking-tight text-white;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible, consistent keyboard focus on every interactive element. */
+  :where(a, button, input, textarea, select, summary):focus-visible {
+    @apply outline-none ring-2 ring-apf-purpleLight/70 ring-offset-2 ring-offset-surface-950;
+  }
+}
+
+@layer components {
+  .apf-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .apf-card {
+    @apply rounded-2xl border border-white/[0.07] bg-surface-900/80 shadow-soft;
+  }
+
+  .apf-card-hover {
+    @apply transition duration-300 hover:-translate-y-0.5 hover:border-white/[0.14] hover:bg-surface-800/80 hover:shadow-lift;
+  }
+
+  .apf-kicker {
+    @apply font-terminal text-[11px] uppercase tracking-[0.22em] text-apf-purpleLight/80;
+  }
+
+  .apf-display {
+    @apply font-display font-semibold tracking-tight;
+  }
+
+  .apf-btn {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-5 text-sm font-medium transition-colors duration-200;
+  }
+
+  .apf-btn-primary {
+    @apply bg-apf-purple text-white hover:bg-[#A21CE8];
+  }
+
+  .apf-btn-ghost {
+    @apply border border-white/15 text-white hover:border-white/25 hover:bg-white/[0.04];
+  }
+
+  .apf-terminal {
+    @apply font-terminal uppercase tracking-wider;
+  }
+
+  .apf-terminal-panel {
+    @apply rounded-2xl border border-white/[0.08] bg-black/50 shadow-soft;
+  }
+
+  .apf-rule {
+    @apply border-t border-white/[0.07];
+  }
+
+  .apf-lede {
+    @apply text-base leading-relaxed text-ink-muted sm:text-lg;
   }
 }
 
 @layer utilities {
-  .logo-text {
-    @apply font-cinzel font-black tracking-widest uppercase;
-  }
-  
-
+  /* Local scanline texture. It used to be `position: fixed`, so every card that asked for
+     it painted a full-viewport overlay over every other card. It is an opt-in accent now:
+     absolute, inside a positioned panel, and barely visible. */
   .scanlines::before {
-    content: " ";
-    display: block;
-    position: fixed;
-    top: 0; left: 0; bottom: 0; right: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    z-index: 50;
-    background-size: 100% 2px, 3px 100%;
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.05) 0px,
+      rgba(255, 255, 255, 0.05) 1px,
+      transparent 1px,
+      transparent 3px
+    );
     pointer-events: none !important;
     user-select: none;
-    opacity: 0.3;
+    opacity: 0.18;
+    z-index: 1;
   }
 
   .neon-grid {
-    background-size: 40px 40px;
-    background-image: 
-      linear-gradient(to right, rgba(148, 0, 255, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(148, 0, 255, 0.05) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-image:
+      linear-gradient(to right, rgba(148, 0, 211, 0.06) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(148, 0, 211, 0.06) 1px, transparent 1px);
   }
 
   .glitch-hover:hover {
-    animation: glitch 0.2s infinite;
+    animation: glitch 0.25s steps(2, end) 1;
   }
 
   @keyframes glitch {
     0% { transform: translate(0); }
-    20% { transform: translate(-2px, 2px); }
-    40% { transform: translate(-2px, -2px); }
-    60% { transform: translate(2px, 2px); }
-    80% { transform: translate(2px, -2px); }
+    25% { transform: translate(-1px, 1px); }
+    50% { transform: translate(1px, -1px); }
+    75% { transform: translate(1px, 1px); }
     100% { transform: translate(0); }
   }
 }
+
 /* Suppress default Thirdweb SDK toasts in favor of APF custom toasts */
 .thirdweb-toast {
   display: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

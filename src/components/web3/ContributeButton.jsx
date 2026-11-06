@@ -4,7 +4,7 @@ import { logCheckoutException } from '../../lib/api/telemetry';
 import SafeIcon from '../../common/SafeIcon';
 import { client } from '../../lib/web3/client';
 
-export function ContributeButton() {
+export function ContributeButton({ className = '', showLabel = false }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
@@ -40,23 +40,27 @@ export function ContributeButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 px-6 py-3 border border-apf-purple text-apf-purple font-vt323 tracking-widest text-lg uppercase bg-black/50 hover:bg-apf-purple hover:text-white transition-all duration-300 shadow-[0_0_15px_rgba(148,0,255,0.3)] hover:shadow-[0_0_25px_rgba(148,0,255,0.6)]"
+        className={`inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full border border-white/10 bg-surface-900/90 text-sm font-medium text-white shadow-lift backdrop-blur transition-colors hover:border-apf-purple/40 hover:bg-surface-800 ${
+          showLabel ? 'px-4' : 'h-11 w-11 p-0'
+        } ${className}`}
+        aria-label="Contribute to the federation"
+        title="Contribute to the federation"
       >
-        <SafeIcon name="DollarSign" className="h-5 w-5" />
-        Contribute to the Federation
+        <SafeIcon name="DollarSign" className="h-4 w-4 text-emerald-300" />
+        {showLabel && 'Contribute'}
       </button>
 
       {isModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="relative w-full max-w-md bg-black border border-apf-purple/50 shadow-[0_0_30px_rgba(148,0,255,0.2)]">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+          <div className="relative w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-surface-900 shadow-lift">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors z-10"
-              aria-label="Close Checkout"
+              className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white"
+              aria-label="Close checkout"
             >
-              <SafeIcon name="X" className="h-6 w-6" />
+              <SafeIcon name="X" className="h-5 w-5" />
             </button>
-            <div className="p-1">
+            <div className="p-2">
                <PayEmbed
                  client={client}
                  theme="dark"

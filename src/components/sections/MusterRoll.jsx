@@ -120,56 +120,54 @@ export function MusterRoll() {
   };
 
   return (
-    <div id="join" className="py-24 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 sm:p-10 lg:p-12 relative">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-apf-purple to-transparent" />
-
-        <div className="mb-12 text-center">
-          <h2 className="text-3xl sm:text-4xl font-vt323 font-black uppercase tracking-widest mb-4">
-            Authorize Connection Sequence
+    <section id="join" className="py-20 sm:py-24">
+      <div className="apf-container max-w-3xl">
+        <div className="max-w-2xl">
+          <p className="apf-kicker">Membership</p>
+          <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+            Join the muster roll
           </h2>
-          {/* The underscore token cannot wrap between characters, so 0.3em tracking at
-              text-lg overflowed a 375px viewport by 62px and gave the whole home page a
-              horizontal scrollbar. Scale the tracking with the breakpoint and allow the
-              token itself to break as a last resort. */}
-          <p className="font-vt323 text-apf-purple text-xs sm:text-lg uppercase tracking-[0.15em] sm:tracking-[0.3em] break-all">
-            [ INITIALIZE_CONNECTION_SEQUENCE ]
+          <p className="apf-lede mt-4">
+            One alias, one Passport. No wallet, no gas, no address required. Rank and guild
+            are assigned by the Federation and read back from your record.
           </p>
         </div>
 
+        <div className="apf-card mt-10 p-6 sm:p-8 lg:p-10">
         {showRecord ? (
           /* ---------- Filed: the Federation's record, read back ---------- */
           <div className="space-y-6">
-            <div className="border border-apf-emerald/40 bg-apf-emerald/5 p-6 font-vt323">
-              <div className="text-apf-emerald uppercase tracking-widest text-sm mb-4">
-                [ ON THE MUSTER ROLL ]
+            <div className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-6">
+              <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.14em] text-emerald-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                On the muster roll
               </div>
-              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+              <dl className="mt-5 grid grid-cols-1 gap-x-8 gap-y-4 text-sm sm:grid-cols-2">
                 <div>
-                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Alias</dt>
-                  <dd className="text-white text-lg uppercase">{member.alias}</dd>
+                  <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Alias</dt>
+                  <dd className="mt-1 text-base font-medium text-white">{member.alias}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Clearance</dt>
-                  <dd className="text-apf-emerald text-lg uppercase">{member.role}</dd>
+                  <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Clearance</dt>
+                  <dd className="mt-1 text-base font-medium text-emerald-300">{member.role}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Guild</dt>
-                  <dd className="text-apf-purple text-lg uppercase">{member.guild}</dd>
+                  <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Guild</dt>
+                  <dd className="mt-1 text-base font-medium text-apf-purpleLight">{member.guild}</dd>
                 </div>
                 <div>
-                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Signal endpoint</dt>
-                  <dd className="text-white text-base break-all">{member.email}</dd>
+                  <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Signal endpoint</dt>
+                  <dd className="mt-1 break-all text-sm text-white">{member.email}</dd>
                 </div>
                 <div className="sm:col-span-2">
-                  <dt className="text-gray-500 uppercase tracking-widest text-xs">Linked wallet</dt>
-                  <dd className="text-white text-base break-all font-mono">
+                  <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Linked wallet</dt>
+                  <dd className="mt-1 break-all font-mono text-xs text-ink-muted">
                     {member.wallet_address || 'None linked — optional by design.'}
                   </dd>
                 </div>
               </dl>
             </div>
-            <p className="font-vt323 text-xs text-gray-500 uppercase leading-relaxed">
+            <p className="text-xs leading-relaxed text-ink-dim">
               Clearance is assigned by the Federation and read from your record. This browser
               cannot raise it. To amend the entry, edit the fields below and file again — the
               existing record is updated, not duplicated.
@@ -180,29 +178,29 @@ export function MusterRoll() {
                 updateMusterRoll({ alias: member.alias, status: 'idle' });
                 setEditing(true);
               }}
-              className="w-full font-vt323 font-bold py-3 px-8 border border-apf-purple/40 text-apf-purple hover:bg-apf-purple/10 transition-all uppercase tracking-widest"
+              className="apf-btn apf-btn-ghost w-full"
             >
               Amend this entry
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={handleSubmit} className="space-y-7">
             {!isSignedIn && (
               <div
                 role="status"
-                className="border border-amber-500/40 bg-amber-500/5 p-4 font-vt323 text-sm text-amber-200"
+                className="rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4 text-sm text-amber-200"
               >
-                <div className="uppercase tracking-widest text-amber-400 mb-1 flex items-center gap-2">
+                <div className="flex items-center gap-2 font-medium text-amber-300">
                   <SafeIcon name="Lock" className="h-4 w-4" /> A Pirate Passport is required
                 </div>
-                <p className="font-sans text-gray-300 leading-relaxed">
+                <p className="mt-2 leading-relaxed text-amber-100/80">
                   Your record is filed against your Passport, not against a wallet. Sign in
                   with an email one-time code — no wallet, no gas, no address required.
                 </p>
                 <button
                   type="button"
                   onClick={openPassport}
-                  className="mt-3 px-4 py-2 border border-amber-400/60 text-amber-200 hover:bg-amber-400/10 transition-colors uppercase tracking-widest text-xs"
+                  className="mt-3 inline-flex min-h-[36px] items-center rounded-lg border border-amber-400/40 px-3 text-xs font-medium text-amber-200 transition-colors hover:bg-amber-400/10"
                 >
                   Establish Passport
                 </button>
@@ -210,8 +208,8 @@ export function MusterRoll() {
             )}
 
             <div className="space-y-2">
-              <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="alias">
-                Alias_Callsign
+              <label className="text-[11px] uppercase tracking-[0.12em] text-ink-dim" htmlFor="alias">
+                Callsign
               </label>
               <input
                 id="alias"
@@ -220,26 +218,26 @@ export function MusterRoll() {
                 maxLength={64}
                 value={alias}
                 onChange={(e) => updateMusterRoll({ alias: e.target.value })}
-                className="w-full bg-black border-b border-gray-800 p-3 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors"
-                placeholder="Ex: Ghost_Vessel"
+                className="w-full rounded-lg border border-white/[0.1] bg-surface-950 px-3.5 py-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
+                placeholder="e.g. Ghost Vessel"
               />
             </div>
 
             <div className="space-y-2">
-              <span className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block">
-                Signal_Endpoint
+              <span className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">
+                Signal endpoint
               </span>
-              <div className="w-full bg-black border-b border-gray-800 p-3 text-white opacity-70 font-vt323 text-lg break-all">
-                {passport.session?.user?.email || '[ PASSPORT REQUIRED ]'}
+              <div className="w-full break-all rounded-lg border border-white/[0.06] bg-surface-950/60 px-3.5 py-3 text-sm text-ink-muted">
+                {passport.session?.user?.email || 'Passport required'}
               </div>
-              <p className="font-vt323 text-xs text-gray-500 uppercase">
+              <p className="text-xs leading-relaxed text-ink-dim">
                 Your Passport address. The Federation writes to this and nothing else.
               </p>
             </div>
 
             <div className="space-y-2">
-              <label className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block" htmlFor="skills">
-                Primary_Skillset
+              <label className="text-[11px] uppercase tracking-[0.12em] text-ink-dim" htmlFor="skills">
+                Skills
               </label>
               <textarea
                 id="skills"
@@ -247,22 +245,22 @@ export function MusterRoll() {
                 maxLength={280}
                 value={skills}
                 onChange={(e) => updateMusterRoll({ skills: e.target.value })}
-                className="w-full bg-black border border-gray-800 p-4 text-white focus:outline-none focus:border-apf-purple font-vt323 text-lg transition-colors resize-none"
-                placeholder="Code, Logistics, Agitprop, Healthcare..."
+                className="w-full resize-none rounded-lg border border-white/[0.1] bg-surface-950 px-3.5 py-3 text-sm text-white placeholder:text-ink-dim focus:border-apf-purpleLight/60 focus:outline-none"
+                placeholder="Code, logistics, agitprop, healthcare…"
               />
-              <p className="font-vt323 text-xs text-gray-500 uppercase">
-                Guild on filing: <span className="text-apf-purple">{draftGuild}</span>
+              <p className="text-xs text-ink-dim">
+                Guild on filing: <span className="text-apf-purpleLight">{draftGuild}</span>
               </p>
             </div>
 
             <div className="space-y-2">
-              <span className="font-vt323 text-apf-purple text-sm uppercase tracking-widest block">
-                Wallet_link <span className="text-gray-600">(optional)</span>
+              <span className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">
+                Wallet <span className="normal-case tracking-normal">(optional)</span>
               </span>
-              <div className="w-full bg-black border-b border-gray-800 p-3 text-white opacity-70 font-vt323 text-lg break-all">
+              <div className="w-full break-all rounded-lg border border-white/[0.06] bg-surface-950/60 px-3.5 py-3 text-sm text-ink-muted">
                 {address || 'No wallet connected — the record files without one.'}
               </div>
-              <p className="font-vt323 text-xs text-gray-500 uppercase">
+              <p className="text-xs leading-relaxed text-ink-dim">
                 A connected wallet is linked only after it signs proof of control. Declining
                 the signature files the record with no wallet attached.
               </p>
@@ -271,16 +269,15 @@ export function MusterRoll() {
             <button
               type="submit"
               disabled={filing || !alias.trim()}
-              className={`w-full font-vt323 font-bold py-5 px-8 transition-all uppercase tracking-widest flex justify-center items-center gap-3 text-xl disabled:opacity-50 disabled:cursor-not-allowed ${
-                filing ? 'bg-gray-800 text-gray-500' : 'bg-apf-purple hover:bg-white hover:text-apf-black text-white shadow-[0_0_20px_rgba(148,0,255,0.3)]'
-              }`}
+              className="apf-btn apf-btn-primary w-full disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <SafeIcon name="UploadCloud" />
-              {filing ? '[ FILING RECORD... ]' : '[ FILE RECORD ON THE MUSTER ROLL ]'}
+              <SafeIcon name="UploadCloud" className="h-4 w-4" />
+              {filing ? 'Filing record…' : 'File record on the muster roll'}
             </button>
           </form>
         )}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

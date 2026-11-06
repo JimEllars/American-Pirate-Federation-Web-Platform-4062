@@ -80,10 +80,10 @@ export function IntelligenceHub() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
 
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-6">
-              <SafeIcon name="Activity" className="h-10 w-10 text-apf-emerald" />
-              <div className="flex-1">
-                <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter">
+            <div className="mb-6 flex flex-wrap items-center gap-4">
+              <SafeIcon name="Activity" className="h-10 w-10 shrink-0 text-apf-emerald" />
+              <div className="min-w-0 flex-1">
+                <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
                 Consolidated Intelligence Core</h1>
               </div>
               <button
@@ -115,7 +115,7 @@ export function IntelligenceHub() {
                       }
                   }
                 }}
-                className={`px-6 py-3 min-h-[44px] border border-apf-purple text-apf-purple font-vt323 tracking-widest text-sm uppercase hover:bg-apf-purple hover:text-white transition-colors ${localAnalyzing ? 'animate-pulse' : ''}`}
+                className={`min-h-[44px] basis-full rounded-xl border border-apf-purple/40 px-5 text-sm font-medium text-apf-purpleLight transition-colors hover:bg-apf-purple/10 sm:basis-auto ${localAnalyzing ? 'animate-pulse' : ''}`}
                 disabled={localAnalyzing}
               >
                 {localAnalyzing ? '[ TRANSMITTING CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
