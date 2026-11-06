@@ -21,7 +21,9 @@ const ROUTES = [
   { path: '/governance', heading: /proposition portal|propose|clearance/i },
   { path: '/calculator', heading: /great balance/i },
   { path: '/ledger', heading: /the ledger/i },
-  { path: '/pay-ratio', heading: /the ledger/i }
+  { path: '/pay-ratio', heading: /the ledger/i },
+  { path: '/profile', heading: /your profile/i },
+  { path: '/members', heading: /member directory/i }
 ];
 
 // The ErrorBoundary fallback copy. Its presence means a component threw during render.
@@ -552,4 +554,33 @@ test('/policies labels annotations as local notes, never as peer review', async 
 
   // Drafts on the same page are local too; the copy must not promise a public floor.
   await expect(body).toContainText(/These drafts are stored in this browser/i);
+});
+
+
+// ---------------------------------------------------------------------------
+// Phase A — profiles and the opt-in directory.
+// ---------------------------------------------------------------------------
+
+test('the member directory lists published profiles and invents none', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/members', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+  // Empty (or migration-pending) is the honest state: no placeholder members.
+  await expect(body).toContainText(/No published profiles yet|directory is not enabled yet/i);
+  await expect(body).not.toContainText(/clearance:/i);
+  await expect(body.getByRole('article')).toHaveCount(0);
+});
+
+test('the profile page requires an identity and never invents a member record', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/profile', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+  await expect(body).toContainText(/Sign in to continue/i);
+  await expect(body).not.toContainText(/Guild:/i);
+  await expect(body).not.toContainText(/Navigator/i);
+
+  await page.getByRole('button', { name: /open pirate passport/i }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
 });
