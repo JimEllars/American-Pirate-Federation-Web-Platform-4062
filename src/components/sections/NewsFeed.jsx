@@ -47,7 +47,7 @@ export function NewsFeed() {
             <h2 className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl">From the newsroom</h2>
           </div>
           <div className="mt-10 rounded-2xl border border-dashed border-white/[0.1] bg-surface-900/40 p-10 text-center">
-            <SafeIcon name="Newspaper" className="mx-auto h-8 w-8 text-ink-dim" />
+            <SafeIcon name="Inbox" className="mx-auto h-8 w-8 text-ink-dim" />
             <p className="mt-4 text-base font-medium text-white">No dispatches on the wire</p>
             <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-ink-muted">
               The Federation newsroom has published nothing yet, or the CMS is unreachable

@@ -27,6 +27,9 @@ const LazyCalculator = React.lazy(() => import('./pages/Calculator').then(m => (
 const LazyLedger = React.lazy(() => import('./pages/Ledger').then(m => ({ default: m.Ledger })));
 const LazyProfile = React.lazy(() => import('./pages/Profile').then(m => ({ default: m.Profile })));
 const LazyDirectory = React.lazy(() => import('./pages/Directory').then(m => ({ default: m.Directory })));
+const LazyForum = React.lazy(() => import('./pages/Forum').then(m => ({ default: m.Forum })));
+const LazyForumCategory = React.lazy(() => import('./pages/ForumCategory').then(m => ({ default: m.ForumCategory })));
+const LazyForumThread = React.lazy(() => import('./pages/ForumThread').then(m => ({ default: m.ForumThread })));
 import { ScrollToTop } from "./components/layout/ScrollToTop";
 import { ToastContainer } from './components/ui/ToastContainer';
 import { logUnhandledRejection } from './lib/api/telemetry';
@@ -125,6 +128,10 @@ function App() {
               {/* Phase A: a member's own profile and the opt-in public directory. */}
               <Route path="/profile" element={<ErrorBoundary><LazyProfile /></ErrorBoundary>} />
               <Route path="/members" element={<ErrorBoundary><LazyDirectory /></ErrorBoundary>} />
+              {/* Forum: public read, Passport to post and vote. */}
+              <Route path="/forum" element={<ErrorBoundary><LazyForum /></ErrorBoundary>} />
+              <Route path="/forum/:categorySlug" element={<ErrorBoundary><LazyForumCategory /></ErrorBoundary>} />
+              <Route path="/forum/:categorySlug/:threadId" element={<ErrorBoundary><LazyForumThread /></ErrorBoundary>} />
               {/* Governance and the proposal floor are the same surface. /propose is the
                   actionable URL the navigation uses; /governance is the SOP's name for it. */}
               <Route path="/governance" element={<ErrorBoundary><LazyPropose key="governance" /></ErrorBoundary>} />
