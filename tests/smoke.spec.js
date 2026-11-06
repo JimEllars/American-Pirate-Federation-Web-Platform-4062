@@ -549,10 +549,15 @@ test('/policies labels annotations as local notes, never as peer review', async 
   const body = page.locator('body');
   await body.getByRole('button', { name: /^notes \(0\)$/i }).first().click();
 
-  // The thread is this browser's store. Presenting it as "peer review" or "commentary"
-  // told a visitor the Federation had a review process with no entries in it.
-  await expect(body).not.toContainText(/peer review/i);
+  // Wait for the panel before asserting anything about it. The negated assertion below used
+  // to run immediately after the click, and a negated match passes as soon as the text is
+  // absent — so on a fast runner it was satisfied before React had rendered the panel at
+  // all. CI was green on a panel it never opened (audit 2026-11-06).
+  await expect(body).toContainText(/No notes on this device/i);
   await expect(body).toContainText(/saved in this browser only/i);
+
+  // The thread is this browser's store. It must not invite Federation review.
+  await expect(body).not.toContainText(/add peer review|peer review recorded/i);
 
   // Drafts on the same page are local too; the copy must not promise a public floor.
   await expect(body).toContainText(/These drafts are stored in this browser/i);
@@ -600,6 +605,10 @@ test('the forum publishes its strategic boards and invents no threads', async ({
   for (const board of ['General Assembly', 'The Pirate Code', 'Guild Halls', 'Mutual Aid', 'Tech & Privacy', 'Politics & Action']) {
     await expect(body).toContainText(board);
   }
+  // The index is the only list of boards, so the number in the copy has to match it.
+  await expect(page.locator('a[href^="/forum/"]')).toHaveCount(8);
+  await expect(body).toContainText(/8 boards/i);
+  await expect(body).not.toContainText(/seven boards/i);
   await expect(body).toContainText(/No threads yet|forum tables have not been created/i);
 });
 

@@ -47,5 +47,9 @@ through the connected `main` branch so Vite includes those environment values.
 - `npm run build` - production build
 - `npm run cf:dev` - preview built app with Cloudflare Pages runtime
 - `npm run deploy:cloudflare` - build and deploy to Cloudflare Pages
+- `npm run lint` - ESLint (Gateway 1)
+- `npm run test:unit` - Node test runner: pure helpers and the sitemap/route invariant
+- `npm run test:smoke` - Playwright smoke suite against `vite preview` (Gateway 3)
+- `npm run verify` - lint, unit tests, build, build verifier, smoke suite in order
 
 `public/_redirects` already contains SPA fallback routing for React Router.
