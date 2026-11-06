@@ -2,8 +2,9 @@
  * Forum categories — strategic structure, not user data.
  *
  * These are fixed ids so the client can list the forum before the database migration is
- * applied and so threads keep their category across environments. The same seven rows are
- * seeded by supabase/migrations/20261106120000_forum.sql; keep the two in step.
+ * applied and so threads keep their category across environments. The same eight rows are
+ * seeded by supabase/migrations/20261106120000_forum.sql; keep the two in step — and do not
+ * restate the count in page copy, derive it from this array instead.
  */
 
 export const FORUM_CATEGORIES = [

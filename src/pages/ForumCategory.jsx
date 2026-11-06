@@ -7,7 +7,7 @@ import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { VoteControl } from '../components/forum/VoteControl';
 import { useAppStore } from '../store/useAppStore';
-import { categoryBySlug } from '../lib/forum/categories';
+import { FORUM_CATEGORIES, categoryBySlug } from '../lib/forum/categories';
 import {
   FORUM_LIMITS,
   ForumSchemaMissing,
@@ -140,7 +140,7 @@ export function ForumCategory() {
         <SEO title="Board not found | Forum" />
         <PageTransition>
           <div className="apf-container py-20">
-            <PageHeader icon="MessageSquare" kicker="Forum" title="Board not found" lede="That board does not exist. The seven boards are listed on the forum index." />
+            <PageHeader icon="MessageSquare" kicker="Forum" title="Board not found" lede={`That board does not exist. The ${FORUM_CATEGORIES.length} boards are listed on the forum index.`} />
             <Link to="/forum" className="apf-btn apf-btn-ghost">Back to the forum</Link>
           </div>
         </PageTransition>
@@ -174,6 +174,31 @@ export function ForumCategory() {
           {schemaMissing && (
             <div role="status" className="mb-6 rounded-xl border border-amber-400/25 bg-amber-400/[0.05] p-4 text-sm text-amber-200">
               The forum migration has not been applied, so posting and voting are unavailable.
+            </div>
+          )}
+
+          {/* Audit 2026-11-06: a signed-in Passport with no `members` row used to open this
+              composer into nothing at all — the form is gated on `member`, so the button
+              appeared to do nothing and the reason was never stated. Say the reason. */}
+          {composerOpen && isSignedIn && !member && (
+            <div className="apf-card mb-6 p-5 sm:p-6" role="status">
+              <h2 className="text-base font-semibold text-white">A muster record is required to post</h2>
+              <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+                Your Pirate Passport is signed in, but the Federation holds no member record
+                for it yet — so this board has no alias to put on a thread. File a muster
+                record, then come back; reading stays open either way.
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Link to="/" onClick={() => setComposerOpen(false)} className="apf-btn apf-btn-primary">
+                  Go to the muster form
+                </Link>
+                <button type="button" onClick={openPassport} className="apf-btn apf-btn-ghost">
+                  Open Pirate Passport
+                </button>
+                <button type="button" onClick={() => setComposerOpen(false)} className="text-xs text-ink-dim hover:text-white">
+                  Cancel
+                </button>
+              </div>
             </div>
           )}
 
