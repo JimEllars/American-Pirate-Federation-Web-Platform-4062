@@ -27,7 +27,7 @@ machine or a surveillance product.
 |---|---|---|
 | **Resources** | Library of documents, briefings, templates, links | not built |
 | **Education** | Structured learning paths, lessons, progress | not built |
-| **Discussions** | Threaded conversation by topic/guild | not built |
+| **Discussions** | Threaded conversation by topic/guild | **Phase C code shipped** (migration pending application) |
 | **Profiles** | Member identity, guild, activity, opt-in directory | **Phase A code shipped** (migration pending application) |
 | **Events** | Muster calendar, RSVP, recordings | reads `events`; empty |
 | **Guilds** | Guild pages, members, projects, blueprints | marketing copy only |
@@ -83,6 +83,28 @@ RLS sketch:
 
 **Operator step:** apply the migration with a service-role credential. Until it is applied,
 `/profile` shows the migration notice and `/members` says the directory is not enabled.
+
+### Phase C — shipped code (2026-11-05)
+
+Reddit-style forum, built before Phase B because it is the community surface members asked
+for first.
+
+- Boards (fixed, strategic): General Assembly, The Pirate Code, Guild Halls, Mutual Aid,
+  Resources & Learning, Tech & Privacy, Politics & Action, Quartermaster's Office.
+- `/forum` — board index plus recent activity.
+- `/forum/:slug` — threads with Hot/New/Top ordering, voting, and a New Thread composer.
+- `/forum/:slug/:threadId` — thread view with nested replies, per-reply voting and inline
+  reply forms.
+- Public read. Thread/reply/vote writes require a Passport and a member record; votes are
+  one row per member per target, and scores are maintained by trigger, never by the client.
+- `supabase/migrations/20261106120000_forum.sql` — categories, threads, posts, votes, RLS,
+  author-alias denormalisation, vote-score and reply-count triggers, column-level insert
+  grants (authors cannot set score/status), and staff moderation policies.
+- Navigation: Forum in the desktop bar (one-row budget still holds at 1280), footer, and
+  mobile drawer.
+
+**Operator step:** apply the forum migration with a service-role credential. Until then the
+boards are visible and read-only, with an explicit migration notice.
 
 ### Phase B — resources and education (content)
 
