@@ -2,18 +2,18 @@ import React from 'react';
 
 export default function ArmoryCategoryBar({ activeCategory, setActiveCategory, categories }) {
   return (
-    <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-apf-purple/50 scrollbar-track-transparent">
+    <div className="mb-8 flex gap-2 overflow-x-auto pb-1">
       {categories.map((cat) => (
         <button
           key={cat}
           onClick={() => setActiveCategory(cat)}
-          className={`px-4 py-2 font-mono text-xs uppercase tracking-widest whitespace-nowrap border transition-all duration-300 min-h-[44px] ${
+          className={`min-h-[40px] whitespace-nowrap rounded-lg border px-4 text-sm font-medium transition-colors ${
             activeCategory === cat
-              ? 'border-apf-purple bg-apf-purple/20 text-white shadow-[0_0_10px_rgba(148,0,255,0.5)]'
-              : 'border-white/10 text-gray-400 hover:border-apf-purple/50 hover:text-white bg-black/40'
+              ? 'border-apf-purple/40 bg-apf-purple/15 text-white'
+              : 'border-white/[0.08] text-ink-muted hover:border-white/20 hover:text-white'
           }`}
         >
-          [ {cat} ]
+          {cat}
         </button>
       ))}
     </div>

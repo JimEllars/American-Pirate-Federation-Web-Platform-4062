@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
+import { PageHeader } from '../components/layout/PageHeader';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { useAppStore } from '../store/useAppStore';
@@ -76,36 +77,26 @@ export function Calculator() {
         description="Work out what Article XIV of The Pirate Code would pay a household: a 33% negative income tax up to the $40,000 / $60,000 phase-out floor, plus $400 per child per month."
       />
       <PageTransition>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="mb-12">
-            <div className="flex items-center gap-4 mb-6">
-              <SafeIcon name="Percent" className="h-10 w-10 text-apf-emerald shrink-0" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-vt323 break-words">
-                The Great Balance
-              </h1>
-            </div>
-            <p className="max-w-3xl text-gray-400 font-sans text-lg border-l-2 border-apf-emerald pl-6">
-              Article XIV replaces the welfare cliff with a single negative income tax: 33% of
-              the gap between a household&apos;s income and a {usd(ARTICLE_XIV.floor.single)} /{' '}
-              {usd(ARTICLE_XIV.floor.married)} floor, plus {usd(ARTICLE_XIV.childAllowance.monthly)} per
-              child per month. Run your own household through it below.
-            </p>
-          </div>
+        <div className="apf-container py-14 sm:py-20">
+          <PageHeader
+            icon="Percent"
+            kicker="Article XIV"
+            title="The Great Balance"
+            lede={`Article XIV replaces the welfare cliff with a single negative income tax: 33% of the gap between a household's income and a ${usd(ARTICLE_XIV.floor.single)} / ${usd(ARTICLE_XIV.floor.married)} floor, plus ${usd(ARTICLE_XIV.childAllowance.monthly)} per child per month. Run your own household through it below.`}
+          />
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-8 items-start">
             {/* ---------------- Inputs ---------------- */}
             <section
               aria-labelledby="gb-inputs"
-              className="lg:col-span-2 bg-black/40 backdrop-blur-md border border-white/10 p-5 sm:p-6 font-vt323"
+              className="apf-card p-5 sm:p-6 lg:col-span-2"
             >
-              <h2 id="gb-inputs" className="text-apf-emerald uppercase tracking-widest text-lg mb-5 border-b border-gray-800 pb-2">
-                [ Household ]
-              </h2>
+              <h2 id="gb-inputs" className="mb-5 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Household</h2>
 
-              <label htmlFor="gb-income" className="block text-gray-300 uppercase text-sm tracking-widest mb-2">
+              <label htmlFor="gb-income" className="mb-2 block text-[11px] uppercase tracking-[0.12em] text-ink-dim">
                 Annual income (pre-subsidy)
               </label>
-              <div className="flex items-center border border-gray-800 bg-black/60 focus-within:border-apf-emerald transition-colors mb-2">
+              <div className="mb-2 flex items-center rounded-lg border border-white/[0.1] bg-surface-950 focus-within:border-apf-purpleLight/60">
                 <span className="pl-3 text-gray-500" aria-hidden="true">$</span>
                 <input
                   id="gb-income"
@@ -116,7 +107,7 @@ export function Calculator() {
                   value={incomeInput}
                   onChange={(e) => setIncomeInput(e.target.value)}
                   aria-describedby="gb-income-help"
-                  className="w-full bg-transparent px-2 py-3 text-white text-xl focus:outline-none"
+                  className="w-full bg-transparent px-2 py-3 text-xl text-white focus:outline-none"
                 />
               </div>
               <p id="gb-income-help" className={`text-xs mb-4 ${negativeInput ? 'text-amber-300' : 'text-gray-500'}`}>
@@ -143,7 +134,7 @@ export function Calculator() {
                 ))}
               </div>
 
-              <span className="block text-gray-300 uppercase text-sm tracking-widest mb-2">
+              <span className="mb-2 block text-[11px] uppercase tracking-[0.12em] text-ink-dim">
                 Filing status
               </span>
               <div className="grid grid-cols-2 gap-2 mb-6" role="group" aria-label="Filing status">
@@ -168,7 +159,7 @@ export function Calculator() {
                 ))}
               </div>
 
-              <span className="block text-gray-300 uppercase text-sm tracking-widest mb-2">
+              <span className="mb-2 block text-[11px] uppercase tracking-[0.12em] text-ink-dim">
                 Dependent children
               </span>
               <div className="flex items-center gap-3" role="group" aria-label="Number of dependent children">
@@ -202,31 +193,29 @@ export function Calculator() {
             {/* ---------------- Result ---------------- */}
             <section
               aria-labelledby="gb-result"
-              className="lg:col-span-3 bg-black/40 backdrop-blur-md border border-apf-emerald/30 p-5 sm:p-6 font-vt323"
+              className="apf-card p-5 sm:p-6 lg:col-span-3"
             >
-              <h2 id="gb-result" className="text-apf-emerald uppercase tracking-widest text-lg mb-5 border-b border-gray-800 pb-2">
-                [ Article XIV Payment ]
-              </h2>
+              <h2 id="gb-result" className="mb-5 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Article XIV payment</h2>
 
               <div className="flex flex-col sm:flex-row sm:items-end gap-4 sm:gap-8 mb-6">
                 <div>
-                  <div className="text-gray-400 uppercase text-xs tracking-widest mb-1">Per month</div>
+                  <div className="mb-1 text-[11px] uppercase tracking-[0.12em] text-ink-dim">Per month</div>
                   <div
                     data-testid="gb-monthly"
-                    className="text-4xl sm:text-5xl text-white leading-none break-all"
+                    className="font-display text-4xl font-semibold tracking-tight text-white sm:text-5xl"
                   >
                     {usd(result.monthly)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-gray-400 uppercase text-xs tracking-widest mb-1">Per year</div>
-                  <div data-testid="gb-annual" className="text-2xl sm:text-3xl text-apf-emerald leading-none break-all">
+                  <div className="mb-1 text-[11px] uppercase tracking-[0.12em] text-ink-dim">Per year</div>
+                  <div data-testid="gb-annual" className="font-display text-2xl font-semibold tracking-tight text-emerald-300 sm:text-3xl">
                     {usd(result.annual)}
                   </div>
                 </div>
               </div>
 
-              <dl className="space-y-2 text-sm border-t border-gray-800 pt-4">
+              <dl className="space-y-2 border-t border-white/[0.06] pt-4 text-sm">
                 <div className="flex justify-between gap-4">
                   <dt className="text-gray-400">
                     Income gap to the {usd(result.floor)} floor
@@ -255,13 +244,13 @@ export function Calculator() {
                   </div>
                 )}
                 <div className="flex justify-between gap-4 border-t border-gray-800 pt-2 mt-2">
-                  <dt className="text-apf-emerald uppercase tracking-widest">Annual payment</dt>
+                  <dt className="font-medium text-emerald-300">Annual payment</dt>
                   <dd className="text-apf-emerald text-right">{usd(result.annual)}</dd>
                 </div>
               </dl>
 
               {result.receivesNothing && (
-                <p className="mt-4 text-sm text-gray-400 bg-black/50 border border-gray-800 p-3 font-sans">
+                <p className="mt-4 rounded-lg border border-white/[0.07] bg-surface-950/60 p-3 text-sm leading-relaxed text-ink-muted">
                   Above the floor with no dependents, Article XIV pays nothing — the mechanism
                   tops households up to the floor rather than paying everyone. That is the
                   Article working as written, not a missing result.
@@ -269,7 +258,7 @@ export function Calculator() {
               )}
 
               {result.childPhaseOutEndsAt !== null && (
-                <p className="mt-4 text-xs text-gray-500 font-sans">
+                <p className="mt-4 text-xs leading-relaxed text-ink-dim">
                   This household&apos;s dependent allowance is fully phased out at{' '}
                   {usd(result.childPhaseOutEndsAt)} of income. Those dollars are not clipped
                   anywhere else — the floor is the only cliff the Article removes.
@@ -280,13 +269,13 @@ export function Calculator() {
                 <button
                   type="button"
                   onClick={handleShare}
-                  className="flex items-center gap-2 px-4 py-2 bg-apf-purple hover:bg-apf-purpleLight text-white uppercase tracking-widest text-sm transition-colors"
+                  className="apf-btn apf-btn-primary"
                 >
                   <SafeIcon name="Share2" className="h-4 w-4" /> Copy summary
                 </button>
                 <a
                   href={`https://pirateusa.org/policies`}
-                  className="flex items-center gap-2 px-4 py-2 border border-apf-purple/40 text-apf-purple hover:bg-apf-purple/10 uppercase tracking-widest text-sm transition-colors"
+                  className="apf-btn apf-btn-ghost"
                 >
                   <SafeIcon name="BookOpen" className="h-4 w-4" /> Read Article XIV
                 </a>
@@ -296,11 +285,9 @@ export function Calculator() {
 
           {/* ---------------- Mechanism ---------------- */}
           <section aria-labelledby="gb-mechanism" className="mt-10 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-            <div className="bg-black/40 border border-white/10 p-5 sm:p-6 font-vt323">
-              <h2 id="gb-mechanism" className="text-apf-purple uppercase tracking-widest text-lg mb-4 border-b border-gray-800 pb-2">
-                [ The Formula, Verbatim ]
-              </h2>
-              <pre className="text-xs sm:text-sm text-gray-300 overflow-x-auto leading-relaxed whitespace-pre">
+            <div className="apf-card p-5 sm:p-6">
+              <h2 id="gb-mechanism" className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">The formula, verbatim</h2>
+              <pre className="overflow-x-auto whitespace-pre font-mono text-xs leading-relaxed text-ink-muted sm:text-sm">
 {`floor       = married ? 60000 : 40000
 gap         = max(0, floor - income)
 adult       = 0.33 * gap
@@ -317,10 +304,8 @@ payment     = adult + child`}
               </p>
             </div>
 
-            <div className="bg-black/40 border border-white/10 p-5 sm:p-6 font-vt323">
-              <h2 className="text-apf-purple uppercase tracking-widest text-lg mb-4 border-b border-gray-800 pb-2">
-                [ Response Curve ]
-              </h2>
+            <div className="apf-card p-5 sm:p-6">
+              <h2 className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Response curve</h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <caption className="sr-only">

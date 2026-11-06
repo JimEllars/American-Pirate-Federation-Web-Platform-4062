@@ -34,33 +34,33 @@ export default function TransmissionModal({ isOpen, onClose, post }) {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-apf-black border border-apf-emerald/50 w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col font-mono shadow-2xl shadow-[#10B981]/20"
+        className="apf-card flex max-h-[90vh] w-full max-w-3xl flex-col overflow-hidden"
       >
 
         {/* Header */}
-        <div className="border-b border-apf-emerald/50 p-4 flex justify-between items-center bg-[#10B981]/10">
+        <div className="flex items-center justify-between border-b border-white/[0.07] bg-surface-900 p-4">
           <div>
-            <div className="text-apf-emerald text-xs mb-1">
+            <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ink-dim">
               {post.classification ? `${post.classification} TRANSMISSION` : 'PUBLIC DISPATCH'} [{formattedDate}]
             </div>
-            <h2 className="text-apf-purple text-xl uppercase tracking-wider font-bold">{cleanTitle}</h2>
+            <h2 className="text-lg font-semibold text-white">{cleanTitle}</h2>
           </div>
           <button
             onClick={onClose}
-            className="text-apf-emerald hover:text-apf-purple transition-colors border border-transparent hover:border-apf-purple px-3 py-1 text-sm uppercase"
+            className="grid h-9 w-9 place-items-center rounded-lg text-ink-muted transition-colors hover:bg-white/[0.06] hover:text-white"
           >
-            [ CLOSE RECORD ]
+            Close
           </button>
         </div>
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto text-gray-300 text-sm leading-relaxed prose prose-invert prose-p:mb-4 prose-a:text-apf-emerald hover:prose-a:text-apf-purple scrollbar-thin scrollbar-thumb-[#10B981]/50 scrollbar-track-transparent">
+        <div className="prose prose-invert max-w-none overflow-y-auto p-6 text-sm leading-relaxed text-ink-muted prose-p:mb-4 prose-a:text-apf-purpleLight">
           <div dangerouslySetInnerHTML={{ __html: cleanContent }} />
         </div>
 
         {/* Footer line */}
-        <div className="border-t border-apf-emerald/30 p-2 text-center text-[10px] text-apf-emerald/50 uppercase tracking-widest">
-          END OF FILE
+        <div className="border-t border-white/[0.06] p-3 text-center font-mono text-[10px] uppercase tracking-[0.12em] text-ink-dim">
+          End of record
         </div>
       </motion.div>
     </div>

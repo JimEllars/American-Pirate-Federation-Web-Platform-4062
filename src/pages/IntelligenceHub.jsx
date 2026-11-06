@@ -77,13 +77,14 @@ export function IntelligenceHub() {
     <Layout>
       <SEO title="Intelligence Hub | Pirate Federation" description="Organizational health, fleet telemetry, and dispatch logs of the American Pirate Federation." />
       <PageTransition>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-16">
+        <div className="apf-container space-y-14 py-14 sm:py-20">
 
           <div className="mb-8">
             <div className="mb-6 flex flex-wrap items-center gap-4">
-              <SafeIcon name="Activity" className="h-10 w-10 shrink-0 text-apf-emerald" />
+              <SafeIcon name="Activity" className="h-5 w-5 shrink-0 text-emerald-300" />
               <div className="min-w-0 flex-1">
-                <h1 className="text-4xl font-semibold tracking-tight md:text-6xl">
+                <p className="apf-kicker">Intelligence</p>
+                <h1 className="mt-2 text-4xl font-semibold tracking-[-0.03em] text-white md:text-5xl">
                 Consolidated Intelligence Core</h1>
               </div>
               <button
@@ -118,7 +119,7 @@ export function IntelligenceHub() {
                 className={`min-h-[44px] basis-full rounded-xl border border-apf-purple/40 px-5 text-sm font-medium text-apf-purpleLight transition-colors hover:bg-apf-purple/10 sm:basis-auto ${localAnalyzing ? 'animate-pulse' : ''}`}
                 disabled={localAnalyzing}
               >
-                {localAnalyzing ? '[ TRANSMITTING CONTEXT... ]' : aiAnalysisSuccess ? '[ AI ANALYSIS INITIATED ]' : '[ INITIALIZE AI ANALYSIS ]'}
+                {localAnalyzing ? 'Analyzing…' : aiAnalysisSuccess ? 'Analysis complete' : 'Run AI analysis'}
               </button>
               {lastSyncTime && (
                 <div className="mt-2 text-apf-emerald font-vt323 text-xs tracking-widest uppercase">
@@ -137,27 +138,24 @@ export function IntelligenceHub() {
               )}
 
             </div>
-            <p className="max-w-2xl text-gray-200 font-mono text-lg border-l-2 border-apf-emerald pl-6">
-              Dispatch logs from the Federation's CMS, and the declared limits of the edge telemetry ingress.
-            </p>
+            <p className="apf-lede mt-5 max-w-3xl">Dispatch logs from the Federation&rsquo;s CMS, and the declared limits of the edge telemetry ingress.</p>
           </div>
 
           {/* Section 1: Fleet Telemetry (Census) */}
-          <section className="space-y-4 sm:space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 sm:p-8">
-              <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3">
-                 <SafeIcon name="Database" className="text-apf-purple h-8 w-8" /> Fleet Telemetry
+          <section className="space-y-5">
+              <h2 className="flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-white">
+                 <SafeIcon name="Database" className="h-5 w-5 text-apf-purpleLight" /> Fleet telemetry
               </h2>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
                   {/* Crew census. The previous card published a guild split of 42% / 28% /
                       30% — three invented percentages for a members table that held zero
                       rows. `members` is additionally RLS-scoped to the owning user, so no
                       public census can be computed at all. The honest panel says why. */}
-                  <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden group">
-                      <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
-                      <div className="relative z-10">
-                          <h3 className="font-vt323 text-xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                              <SafeIcon name="Users" className="h-5 w-5 text-apf-purpleLight" /> Crew Census
+                  <div className="apf-card p-6 lg:col-span-1">
+                      <div>
+                          <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-white">
+                              <SafeIcon name="Users" className="h-4 w-4 text-apf-purpleLight" /> Crew census
                           </h3>
 
                           <div className="border-l-2 border-apf-purple/50 pl-4 py-1">
@@ -174,19 +172,18 @@ export function IntelligenceHub() {
                   </div>
 
                   {/* Readiness Score */}
-                    <div className="lg:col-span-1 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 neon-grid relative overflow-hidden flex flex-col justify-center items-center text-center">
-                        <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
-                        <div className="relative z-10">
-                            <SafeIcon name="Shield" className="h-12 w-12 text-apf-emerald mx-auto mb-4" />
+                    <div className="apf-card flex flex-col items-center justify-center p-6 text-center lg:col-span-1">
+                        <div>
+                            <SafeIcon name="Shield" className="mx-auto mb-4 h-8 w-8 text-emerald-300" />
                             {/* Law 1: this card used to assert a "94% Fleet Readiness Index /
                                 Status: Optimal" against no instrument that produces such a
                                 number. It now counts the intel reports actually loaded from
                                 the CMS — a value the page can prove. */}
-                            <div className="text-6xl font-black text-white font-vt323 mb-2">
-                              {loading ? <span className="text-gray-600">--</span> : posts.length}
+                            <div className="mb-1 font-display text-5xl font-semibold tracking-tight text-white">
+                              {loading ? <span className="text-ink-dim">--</span> : posts.length}
                             </div>
-                            <div className="font-vt323 text-apf-purple uppercase tracking-[0.2em] text-sm">Intel Reports On File</div>
-                            <div className="mt-4 text-xs text-gray-400 font-vt323 uppercase">
+                            <div className="text-sm font-medium text-white">Intel reports on file</div>
+                            <div className="mt-2 text-xs text-ink-dim">
                               {loading ? 'Syncing with the CMS' : 'Live from piratefederation.org'}
                             </div>
                         </div>
@@ -194,14 +191,13 @@ export function IntelligenceHub() {
               </div>
 
               {/* Node Heatmap Placeholder */}
-              <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8 relative overflow-hidden">
-                 <div className="absolute inset-0 neon-grid opacity-30 z-0 !pointer-events-none" />
-                 <div className="relative z-10">
-                      <h3 className="font-vt323 text-2xl text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                          <SafeIcon name="Map" className="h-6 w-6 text-apf-purple" /> Active Synchronization Clusters
+              <div className="apf-card p-6">
+                 <div>
+                      <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-white">
+                          <SafeIcon name="Map" className="h-4 w-4 text-apf-purpleLight" /> Synchronization schematic
                       </h3>
-                      <div className="h-64 border border-gray-800/50 bg-black/50 relative overflow-hidden flex items-center justify-center">
-                         <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-10" />
+                      <div className="relative flex h-56 items-center justify-center overflow-hidden rounded-xl border border-white/[0.06] bg-surface-950">
+                         <div className="scanlines pointer-events-none absolute inset-0 z-10" />
                          {/* Stylized Abstract SVG Map Placeholder */}
                          <svg viewBox="0 0 800 400" className="w-full h-full opacity-60">
                             <path d="M100,100 Q150,50 200,150 T300,100 T400,200 T500,150 T600,250 T700,100" fill="none" stroke="#9400FF" strokeWidth="2" className="opacity-50" />
@@ -228,13 +224,12 @@ export function IntelligenceHub() {
                   (US-EAST-1 ... connected to consensus cluster) stamped with the current
                   clock, which read as live telemetry on a page whose whole claim is ground
                   truth. The Federation has one edge ingress and it stores nothing; say that. */}
-              <div className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6 relative overflow-hidden">
-                 <div className="absolute inset-0 scanlines !pointer-events-none opacity-50 z-0" />
-                 <div className="relative z-10">
-                     <h4 className="font-vt323 text-apf-purpleLight uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
-                         [ TELEMETRY INGRESS — DECLARED LIMITS ]
+              <div className="apf-card p-6">
+                 <div>
+                     <h4 className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">
+                         Telemetry ingress · declared limits
                      </h4>
-                     <div className="font-vt323 text-gray-300 text-xs flex flex-col gap-1.5">
+                     <div className="flex flex-col gap-1.5 font-mono text-xs text-ink-muted">
                          <div className="flex justify-between gap-4"><span className="text-gray-500">MAX PAYLOAD</span><span className="text-apf-emerald">16 KB</span></div>
                          <div className="flex justify-between gap-4"><span className="text-gray-500">MAX BATCH</span><span className="text-apf-emerald">50 events</span></div>
                          <div className="flex justify-between gap-4"><span className="text-gray-500">CLOCK SKEW</span><span className="text-apf-emerald">-2h / +24h</span></div>
@@ -249,32 +244,32 @@ export function IntelligenceHub() {
           </section>
 
           {/* Section 2: Fleet Transmissions (Bridge Dispatches) */}
-          <section className="space-y-4 sm:space-y-8 bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-4 sm:p-8">
-              <h2 className="text-3xl font-bold uppercase tracking-widest text-white border-b-2 border-apf-purple/50 pb-2 flex items-center gap-3 relative mb-6">
-                 <SafeIcon name="Terminal" className="text-apf-purple h-8 w-8" /> Fleet Transmissions
-                 {error && <span className="absolute right-0 text-red-500 text-sm animate-pulse">[ OFFLINE MODE ]</span>}
+          <section className="space-y-4 sm:space-y-8 apf-card hover:border-white/15 transition-all duration-500 p-4 sm:p-8">
+              <h2 className="mb-5 flex items-center gap-2.5 text-2xl font-semibold tracking-tight text-white">
+                 <SafeIcon name="Terminal" className="h-5 w-5 text-apf-purpleLight" /> Fleet transmissions
+                 {error && <span className="ml-auto text-xs font-normal text-red-400">Offline mode</span>}
               </h2>
               <IntelFilterBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
               {loading ? (
-                <div className="py-12 flex justify-center text-apf-purple font-mono bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
-                  <SafeIcon name="Loader" className="animate-spin mr-2 h-8 w-8" />
-                  SYNCING ARCHIVES...
+                <div className="apf-card flex items-center justify-center gap-3 p-10 text-sm text-ink-muted">
+                  <SafeIcon name="Loader" className="h-4 w-4 animate-spin text-apf-purpleLight" />
+                  Loading dispatches…
                 </div>
               ) : error ? (
-                <div className="py-12 flex justify-center bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-8">
-                  <div className="border border-red-500/50 bg-red-500/10 p-6 rounded text-red-400 font-mono flex items-center gap-3">
-                    <SafeIcon name="AlertTriangle" className="h-6 w-6" />
-                    <span>[SIGNAL_INTERRUPTED] - UNABLE TO FETCH ARCHIVES</span>
+                <div className="apf-card flex items-center justify-center p-10">
+                  <div className="flex items-center gap-3 text-sm text-red-400">
+                    <SafeIcon name="AlertTriangle" className="h-4 w-4" />
+                    <span>The CMS could not be reached. This is a signal failure, not an empty archive.</span>
                   </div>
                 </div>
               ) : !posts.length ? (
                 // An empty archive is not a failure. The previous condition folded
                 // "nothing published" into "signal interrupted" and printed a red error
                 // for a CMS that was answering perfectly well.
-                <div className="py-12 px-6 text-center bg-black/40 backdrop-blur-md transform-gpu border border-dashed border-gray-800 shadow-2xl transition-all duration-500">
-                  <div className="font-vt323 text-apf-purple text-lg uppercase tracking-widest mb-2">[ NO DISPATCHES ON FILE ]</div>
-                  <p className="font-sans text-sm text-gray-500 max-w-lg mx-auto">
+                <div className="rounded-2xl border border-dashed border-white/[0.1] bg-surface-900/40 px-6 py-12 text-center">
+                  <p className="text-base font-medium text-white">No dispatches on file</p>
+                  <p className="mx-auto mt-2 max-w-lg text-sm leading-relaxed text-ink-muted">
                     The Federation newsroom has published nothing yet. This archive stays empty
                     until it does — it is never filled with sample stories.
                   </p>
@@ -290,10 +285,10 @@ export function IntelligenceHub() {
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         key={post.id}
-                        className="bg-black/40 backdrop-blur-md transform-gpu border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 overflow-hidden group flex flex-col"
+                        className="apf-card apf-card-hover group flex flex-col overflow-hidden"
                       >
                         {featuredMedia && (
-                          <div className="h-48 overflow-hidden">
+                          <div className="h-40 overflow-hidden">
                             <img
                               src={featuredMedia}
                               alt=""
@@ -303,18 +298,18 @@ export function IntelligenceHub() {
                           </div>
                         )}
                         <div className="p-6 flex-grow flex flex-col">
-                          <p className="text-apf-purple text-xs font-mono mb-2">
+                          <p className="mb-2 font-mono text-[11px] text-ink-dim">
                             {formatTerminalDate(post.date)}
                           </p>
                           <h3
-                            className="text-xl font-bold mb-3 text-gray-100 group-hover:text-apf-purpleLight transition-colors"
+                            className="mb-2.5 text-lg font-semibold leading-snug text-white"
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title.rendered) }}
                           />
                           <div
-                            className="prose prose-invert prose-sm text-gray-200 line-clamp-3 font-mono flex-grow mb-4"
+                            className="mb-4 line-clamp-3 flex-grow text-sm leading-relaxed text-ink-muted"
                             dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                           />
-                          <button onClick={() => setActivePost(post)} className="mt-auto w-fit text-sm font-mono text-apf-purple hover:text-white flex items-center gap-2 uppercase tracking-widest">
+                          <button onClick={() => setActivePost(post)} className="mt-auto flex w-fit items-center gap-1.5 text-sm font-medium text-apf-purpleLight transition-colors hover:text-white">
                             Read Dispatch <SafeIcon name="ArrowRight" />
                           </button>
                         </div>
@@ -325,7 +320,7 @@ export function IntelligenceHub() {
               )}
 
               {!loading && !error && posts && posts.length > 0 && (
-                <div className="mt-12 p-8 text-center font-vt323 text-xs uppercase tracking-widest text-gray-500">
+                <div className="mt-10 text-center text-xs text-ink-dim">
                    The archive lists the dispatches the CMS has published; the previous control
                    here read &ldquo;Load Older Transmissions&rdquo; and loaded nothing.
                 </div>

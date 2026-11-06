@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
+import { PageHeader } from '../components/layout/PageHeader';
 import { SEO } from '../components/seo/SEO';
 import { PolicyCard } from '../components/sections/PolicyCard';
 import SafeIcon from '../common/SafeIcon';
@@ -65,18 +66,13 @@ export function Policies() {
     <Layout>
       <SEO title="Policies | American Pirate Federation" description="The legislative drafts and sovereign protocols of the American Pirate Federation." />
       <PageTransition>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="mb-16">
-            <div className="flex items-center gap-4 mb-6">
-              <SafeIcon name="BookOpen" className="h-10 w-10 text-apf-purple" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-vt323">
-                Policies
-              </h1>
-            </div>
-            <p className="max-w-2xl text-gray-400 font-sans text-lg border-l-2 border-apf-purple pl-6">
-              Sovereignty is not given; it is coded. These are the active foundational protocols and civic mandates governing the American Pirate Federation.
-            </p>
-          </div>
+        <div className="apf-container py-14 sm:py-20">
+          <PageHeader
+            icon="BookOpen"
+            kicker="The Pirate Code"
+            title="Policies"
+            lede="Sovereignty is not given; it is coded. These are the active foundational protocols and civic mandates governing the American Pirate Federation."
+          />
 
           {divergence && (
             <div
@@ -114,10 +110,9 @@ export function Policies() {
             ))}
           </div>
 
-          <div className="mt-16 p-8 bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 text-center relative overflow-hidden">
-             <div className="absolute inset-0 scanlines !pointer-events-none opacity-30" />
-            <h3 className="text-xl font-bold mb-4 text-white uppercase tracking-widest relative z-10">Your Draft Amendments (this browser)</h3>
-            <p className="text-gray-500 font-sans text-sm mb-8 max-w-2xl mx-auto relative z-10">
+          <div className="apf-card mt-16 p-8 text-center">
+            <h3 className="mb-3 text-xl font-semibold text-white">Your draft amendments</h3>
+            <p className="mx-auto mb-8 max-w-2xl text-sm leading-relaxed text-ink-muted">
               These drafts are stored in this browser, not on the Federation&rsquo;s floor. No other
               member can read them and the Federation has not received them. A draft stays a
               draft until the Quartermaster&rsquo;s Provisions certifies it for a ballot — nothing
@@ -126,15 +121,15 @@ export function Policies() {
             <div className="flex flex-col gap-6 text-left max-w-3xl mx-auto relative z-10">
                 {activeDrafts && activeDrafts.length > 0 ? (
                     activeDrafts.map((draft, idx) => (
-                        <div key={idx} className="bg-black/40 backdrop-blur-md border border-white/10 shadow-2xl hover:border-apf-purple/40 hover:shadow-[0_0_15px_rgba(148,0,255,0.5)] transition-all duration-500 p-6">
+                        <div key={idx} className="apf-card hover:border-white/15 transition-all duration-500 p-6">
                             <div className="flex justify-between items-start mb-2">
-                                <div className="text-gray-400 font-vt323 text-xs uppercase tracking-widest border border-gray-800 px-2 py-1 bg-black">{draft.id}</div>
-                                <div className="text-gray-600 font-vt323 text-xs">{new Date(draft.date).toLocaleDateString()}</div>
+                                <div className="rounded-md border border-white/[0.08] bg-surface-950 px-2 py-1 font-mono text-[10px] text-ink-dim">{draft.id}</div>
+                                <div className="font-mono text-[11px] text-ink-dim">{new Date(draft.date).toLocaleDateString()}</div>
                             </div>
-                            <h4 className="text-white font-bold text-xl mb-2 font-vt323">{draft.title}</h4>
-                            <p className="text-gray-400 font-sans text-sm mb-4 leading-relaxed">{draft.summary}</p>
+                            <h4 className="mb-2 text-lg font-semibold text-white">{draft.title}</h4>
+                            <p className="mb-4 text-sm leading-relaxed text-ink-muted">{draft.summary}</p>
 
-                            <div className="flex flex-wrap gap-4 text-xs font-vt323 border-t border-gray-800/50 pt-4 mt-auto">
+                            <div className="mt-auto flex flex-wrap gap-4 border-t border-white/[0.06] pt-4 text-[11px] text-ink-muted">
                                 <span className="text-apf-emerald flex items-center gap-1">
                                     <SafeIcon name="CheckCircle" className="h-3 w-3" /> Alignment: {draft.alignment}
                                 </span>
@@ -145,20 +140,21 @@ export function Policies() {
                         </div>
                     ))
                 ) : (
-                    <div className="border-l-2 border-gray-600 pl-4 py-2 opacity-50">
-                        <div className="text-gray-400 font-vt323 text-xs uppercase mb-1">SYSTEM_NOTICE</div>
-                        <div className="text-white font-bold">No active drafts in the queue.</div>
+                    <div className="rounded-xl border border-dashed border-white/[0.1] px-4 py-6">
+                        <div className="text-sm font-medium text-white">No drafts in the queue</div>
+                        <div className="mt-1 text-sm text-ink-dim">Drafts you save in this browser appear here.</div>
                     </div>
                 )}
             </div>
           </div>
 
-          <div className="mt-20 p-8 border border-dashed border-gray-800 text-center">
-            <p className="text-gray-500 font-vt323 text-sm uppercase tracking-widest">
-              [ End of Current Legislative Stack ]
+          <div className="mt-16 rounded-2xl border border-dashed border-white/[0.1] p-8 text-center">
+            <p className="text-sm text-ink-muted">
+              Every protocol on this page is doctrine of record. Revisions start on the
+              proposition floor.
             </p>
-            <button onClick={() => navigate('/propose')} className="mt-4 text-apf-purple hover:text-white font-vt323 text-xs uppercase underline underline-offset-4 tracking-widest">
-              Propose New Protocol Revision
+            <button onClick={() => navigate('/propose')} className="apf-btn apf-btn-ghost mt-4">
+              Propose a revision
             </button>
           </div>
         </div>

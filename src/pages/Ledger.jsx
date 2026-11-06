@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Layout } from '../components/layout/Layout';
 import { PageTransition } from '../components/layout/PageTransition';
+import { PageHeader } from '../components/layout/PageHeader';
 import { SEO } from '../components/seo/SEO';
 import SafeIcon from '../common/SafeIcon';
 import { supabase } from '../lib/api/supabaseClient';
@@ -89,22 +90,15 @@ export function Ledger({ initialTab = 'treasury' }) {
         description="Read-only view of the APF treasury ledger and the corporate pay ratio explorer, which cites SEC Form DEF 14A filings and nothing else."
       />
       <PageTransition>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <div className="mb-10">
-            <div className="flex items-center gap-4 mb-6">
-              <SafeIcon name="Database" className="h-10 w-10 text-apf-emerald shrink-0" />
-              <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter font-vt323 break-words">
-                The Ledger
-              </h1>
-            </div>
-            <p className="max-w-3xl text-gray-400 font-sans text-lg border-l-2 border-apf-emerald pl-6">
-              Every figure here is cited or absent. The treasury panel reads an on-chain Safe
-              and never writes to it; the pay ratio panel reads filings and never estimates
-              one.
-            </p>
-          </div>
+        <div className="apf-container py-14 sm:py-20">
+          <PageHeader
+            icon="Database"
+            kicker="Public ledger"
+            title="The Ledger"
+            lede="Every figure here is cited or absent. The treasury panel reads an on-chain Safe and never writes to it; the pay ratio panel reads filings and never estimates one."
+          />
 
-          <div role="tablist" aria-label="Ledger sections" className="flex flex-wrap gap-2 mb-8">
+          <div role="tablist" aria-label="Ledger sections" className="mb-8 inline-flex flex-wrap gap-1 rounded-xl border border-white/[0.08] bg-surface-900/70 p-1">
             {TABS.map((entry) => (
               <button
                 key={entry.id}
@@ -113,10 +107,10 @@ export function Ledger({ initialTab = 'treasury' }) {
                 aria-selected={tab === entry.id}
                 aria-controls={`ledger-panel-${entry.id}`}
                 onClick={() => setTab(entry.id)}
-                className={`px-4 py-2 font-vt323 uppercase tracking-widest text-sm border transition-colors ${
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                   tab === entry.id
-                    ? 'bg-apf-emerald/20 border-apf-emerald text-apf-emerald'
-                    : 'bg-black/40 border-gray-800 text-gray-400 hover:border-apf-emerald/50'
+                    ? 'bg-white/[0.08] text-white'
+                    : 'text-ink-muted hover:text-white'
                 }`}
               >
                 {entry.label}
@@ -131,23 +125,21 @@ export function Ledger({ initialTab = 'treasury' }) {
               aria-labelledby="ledger-tab-treasury"
               className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
-              <div className="lg:col-span-1 bg-black/40 border border-white/10 p-5 font-vt323">
-                <h2 className="text-apf-emerald uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
-                  [ Safe — Read Only ]
-                </h2>
+              <div className="apf-card p-5 lg:col-span-1">
+                <h2 className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Safe · read only</h2>
                 <dl className="space-y-3 text-sm">
                   <div>
-                    <dt className="text-gray-500 uppercase text-xs tracking-widest">Custody</dt>
+                    <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Custody</dt>
                     <dd className="text-white">Arbitrum One Safe multisig</dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500 uppercase text-xs tracking-widest">Address</dt>
+                    <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Address</dt>
                     <dd className="text-white break-all">
                       {isConfigured ? treasuryAddress : 'NOT CONFIGURED'}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500 uppercase text-xs tracking-widest">Native balance</dt>
+                    <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Native balance</dt>
                     <dd className="text-white">
                       {/* Read straight from the Safe address; never defaulted to zero. */}
                       {!isConfigured
@@ -160,7 +152,7 @@ export function Ledger({ initialTab = 'treasury' }) {
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-gray-500 uppercase text-xs tracking-widest">Signing authority</dt>
+                    <dt className="text-[11px] uppercase tracking-[0.12em] text-ink-dim">Signing authority</dt>
                     <dd className="text-gray-400 font-sans text-xs leading-relaxed">
                       Owner signatures on the Safe. The signer threshold is not published in
                       this repository, so this page does not claim one.
@@ -173,20 +165,18 @@ export function Ledger({ initialTab = 'treasury' }) {
                 </p>
               </div>
 
-              <div className="lg:col-span-2 bg-black/40 border border-white/10 p-5">
-                <h2 className="font-vt323 text-apf-emerald uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
-                  [ Settlements ]
-                </h2>
+              <div className="apf-card p-5 lg:col-span-2">
+                <h2 className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Settlements</h2>
 
                 {settlementsLoading ? (
-                  <p className="font-vt323 text-gray-400 animate-pulse">[ QUERYING LEDGER TABLE… ]</p>
+                  <p className="text-sm text-ink-dim">Loading ledger…</p>
                 ) : settlements.length === 0 ? (
-                  <div className="border border-dashed border-gray-800 p-6 text-center">
+                  <div className="rounded-xl border border-dashed border-white/[0.1] p-8 text-center">
                     <SafeIcon name="FileText" className="mx-auto h-8 w-8 text-gray-600 mb-3" />
-                    <p className="font-vt323 text-gray-300 uppercase tracking-widest mb-2">
+                    <p className="mb-2 text-sm font-medium text-white">
                       No settlements recorded
                     </p>
-                    <p className="font-sans text-sm text-gray-500 leading-relaxed max-w-lg mx-auto">
+                    <p className="mx-auto max-w-lg text-sm leading-relaxed text-ink-muted">
                       Entries appear here only after an on-chain transaction is confirmed and
                       the treasury operator appends it. The frontend is not a writer
                       {settlementsError ? ' — and the ledger query is currently unavailable' : ''}.
@@ -194,9 +184,9 @@ export function Ledger({ initialTab = 'treasury' }) {
                     </p>
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-800 font-vt323 text-sm">
+                  <ul className="divide-y divide-white/[0.06] text-sm">
                     {settlements.map((row) => (
-                      <li key={row.id ?? `${row.tx_hash}-${row.created_at}`} className="py-2 flex flex-wrap justify-between gap-2">
+                      <li key={row.id ?? `${row.tx_hash}-${row.created_at}`} className="flex flex-wrap justify-between gap-2 py-3">
                         <span className="text-gray-300 break-all">{row.description ?? row.tx_hash ?? 'UNLABELLED ENTRY'}</span>
                         <span className="text-apf-emerald">{row.amount ?? ''}</span>
                       </li>
@@ -214,20 +204,18 @@ export function Ledger({ initialTab = 'treasury' }) {
               aria-labelledby="ledger-tab-pay-ratio"
               className="grid grid-cols-1 lg:grid-cols-3 gap-6"
             >
-              <div className="lg:col-span-2 bg-black/40 border border-white/10 p-5">
-                <h2 className="font-vt323 text-apf-emerald uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
-                  [ Ingested Filings ]
-                </h2>
+              <div className="apf-card p-5 lg:col-span-2">
+                <h2 className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Ingested filings</h2>
 
                 {ratiosLoading ? (
-                  <p className="font-vt323 text-gray-400 animate-pulse">[ QUERYING FILINGS… ]</p>
+                  <p className="text-sm text-ink-dim">Loading filings…</p>
                 ) : ratios.length === 0 ? (
-                  <div className="border border-dashed border-gray-800 p-6 text-center">
+                  <div className="rounded-xl border border-dashed border-white/[0.1] p-8 text-center">
                     <SafeIcon name="FileText" className="mx-auto h-8 w-8 text-gray-600 mb-3" />
-                    <p className="font-vt323 text-gray-300 uppercase tracking-widest mb-2">
+                    <p className="mb-2 text-sm font-medium text-white">
                       No verified filings ingested
                     </p>
-                    <p className="font-sans text-sm text-gray-500 leading-relaxed max-w-xl mx-auto">
+                    <p className="mx-auto max-w-xl text-sm leading-relaxed text-ink-muted">
                       A pay ratio is a company&apos;s own disclosure under Item 402(u) of
                       Regulation S-K: the CEO&apos;s annual total compensation divided by the
                       median employee&apos;s. This explorer ranks only filings that have been
@@ -236,9 +224,9 @@ export function Ledger({ initialTab = 'treasury' }) {
                     </p>
                   </div>
                 ) : (
-                  <ul className="divide-y divide-gray-800 font-vt323 text-sm">
+                  <ul className="divide-y divide-white/[0.06] text-sm">
                     {ratios.map((row) => (
-                      <li key={row.id} className="py-2 flex flex-wrap justify-between gap-2">
+                      <li key={row.id} className="flex flex-wrap justify-between gap-2 py-3">
                         <span className="text-gray-300">
                           {row.company ?? row.ticker} — {row.ratio}:1
                         </span>
@@ -249,11 +237,9 @@ export function Ledger({ initialTab = 'treasury' }) {
                 )}
               </div>
 
-              <div className="lg:col-span-1 bg-black/40 border border-apf-purple/30 p-5 font-vt323">
-                <h2 className="text-apf-purple uppercase tracking-widest text-sm mb-4 border-b border-gray-800 pb-2">
-                  [ Read The Filing ]
-                </h2>
-                <label htmlFor="ledger-ticker" className="block text-gray-300 uppercase text-xs tracking-widest mb-2">
+              <div className="apf-card p-5 lg:col-span-1">
+                <h2 className="mb-4 border-b border-white/[0.06] pb-3 text-base font-semibold text-white">Read the filing</h2>
+                <label htmlFor="ledger-ticker" className="mb-2 block text-[11px] uppercase tracking-[0.12em] text-ink-dim">
                   Ticker or company
                 </label>
                 <input
@@ -261,13 +247,13 @@ export function Ledger({ initialTab = 'treasury' }) {
                   value={ticker}
                   onChange={(e) => setTicker(e.target.value)}
                   placeholder="e.g. AAPL"
-                  className="w-full bg-black/60 border border-gray-800 px-3 py-2 text-white text-sm mb-3 focus:outline-none focus:border-apf-purple transition-colors"
+                  className="mb-3 w-full rounded-lg border border-white/[0.1] bg-surface-950 px-3 py-2.5 text-sm text-white focus:border-apf-purpleLight/60 focus:outline-none"
                 />
                 <a
                   href={lookupUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-apf-purple hover:bg-apf-purpleLight text-white uppercase tracking-widest text-sm transition-colors"
+                  className="apf-btn apf-btn-primary w-full"
                 >
                   <SafeIcon name="ExternalLink" className="h-4 w-4" /> Open on SEC EDGAR
                 </a>
