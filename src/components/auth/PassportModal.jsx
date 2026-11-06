@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import SafeIcon from '../../common/SafeIcon';
 import { supabase, isSupabaseConfigured } from '../../lib/api/supabaseClient';
 import { useAppStore } from '../../store/useAppStore';
@@ -140,12 +141,21 @@ export function PassportModal({ isOpen, onClose }) {
               </p>
             )}
 
+            <div className="grid grid-cols-2 gap-2">
+              <Link to="/profile" onClick={onClose} className="apf-btn apf-btn-ghost w-full">
+                Your profile
+              </Link>
+              <Link to="/members" onClick={onClose} className="apf-btn apf-btn-ghost w-full">
+                Directory
+              </Link>
+            </div>
+
             <button
               onClick={async () => {
                 await signOutPassport();
                 onClose?.();
               }}
-              className="apf-btn apf-btn-ghost w-full"
+              className="apf-btn w-full border border-white/[0.08] text-ink-muted hover:border-red-400/30 hover:text-red-300"
             >
               End Passport session
             </button>

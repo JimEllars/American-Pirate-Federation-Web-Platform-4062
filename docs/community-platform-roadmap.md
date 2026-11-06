@@ -28,7 +28,7 @@ machine or a surveillance product.
 | **Resources** | Library of documents, briefings, templates, links | not built |
 | **Education** | Structured learning paths, lessons, progress | not built |
 | **Discussions** | Threaded conversation by topic/guild | not built |
-| **Profiles** | Member identity, guild, activity, opt-in directory | partial (muster record) |
+| **Profiles** | Member identity, guild, activity, opt-in directory | **Phase A code shipped** (migration pending application) |
 | **Events** | Muster calendar, RSVP, recordings | reads `events`; empty |
 | **Guilds** | Guild pages, members, projects, blueprints | marketing copy only |
 | **Games** | Small browser games, optional leaderboards | not built |
@@ -69,6 +69,20 @@ RLS sketch:
 - Profile page reading the member row; edit headline/bio/links; opt-in public directory.
 - Public member directory with guild filter, no email exposure.
 - Acceptance: a member can sign in, edit a profile, and choose whether it is listed.
+
+### Phase A — shipped code (2026-11-05)
+
+- `/profile`: headline, bio, website and social links, private/public visibility, live
+  preview. Rank and guild are read-only from the muster record.
+- `/members`: opt-in directory with search. Empty and migration-pending states are
+  distinguished; no placeholder members.
+- `supabase/migrations/20261106090000_member_profiles.sql`: `profiles` table with RLS
+  (owner write, public read only when published) and a `public_directory` view that joins
+  alias/rank/guild but excludes email and wallet address.
+- Access points: footer → Members; Passport dialog → Your profile / Directory.
+
+**Operator step:** apply the migration with a service-role credential. Until it is applied,
+`/profile` shows the migration notice and `/members` says the directory is not enabled.
 
 ### Phase B — resources and education (content)
 
