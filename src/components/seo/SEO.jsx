@@ -10,7 +10,7 @@ export function SEO({ title, description, type = 'website', articleData }) {
     <Helmet>
       <title>{fullTitle}</title>
       <meta name="description" content={metaDesc} />
-      <meta name="theme-color" content="#9400FF" />
+      <meta name="theme-color" content="#9400D3" />
       <meta property="og:type" content={type} />
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={metaDesc} />

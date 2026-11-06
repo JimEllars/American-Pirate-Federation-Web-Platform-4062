@@ -111,8 +111,8 @@ export function Armory() {
     return (
       <Layout>
         <SEO
-          title="Secure Channel | The Federation"
-          description="Arbitrum Network Required."
+          title="Network Required | The Armory"
+          description="The Armory settles on Arbitrum One. Switch networks to continue."
         />
         <PageTransition>
           <div className="apf-container py-14 sm:py-20 flex flex-col min-h-[calc(100vh-64px)]">

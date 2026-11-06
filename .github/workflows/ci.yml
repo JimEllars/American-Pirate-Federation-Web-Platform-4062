@@ -40,6 +40,11 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # Pure-helper tests and the sitemap/route invariant. No browser, so it runs before
+      # the build and fails fast.
+      - name: Unit tests
+        run: npm run test:unit
+
       # Gateway 4 — secret scan. Fails the build on a committed credential.
       - name: Secret scan
         run: |

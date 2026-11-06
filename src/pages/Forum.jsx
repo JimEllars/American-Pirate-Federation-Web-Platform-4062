@@ -55,7 +55,7 @@ export function Forum() {
             icon="MessageSquare"
             kicker="Community"
             title="Forum"
-            lede="Read everything without an account. Post and vote with a Pirate Passport. Seven boards, one Federation."
+            lede={`Read everything without an account. Post and vote with a Pirate Passport. ${FORUM_CATEGORIES.length} boards, one Federation.`}
             actions={<Link to="/members" className="apf-btn apf-btn-ghost">Member directory</Link>}
           />
 

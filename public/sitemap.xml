@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   Public routes only. This file is static: the SPA routes in src/App.jsx are the set that
-  exists, and /api/* is POST-only. Update both this file and App.jsx together.
+  exists, and /api/* is POST-only. Update both this file and App.jsx together —
+  tests/unit/sitemap.test.mjs fails the build when they drift.
+
+  Deliberately absent: /profile (a signed-in member's own record, nothing to index).
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://pirateusa.org/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
@@ -16,4 +19,14 @@
   <url><loc>https://pirateusa.org/calculator</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
   <url><loc>https://pirateusa.org/ledger</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://pirateusa.org/pay-ratio</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pirateusa.org/forum</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://pirateusa.org/forum/general</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/code</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/guilds</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/mutual-aid</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/learning</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/tech</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/action</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/forum/meta</loc><changefreq>daily</changefreq><priority>0.5</priority></url>
+  <url><loc>https://pirateusa.org/members</loc><changefreq>weekly</changefreq><priority>0.5</priority></url>
 </urlset>
