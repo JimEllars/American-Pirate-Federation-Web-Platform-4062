@@ -23,7 +23,9 @@ const ROUTES = [
   { path: '/ledger', heading: /the ledger/i },
   { path: '/pay-ratio', heading: /the ledger/i },
   { path: '/profile', heading: /your profile/i },
-  { path: '/members', heading: /member directory/i }
+  { path: '/members', heading: /member directory/i },
+  { path: '/forum', heading: /forum/i },
+  { path: '/forum/general', heading: /general assembly/i }
 ];
 
 // The ErrorBoundary fallback copy. Its presence means a component threw during render.
@@ -344,7 +346,7 @@ for (const width of [1280, 1440, 1920]) {
     expect(Math.round(box.height), `navigation wrapped at ${width}px`).toBeLessThanOrEqual(68);
 
     // And every control must sit inside the bar, not underneath it.
-    for (const label of ['Intel', 'Transmissions', 'Directives', 'Fleet Muster', 'Armory', 'Governance', 'Donate', 'Tools', 'Passport']) {
+    for (const label of ['Intel', 'Transmissions', 'Directives', 'Fleet Muster', 'Armory', 'Forum', 'Governance', 'Donate', 'Tools', 'Passport']) {
       const control = nav.getByText(label, { exact: true }).first();
       await expect(control, `${label} missing from the desktop bar`).toBeVisible();
       const cbox = await control.boundingBox();
@@ -583,4 +585,32 @@ test('the profile page requires an identity and never invents a member record', 
 
   await page.getByRole('button', { name: /open pirate passport/i }).click();
   await expect(page.getByRole('dialog')).toBeVisible();
+});
+
+
+// ---------------------------------------------------------------------------
+// Forum — strategic boards, public read, Passport to post.
+// ---------------------------------------------------------------------------
+
+test('the forum publishes its strategic boards and invents no threads', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/forum', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+  for (const board of ['General Assembly', 'The Pirate Code', 'Guild Halls', 'Mutual Aid', 'Tech & Privacy', 'Politics & Action']) {
+    await expect(body).toContainText(board);
+  }
+  await expect(body).toContainText(/No threads yet|forum tables have not been created/i);
+});
+
+test('opening a thread requires a Passport and posts nothing', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/forum/general', { waitUntil: 'domcontentloaded' });
+
+  const body = page.locator('body');
+  await expect(body).toContainText(/No threads on this board yet|forum migration has not been applied/i);
+
+  await page.getByRole('button', { name: /new thread/i }).first().click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await expect(body).not.toContainText(/THREAD POSTED/i);
 });
