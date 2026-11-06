@@ -404,6 +404,10 @@ test('/podcast never claims a live broadcast without an audio source', async ({ 
     return;
   }
 
+  // An empty <audio> element must not announce a failed recording before anything is
+  // selected. (It fired `error` on mount with no src.)
+  await expect(body).not.toContainText(/could not be loaded from its source/i);
+
   // A written dispatch: the player opens the transcript and says there is no recording.
   await expect(body).toContainText('NO AUDIO PUBLISHED');
   await expect(body).not.toContainText('BROADCASTING_LIVE');
