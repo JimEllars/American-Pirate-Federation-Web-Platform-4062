@@ -200,17 +200,17 @@ export function IntelligenceHub() {
                          <div className="scanlines pointer-events-none absolute inset-0 z-10" />
                          {/* Stylized Abstract SVG Map Placeholder */}
                          <svg viewBox="0 0 800 400" className="w-full h-full opacity-60">
-                            <path d="M100,100 Q150,50 200,150 T300,100 T400,200 T500,150 T600,250 T700,100" fill="none" stroke="#9400FF" strokeWidth="2" className="opacity-50" />
+                            <path d="M100,100 Q150,50 200,150 T300,100 T400,200 T500,150 T600,250 T700,100" fill="none" stroke="#9400D3" strokeWidth="2" className="opacity-50" />
                             <path d="M50,200 Q100,100 250,250 T450,150 T650,300" fill="none" stroke="#10B981" strokeWidth="1" className="opacity-30" />
 
                             {/* Heatmap Nodes */}
                             <circle cx="200" cy="150" r="15" fill="#10B981" className="animate-pulse opacity-80" />
-                            <circle cx="400" cy="200" r="25" fill="#9400FF" className="animate-ping opacity-40" />
-                            <circle cx="400" cy="200" r="10" fill="#9400FF" className="opacity-90" />
+                            <circle cx="400" cy="200" r="25" fill="#9400D3" className="animate-ping opacity-40" />
+                            <circle cx="400" cy="200" r="10" fill="#9400D3" className="opacity-90" />
                             <circle cx="600" cy="250" r="18" fill="#10B981" className="animate-pulse opacity-70" />
-                            <circle cx="300" cy="100" r="8" fill="#9400FF" className="opacity-60" />
+                            <circle cx="300" cy="100" r="8" fill="#9400D3" className="opacity-60" />
                             <circle cx="700" cy="100" r="12" fill="#10B981" className="opacity-50" />
-                            <circle cx="250" cy="250" r="20" fill="#9400FF" className="animate-pulse opacity-60" />
+                            <circle cx="250" cy="250" r="20" fill="#9400D3" className="animate-pulse opacity-60" />
                          </svg>
                          <div className="absolute bottom-4 right-4 font-vt323 text-xs text-gray-400 uppercase !pointer-events-none">
                              [ SCHEMATIC — ILLUSTRATIVE ONLY ]

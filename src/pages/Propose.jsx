@@ -106,16 +106,20 @@ export function Propose() {
     return (
       <Layout>
         <SEO
-          title="Secure Channel | The Federation"
-          description="Arbitrum Network Required."
+          title="Network Required | The Federation"
+          description="The proposal floor files to Arbitrum One. Switch networks to continue."
         />
         <PageTransition>
           <div className="apf-container max-w-4xl py-14 sm:py-20 flex flex-col min-h-[calc(100vh-64px)]">
             <div className="min-h-[80vh] flex flex-col items-center justify-center p-4">
-              <div className="flex flex-col items-center justify-center p-12 apf-card hover:border-white/15 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500">
-                <div className="mb-6 text-lg font-semibold text-white">
-                  [ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]
-                </div>
+              <div className="flex flex-col items-center justify-center p-12 apf-card hover:border-white/15 hover:shadow-[0_0_15px_rgba(148,0,255,0.3)] transition-all duration-500 text-center">
+                {/* Was "[ SECURE CHANNEL: ARBITRUM NETWORK CONNECTION REQUIRED ]". Connecting a
+                    wallet to a chain opens no channel and establishes no security; it picks a
+                    network to file on. Say that. */}
+                <p className="text-xl font-semibold text-white">Switch to Arbitrum</p>
+                <p className="mb-6 mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
+                  The proposal floor files to Arbitrum One. Switch networks to continue.
+                </p>
                 <SwitchNetworkButton />
               </div>
             </div>
