@@ -122,7 +122,7 @@ visitor notices, not the surface they read through.
 | Stage | Scope | State |
 |---|---|---|
 | 1 | Tokens, type, base CSS, navigation, footer, Hero, status strip, Pirate Code, home sections | **shipped 2026-11-05** |
-| 2 | Home sections (Treasury, News, Muster), shared cards and modals | next |
+| 2 | Content routes, shared cards, forms and modals | **shipped 2026-11-05** |
 | 3 | Content routes: Intelligence, Policies, Signal, Armory, Events, Donate | next |
 | 4 | Governance, Calculator, Ledger, Passport | next |
 | 5 | Community surfaces (resources, education, discussions, profiles) | with feature work |
@@ -147,6 +147,27 @@ visitor notices, not the surface they read through.
 - The floating Contribute button is gone; Contribute is inline where it is contextual and
   reachable from Donate in the navigation.
 - `prefers-reduced-motion` honoured globally; focus rings on every interactive control.
+
+### Stage 2 shipped (2026-11-05)
+
+- `PageHeader` component: one kicker/title/lede pattern on every route.
+- Policies: policy cards rebuilt (baseline bar, notes/history panels, local-signal
+  buttons); draft list and revision CTA on the shared card system.
+- Intelligence: crew census, readiness count, schematic and ingress panels rebuilt;
+  dispatch cards and the AI control modernised.
+- Signal: player, transport, classification metadata and episode cards rebuilt; fixed an
+  `<audio>` element that fired `error` on mount and announced a broken recording before
+  anything was selected.
+- Armory: clearance panel, category bar, item cards, requisition history and network gate.
+- Events: muster list, empty states and past-muster archive.
+- Donate: sidecar split cards and a modern 300×300 Chest (monthly default, statutory
+  disclosure still inside the frame).
+- Calculator and Ledger: panels, inputs, tables and actions on the new primitives.
+- Propose, Passport dialog, toasts, network gate, loading fallback and error boundary.
+- 91 `font-vt323` usages reduced to 13, all small terminal accents.
+
+Remaining: community surfaces (resources, education, discussions, profiles, games) are
+not built; see `docs/community-platform-roadmap.md`.
 
 Migration rules for every touched file:
 
